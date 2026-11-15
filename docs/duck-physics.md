@@ -2,6 +2,8 @@
 
 The FastAPI and React workflow reads the published Duck handoff at `data/processed/verified/unified` ([data commit](https://github.com/rishidanta-svg/NASA_Challenge/commit/0b690ad)). It uses the specific June and October observations from `cross_date_pairs.json`. Processing version `duck-physics-v1` labels the optical products and radar diagnostic. Measured LiDAR inherits the verified LiDAR manifest's processing version.
 
+See the [NISAR experiment and API handoff](duck-nisar.md) for the HH candidate extraction and blocked terrain ablation.
+
 ## Waterlines
 
 - NDWI is the default optical edge. MNDWI, `(B03 - B11) / (B03 + B11)`, is available as a separate comparison. The published MNDWI was calculated on the native 20 m SWIR grid. The API uses the harmonized index rasters with the clear and index-valid flags. The fixed thresholds (NDWI 0 and MNDWI 0.10) come from the existing Duck extraction. A unique crossing requires contiguous clear samples on both sides, with connected seaward water support of at least one native posting. The 1 m interpolation along FRF rows does not change the sensor resolution. Line geometries break wherever a crossing is unavailable.

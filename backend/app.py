@@ -12,6 +12,7 @@ from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from .catalog import Catalog, read_json
 from .environment import Environment
+from .nisar_experiments import NisarExperiments
 from .raster import render
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -27,6 +28,8 @@ def create_app(root=None, unified_root=None):
     else:
         unified_data = Path(os.getenv("POLTERGEIST_UNIFIED_DATA_DIR", data / "unified"))
     catalog = Catalog(data, unified_root=unified_data)
+    nisar = NisarExperiments(catalog)
+    catalog.layers.update(nisar.descriptors)
     env = Environment()
     app = FastAPI(title="POLTERGEIST", version="1.0")
     origins = os.getenv("POLTERGEIST_CORS_ORIGINS",
@@ -67,6 +70,10 @@ def create_app(root=None, unified_root=None):
     def coastal_observations(include_samples: bool = False):
         return JSONResponse(catalog.coastal.summary(include_samples=include_samples), headers=CACHE)
 
+    @app.get("/api/coastal/nisar")
+    def coastal_nisar(include_samples: bool = False):
+        return JSONResponse(nisar.summary(include_samples=include_samples), headers=CACHE)
+
     @app.get("/api/terrain/change")
     def terrain():
         return catalog.terrain()
@@ -102,6 +109,8 @@ def create_app(root=None, unified_root=None):
     def boundary_geojson(id: str):
         if id in catalog.coastal.layers:
             return JSONResponse(catalog.coastal.layers[id], headers=CACHE)
+        if id in nisar.layers:
+            return JSONResponse(nisar.layers[id], headers=CACHE)
         if id not in catalog.reconstruction.boundary_geojson:
             raise HTTPException(404, "Unknown boundary layer")
         return JSONResponse(catalog.reconstruction.boundary_geojson[id], headers=CACHE)

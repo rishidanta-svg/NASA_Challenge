@@ -244,12 +244,22 @@ def main():
     # Robust generalized-Bayesian fusion for the dune-toe feature.
     results = []
     conservative_scales = []
+    baseline_estimates = []
     for r in state.itertuples():
         vv = getattr(r, "S1_VV", np.nan)
         vh = getattr(r, "S1_VH", np.nan)
         sv = rmse.get(("S1_VV", "B2_dunetoe", r.date), np.nan)
         sh = rmse.get(("S1_VH", "B2_dunetoe", r.date), np.nan)
         results.append(bayesian_dune_estimate(vv, vh, sv, sh))
+        # Retain v1's inverse-variance weighted estimate as a direct baseline.
+        valid = [(x, s) for x, s in ((vv, sv), (vh, sh))
+                 if np.isfinite(x) and np.isfinite(s) and s > 0]
+        if valid:
+            weights = np.array([1.0 / (s * s) for _, s in valid])
+            positions = np.array([x for x, _ in valid])
+            baseline_estimates.append(float(np.sum(weights * positions) / weights.sum()))
+        else:
+            baseline_estimates.append(np.nan)
         valid_scales = [
             scale for value, scale in ((vv, sv), (vh, sh))
             if np.isfinite(value) and np.isfinite(scale) and scale > 0
@@ -261,6 +271,7 @@ def main():
     # Only accepted estimates populate dunetoe_x_m. Ambiguous rows retain
     # their posterior diagnostics but do not receive a misleading midpoint.
     state["dunetoe_x_m"] = [r["accepted_x"] for r in results]
+    state["dunetoe_baseline_weighted_x_m"] = baseline_estimates
     state["dunetoe_bayes_map_x_m"] = [r["map_x"] for r in results]
     state["dunetoe_bayes_median_x_m"] = [r["median_x"] for r in results]
     state["dunetoe_bayes_ci90_low_m"] = [r["ci90_low"] for r in results]
@@ -308,6 +319,37 @@ def main():
     })
     state = state.merge(refs, on=keys, how="left")
 
+    # Final independent comparison against LiDAR. These references are used
+    # only after predictions have been generated, to score rather than fit.
+    truth = state["validation_lidar_dunetoe_x_m"]
+    bayes_valid = state["dunetoe_x_m"].notna() & truth.notna()
+    baseline_valid = state["dunetoe_baseline_weighted_x_m"].notna() & truth.notna()
+
+    def error_metrics(label, prediction, valid_mask):
+        errors = prediction[valid_mask] - truth[valid_mask]
+        if len(errors) == 0:
+            return {"method": label, "N": 0, "bias_m": np.nan,
+                    "MAE_m": np.nan, "RMSE_m": np.nan}
+        return {
+            "method": label,
+            "N": int(len(errors)),
+            "bias_m": float(errors.mean()),
+            "MAE_m": float(errors.abs().mean()),
+            "RMSE_m": float(np.sqrt(np.mean(np.square(errors)))),
+        }
+
+    reconstruction_metrics = pd.DataFrame([
+        error_metrics("v1_inverse_variance_baseline_all_matched",
+                      state["dunetoe_baseline_weighted_x_m"], baseline_valid),
+        error_metrics("v1_baseline_on_bayesian_accepted_rows",
+                      state["dunetoe_baseline_weighted_x_m"], bayes_valid),
+        error_metrics("robust_generalized_bayesian_accepted_rows",
+                      state["dunetoe_x_m"], bayes_valid),
+    ])
+    reconstruction_metrics.to_csv(
+        OUT / "reconstruction_metrics.csv", index=False, float_format="%.3f"
+    )
+
     state["state_scope"] = (
         "observed boundary features; not full terrain or bathymetry"
     )
@@ -325,6 +367,9 @@ def main():
           int(state.dunetoe_x_m.notna().sum()))
     print("Ambiguous radar disagreements:",
           int(state.dunetoe_status.str.startswith("ambiguous").sum()))
+    print("Independent dune-toe validation (LiDAR used for scoring only):")
+    print(reconstruction_metrics.to_string(index=False))
+    print("Saved outputs/reconstruction_metrics.csv")
     print("LiDAR references are validation-only; not used in estimates.")
 
 

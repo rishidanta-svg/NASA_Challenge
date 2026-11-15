@@ -1,6 +1,7 @@
-import { useCallback, useEffect } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { getAcquisitions, getLayers, getStudyArea, getTerrainChange, getTransects } from './api/client';
 import { clearCache } from './api/http';
+import { BoundaryWorkspace } from './components/BoundaryWorkspace';
 import { CrossSection } from './components/CrossSection';
 import { Header } from './components/Header';
 import { Inspector } from './components/Inspector';
@@ -10,6 +11,7 @@ import { MapView } from './map/MapView';
 import { useApp } from './state/store';
 
 export function App() {
+  const [workspace, setWorkspace] = useState<'explore' | 'analyze' | 'evidence'>('explore');
   const set = useApp((state) => state.set);
 
   const loadAll = useCallback(
@@ -46,14 +48,16 @@ export function App() {
       <div className="workstation-grid">
         <LayerPanel />
         <main className="center-column">
-          <MapView />
-          <CrossSection />
+          <nav className="workspace-tabs" aria-label="Workspaces">
+            {(['explore', 'analyze', 'evidence'] as const).map(w => <button key={w} aria-current={workspace === w ? 'page' : undefined} onClick={() => setWorkspace(w)}>{w.toUpperCase()}</button>)}
+          </nav>
+          {workspace === 'explore' ? <><MapView /><CrossSection /></> : <BoundaryWorkspace evidence={workspace === 'evidence'} />}
         </main>
         <Inspector />
       </div>
 
       <footer className="app-footer">
-        <span>POLTERGEIST · DUCK FRF COASTAL MONITORING WORKSTATION</span>
+        <span>LITTORAL · DUCK FRF COASTAL MONITORING WORKSTATION</span>
         <span>
           MapLibre GL JS · OpenFreeMap · AWS Terrarium DEM · NOAA CO-OPS #8651370 · API: {API_BASE_URL}
         </span>

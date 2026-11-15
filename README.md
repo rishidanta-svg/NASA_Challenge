@@ -8,7 +8,7 @@ This repository pairs the **quantitative boundary validation pipeline** (`run_va
 
 ---
 
-## Run the integrated POLTERGEIST map
+## Run the integrated Littoral map
 
 The React and MapLibre app and FastAPI data service run together from this checkout. See the [local setup and integration QA](docs/full-integration.md).
 
@@ -31,8 +31,9 @@ The React and MapLibre app and FastAPI data service run together from this check
 - **Beach lowering (SUPPORTED):** Co-registered USACE FRF tower lidar (`coregQCFlag 1`, max RMS reflector error `0.097 m`) measured a median elevation change of **−0.268 m** over `17,654` common `1 m` cells (`11,684 m²` lowered by more than `0.1 m`).
 - **Optical waterline (PLAUSIBLE):** Using 5-fold spatial block cross-validation (`100 m` alongshore blocks; `1,000`-resample `50 m` block bootstrap), **Sentinel-2 NDWI** locates the lidar wet/dry edge with pooled RMSE **5.4 m [4.9–5.9]** (`93%` within one `10 m` pixel, `N = 150`). An experimental tide correction using training-fold beach slope shifts pooled RMSE to **4.0 m [3.3–4.6]**.
 - **Radar back-beach edge (SUPPORTED / PLAUSIBLE):** **Sentinel-1 VV** does **not** track the waterline (RMSE **31.9 m**, bias **−25.5 m** landward vs. wet/dry edge; `SUPPORTED`) and instead aligns with the **lidar dune toe** (pooled RMSE **9.2 m [7.9–10.1]**, `N = 42`; `PLAUSIBLE`). Both the Sentinel-1 VV edge (`−1.5 m`) and lidar dune toe (`−2.0 m`) moved less than one `10 m` pixel between June and October.
-- **NISAR status (`NOT YET RUN`):** `src/nisar.py` and the ablation branch in `src/score.py` are implemented and verified syntactically, awaiting a user-configured NASA Earthdata Login (`~/.netrc` or `EARTHDATA_TOKEN`) to stream the Duck GCOV granules (`G4250721321-ASF`, `G4331248374-ASF`, `G4376256706-ASF`).
-- **Automated Self-Checks:** `10 PASS`, `1 NOT RUN` (NISAR download), `0 FAIL` — recorded in [`outputs/self_checks.csv`](outputs/self_checks.csv).
+- **NISAR status:** main contains June30 profiles; the verified map bundle separately contains June18/October16 scenes. Acquisition times and pairings are preserved. The original document pairing check remains unresolved.
+- **Automated Self-Checks:** see [`outputs/self_checks.csv`](outputs/self_checks.csv); a failed scientific pairing check is retained and does not prevent the final report being refreshed.
+- **Reproduction and input validation:** [`docs/REPRODUCTION.md`](docs/REPRODUCTION.md).
 
 ---
 

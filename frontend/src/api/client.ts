@@ -15,6 +15,8 @@ import { FRF_Y_RANGE_M, NOAA_DUCK_STATION, STUDY_BOUNDS } from '../config/geo';
 import { cached, fetchJson } from './http';
 import { fetchNoaaLatest } from './noaa';
 import {
+  BoundaryAnalysisSchema,
+  type BoundaryAnalysis,
   AcquisitionListSchema,
   AnalysisSchema,
   EnvironmentLatestSchema,
@@ -164,4 +166,8 @@ export async function getEnvironmentLatest(): Promise<Sourced<EnvironmentLatest>
     reasons.push(err instanceof Error ? err.message : String(err));
     return { data: null, state: 'unavailable', origin: 'none', reason: reasons.join(' · '), fetchedAt: now() };
   }
+}
+
+export async function getBoundaryAnalysis(id: string): Promise<Sourced<BoundaryAnalysis>> {
+  return sourced(await get(`/api/boundary-analysis/${encodeURIComponent(id)}`, BoundaryAnalysisSchema, 300_000));
 }

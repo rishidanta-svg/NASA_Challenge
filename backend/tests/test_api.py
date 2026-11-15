@@ -23,7 +23,11 @@ def xy(lng, lat, z):
 
 
 def test_metadata_and_missing_products(tmp_path):
-    assert len(CLIENT.get("/api/acquisitions").json()) == 4
+    acquisitions = CLIENT.get("/api/acquisitions").json()
+    assert len(acquisitions) == 11
+    assert {a["sensor"] for a in acquisitions} == {"LIDAR", "NISAR", "SENTINEL-1", "SENTINEL-2"}
+    assert len({a["id"] for a in acquisitions}) == len(acquisitions)
+    assert len([a for a in acquisitions if a["sensor"] == "NISAR"]) == 3
     study = CLIENT.get("/api/study-area").json()
     assert study["geometry"]["coordinates"][0][0] == [-75.753384, 36.183704]
     result = CLIENT.get("/api/analysis/FRF-950")

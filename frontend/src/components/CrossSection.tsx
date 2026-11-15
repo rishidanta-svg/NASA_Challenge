@@ -85,10 +85,10 @@ export function CrossSection() {
             <input type="checkbox" checked={showGuides} onChange={(e) => setShowGuides(e.target.checked)} />
             <span>Sensor boundaries</span>
           </label>
-          <label style={{ display: 'inline-flex', alignItems: 'center', gap: 5, cursor: 'pointer' }}>
+          {a && <label style={{ display: 'inline-flex', alignItems: 'center', gap: 5, cursor: 'pointer' }}>
             <input type="checkbox" checked={showModel} onChange={(e) => setShowModel(e.target.checked)} />
             <span style={{ color: 'var(--purple)' }}>Model ± 1σ (inferred)</span>
-          </label>
+          </label>}
           <button
             onClick={() => set({ bottomOpen: !bottomOpen })}
             style={{ padding: '2px 8px', fontSize: 10.5 }}
@@ -212,7 +212,7 @@ export function CrossSection() {
               <div style={{ display: 'flex', gap: 10, fontSize: 11, fontFamily: 'var(--font-mono)', flexWrap: 'wrap' }}>
                 <span style={{ color: '#65dfce' }}>━ June</span>
                 <span style={{ color: '#edbf7c' }}>━ October</span>
-                {showModel && <span style={{ color: '#d58bd8' }}>┅ Model ± 1σ</span>}
+                {showModel && a && <span style={{ color: '#d58bd8' }}>┅ Model ± 1σ</span>}
               </div>
               <div className="mono" style={{ fontSize: 11, marginTop: 8, lineHeight: 1.5 }}>
                 {hoverX !== null && hJune && hOct ? (

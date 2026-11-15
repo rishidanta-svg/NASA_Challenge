@@ -80,8 +80,7 @@ export function Timeline() {
       <div className="slot-meta" style={{ marginTop: 8 }}>
         {acqList.length > 0 ? (
           <div>
-            <strong>{acqList.length} verified acquisitions</strong> in register. Nearest scene to {date} selected per
-            sensor.
+            <strong>{acqList.length} registered acquisitions</strong> in register. Map layers use their nearest available raster; some registered acquisitions have profiles only. Exact times are shown in Analyze.
           </div>
         ) : (
           <div>

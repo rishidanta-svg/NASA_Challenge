@@ -1,3 +1,4 @@
+import os
 """Presentation graphs (Plotly -> PNG + HTML). Every number plotted comes from
 outputs/*.csv produced by score.py / lidar_boundaries.py."""
 from pathlib import Path
@@ -32,6 +33,9 @@ LAYOUT = dict(template="plotly_white", font=dict(size=16, family="Arial"),
 
 def save(fig, name):
     fig.write_html(FIG / f"{name}.html", include_plotlyjs="cdn")
+    if os.getenv("SARS_SKIP_PNG") == "1":
+        print("saved HTML; PNG skipped:", name)
+        return
     for _ in range(3):
         try:
             fig.write_image(FIG / f"{name}.png", scale=2)

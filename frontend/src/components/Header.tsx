@@ -25,7 +25,7 @@ export function Header({ onRefreshAll }: HeaderProps) {
             />
           </svg>
           <div>
-            <span className="brand-title">POLTERGEIST</span>
+            <span className="brand-title">LITTORAL</span>
             <small className="brand-sub">COASTAL OBSERVATION &amp; TERRAIN WORKSTATION · NASA SPACE APPS 2026</small>
           </div>
         </div>

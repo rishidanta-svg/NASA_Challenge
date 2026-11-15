@@ -18,6 +18,7 @@ import numpy as np
 import pandas as pd
 import xarray as xr
 
+from metadata import read_nisar_metadata
 from frf import ROWS10, PROC, edge_crossing, max_gradient_edge
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -48,7 +49,7 @@ def load_products():
                                            product_id=r.item_id) for r in m1.itertuples()}
     nis = PROC / "nisar_profiles.nc"
     if nis.exists():
-        n = xr.open_dataset(nis); mn = pd.read_csv(PROC / "nisar_meta.csv")
+        n = xr.open_dataset(nis); mn = read_nisar_metadata(PROC / "nisar_meta.csv")
         for v in ["HH", "HV"]:
             prods[f"NISAR_{v}"] = n[v]
             meta[f"NISAR_{v}"] = {r.date_key: dict(pixel_m=max(r.pixel_m_x, r.pixel_m_y),

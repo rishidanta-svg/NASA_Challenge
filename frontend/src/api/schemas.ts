@@ -272,3 +272,24 @@ export const EnvironmentLatestSchema = z.object({
   observations: z.array(EnvironmentObservationSchema),
 });
 export type EnvironmentLatest = z.infer<typeof EnvironmentLatestSchema>;
+
+// Horizontal boundary analysis is a separate product from elevation reconstruction.
+export const BoundaryAnalysisSchema = z.object({
+  transect_id: z.string(), quantity: z.literal('cross-shore boundary position'),
+  coordinate_reference: z.string(), inferred: z.literal(true),
+  quality_checks: z.array(z.object({check:z.string(), status:z.enum(['PASS','FAIL','NOT RUN']), detail:z.string()})),
+  records: z.array(z.object({
+    epoch: z.string(), feature: z.enum(['waterline', 'dunetoe']),
+    x_frf_m: z.number().finite().nullable(), status: z.string(), source: z.string(),
+    cv_rmse_m: z.number().nonnegative().nullable(),
+    interval90_frf_m: z.tuple([z.number().finite(), z.number().finite()]).nullable(),
+    observations: z.array(z.object({
+      sensor: z.string(), product: z.string(), acquisition_id: z.string(),
+      acquired_at: isoDateTime.nullable(), x_frf_m: z.number().finite().nullable(),
+      lidar_offset_hours: z.number().finite().nullable(),
+    })).optional(),
+  })),
+  validation: z.array(z.object({method: z.string(), N: z.number().int(), RMSE_m: z.number().nonnegative().nullable()})),
+  limitations: z.array(z.string()),
+});
+export type BoundaryAnalysis = z.infer<typeof BoundaryAnalysisSchema>;

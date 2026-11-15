@@ -610,3 +610,20 @@
     grid-template-columns: 1fr;
   }
 }
+
+.workspace-tabs { display: flex; gap: 6px; padding: 8px 12px; background: var(--panel); border-bottom: 1px solid var(--line); }
+.workspace-tabs button[aria-current] { color: var(--teal, #65dfce); border-color: currentColor; }
+.boundary-workspace { overflow-y: auto; padding: 24px; min-height: 0; flex: 1; }
+.boundary-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.boundary-workspace h1 { font-size: 26px; margin: 8px 0 20px; }
+.boundary-workspace h2 { font-size: 17px; margin: 22px 0 12px; }
+.boundary-workspace p, .boundary-workspace li { font-size: 13px; line-height: 1.65; }
+.boundary-controls { display: flex; gap: 12px; flex-wrap: wrap; align-items: end; margin-bottom: 20px; }
+.boundary-controls label { display: flex; flex-direction: column; gap: 6px; font-size: 12px; }
+.boundary-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; }
+.boundary-cards .slot-card { margin: 0; }
+.boundary-cards h2 { color: #65dfce; font: 24px var(--font-mono); }
+.science-table { overflow-x: auto; }
+.science-table table { width: 100%; border-collapse: collapse; font-size: 12px; text-align: left; }
+.science-table th, .science-table td { padding: 12px 8px; border-bottom: 1px solid var(--line); vertical-align: top; }
+.science-table details { max-width: 260px; overflow-wrap: anywhere; color: #a3b5c5; margin-top: 8px; }

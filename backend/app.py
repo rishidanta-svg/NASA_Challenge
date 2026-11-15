@@ -12,16 +12,18 @@ from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from .catalog import Catalog, read_json
 from .environment import Environment
+from .science import Science
 from .raster import render
 
 ROOT = Path(__file__).resolve().parents[1]
 CACHE = {"Cache-Control": "public, max-age=300"}
 
 
-def create_app(root=None):
+def create_app(root=None, science_root=None):
     data = Path(root or os.getenv("POLTERGEIST_DATA_DIR", ROOT / "data/processed/verified"))
     catalog = Catalog(data)
     env = Environment()
+    science = Science(Path(science_root or ROOT))
     app = FastAPI(title="POLTERGEIST", version="1.0")
     origins = os.getenv("POLTERGEIST_CORS_ORIGINS",
                         "http://localhost:5173,http://localhost:4173,http://127.0.0.1:5173,http://127.0.0.1:4173")
@@ -46,7 +48,8 @@ def create_app(root=None):
 
     @app.get("/api/acquisitions")
     def acquisitions():
-        return sorted(catalog.acquisitions, key=lambda a: a["acquired_at"])
+        return sorted({a["id"]: a for a in [*science.acquisitions(), *catalog.acquisitions]}.values(),
+                      key=lambda a: a["acquired_at"])
 
     @app.get("/api/layers")
     def layers():
@@ -76,6 +79,12 @@ def create_app(root=None):
         if id not in catalog.transects:
             raise HTTPException(404, "Unknown transect")
         return {"status": "unavailable", "reason": "Physics-informed profiles are awaiting data"}
+
+    @app.get("/api/boundary-analysis/{id}")
+    def boundary_analysis(id: str):
+        if id not in catalog.transects:
+            raise HTTPException(404, "Unknown transect")
+        return science.analysis(catalog.transects[id][0])
 
     @app.get("/api/environment/latest")
     def environment():

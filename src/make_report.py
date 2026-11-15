@@ -4,6 +4,7 @@ Every number is read from CSVs produced by the pipeline, and every
 SUPPORTED / PLAUSIBLE / NOT DEMONSTRATED tag is assigned by the written rules in
 TAG_RULES below (also printed in the summary), never chosen by hand.
 """
+from metadata import read_nisar_metadata
 from pathlib import Path
 import os
 import numpy as np
@@ -52,7 +53,7 @@ def tag_feature_match(S, p, b):
     best = {d: s[s.date == d].set_index("lidar_boundary").RMSE_m.idxmin() for d in DATES + ["pooled"]
             if s[s.date == d].RMSE_m.notna().any()}
     pooled = s[(s.date == "pooled") & (s.lidar_boundary == b)].iloc[0]
-    every = all(best.get(d) == b for d in DATES if d in best)
+    every = all(best.get(d) == b for d in DATES)
     detail = "; ".join(f"{d}: closest to {BN[best[d]]}" for d in DATES if d in best)
     if every and pooled.RMSE_m <= pooled.pixel_m:
         return "SUPPORTED", detail
@@ -78,7 +79,7 @@ def tag_better(M, a, b, tgt):
     per = [(d, x.RMSE_m < y.RMSE_m) for d, x, y in zip(DATES, A, B) if x is not None and y is not None]
     worse = [d for d, ok in per if not ok]
     no_overlap = pa.RMSE_hi < pb.RMSE_lo
-    if not worse and no_overlap:
+    if len(per) == len(DATES) and not worse and no_overlap:
         return "SUPPORTED", worse
     if pa.RMSE_m < pb.RMSE_m and worse:
         return "NOT DEMONSTRATED (mixed)", worse
@@ -113,8 +114,8 @@ def citations():
         L.append(f"| USACE FRF dune lidar DEM (duneLidarDEM, hourly) | {Path(r.opendap_url).name}, coregQCFlag {int(r.coregQCFlag)} | {r.scan_utc} | {r.opendap_url} |")
     nm = PROC / "nisar_meta.csv"
     if nm.exists():
-        for r in pd.read_csv(nm).itertuples():
-            L.append(f"| NASA-ISRO NISAR L2 GCOV (provisional), HH/HV | {r.concept_id} ({r.granule_ur}) | {r.begin_utc} to {r.end_utc} | {r.url} |")
+        for r in read_nisar_metadata(nm).itertuples():
+            L.append(f"| NASA-ISRO NISAR L2 GCOV, HH/HV | {r.granule} | {r.begin_utc} to {getattr(r, 'end_utc', 'end not recorded')} | {getattr(r, 'url', 'source URL not recorded; local HDF5 input')} |")
     else:
         for cid in ["G4250721321-ASF", "G4331248374-ASF", "G4376256706-ASF"]:
             L.append(f"| NASA-ISRO NISAR L2 GCOV (provisional), HH/HV | {cid} | see CMR record | https://cmr.earthdata.nasa.gov/search/concepts/{cid} (not yet downloaded) |")
@@ -162,7 +163,7 @@ def summary():
          "- Bias, MAE, RMSE, % of rows within one pixel, and 95% block-bootstrap intervals (1000 resamples of 50 m blocks).", "",
          "## When each image was taken (hours before (−) or after (+) the lidar scan)", "",
          "| Date | Sentinel-2 | Sentinel-1 |" + (" NISAR |" if have_nisar else ""), "|---|---|---|" + ("---|" if have_nisar else "")]
-    nmeta = pd.read_csv(PROC / "nisar_meta.csv").set_index("date_key") if have_nisar else None
+    nmeta = read_nisar_metadata(PROC / "nisar_meta.csv").set_index("date_key") if have_nisar else None
     for d in DATES:
         row = f"| {d} | {hours(lm.loc[d,'scan_utc'], s2m.loc[d,'acquisition_utc']):+.1f} h | {hours(lm.loc[d,'scan_utc'], s1m.loc[d,'acquisition_utc']):+.1f} h |"
         if have_nisar:
@@ -231,15 +232,23 @@ def summary():
     if have_nisar:
         t, worse = tag_better(M, "EXP_radar_S1VV+NISARHH", "ABL_radar_S1VV_only", "B2_dunetoe")
         a, b = g(M, "EXP_radar_S1VV+NISARHH", "B2_dunetoe"), g(M, "ABL_radar_S1VV_only", "B2_dunetoe")
-        F.append(f"**NISAR ablation — {t}: adding NISAR HH to Sentinel-1 VV improves the dune line (EXPERIMENTAL).** With NISAR RMSE {f1(a.RMSE_m)} m "
+        F.append(f"**NISAR ablation — {t}: comparison of S1 VV + NISAR HH against S1 VV alone (EXPERIMENTAL).** With NISAR RMSE {f1(a.RMSE_m)} m "
                  f"[{f1(a.RMSE_lo)}-{f1(a.RMSE_hi)}]; without NISAR, same rows, {f1(b.RMSE_m)} m [{f1(b.RMSE_lo)}-{f1(b.RMSE_hi)}]. "
                  "NISAR passes used: " + "; ".join(f"{r.Index} {r.direction} track {r.track}" for r in nmeta.itertuples())
-                 + ". The September pass looks from the opposite direction, which can move a radar edge.")
+                 + ". Only the listed acquisitions were used; missing epochs are not inferred. This comparison does not establish improved accuracy on unseen sites.")
     else:
         F.append("**NOT YET RUN: NISAR accuracy and the NISAR ablation.** No NASA Earthdata login was available. Run `.venv/bin/python src/earthdata_login.py`, "
                  "then `.venv/bin/python run_validation.py`; NISAR rows, the ablation and its tag are added automatically.")
     L += ["", "## Findings", ""] + [f"{i}. {x}" for i, x in enumerate(F, 1)]
 
+    reconstruction = OUT / "reconstruction_metrics.csv"
+    if reconstruction.exists():
+        R = pd.read_csv(reconstruction)
+        L += ["", "## Boundary reconstruction validation", "",
+              "Horizontal boundary positions only; not elevation or bathymetry. Error scales are LiDAR-dependent spatial-CV diagnostics, not independent posterior calibration.", "",
+              "| Method | N | RMSE (m) |", "|---|---|---|"]
+        L += [f"| {r.method} | {int(r.N)} | {r.RMSE_m:.3f} |" for r in R.itertuples()]
+        L += ["", "The committed matched-row comparison does not demonstrate improved Bayesian accuracy over the baseline; ambiguity handling and withheld estimates remain separate benefits."]
     L += ["", "## Where this could be wrong",
           "- **The lidar never reaches the still-water line** (FRF removes water returns), so the wet/dry edge depends on FRF's automatic filter and on waves at scan time.",
           "- **Timing:** see the timing table; tide and waves differ between each image and the lidar scan. Sentinel-1 scenes all come from one orbit "
@@ -253,8 +262,8 @@ def summary():
           "- **Small samples:** the dune toe is visible on a minority of rows, so its intervals rest on few alongshore blocks; three dates; one ~500 m site.",
           "- **The tide correction uses lidar** (beach slope), so it is a physics check, not a satellite-only method.",
           "- **Tidal datum epoch** for MHW is 1983-2001.",
-          "- **NISAR data are provisional** (NISAR_L2_GCOV_PROVISIONAL_V1). A newer NISAR_L2_GCOV_V1 collection exists but, when searched, "
-          "held no granule for these dates over the site.", "",
+          "- **NISAR provenance:** collection/version and source URL must be verified from the input record; no current collection availability is inferred from earlier searches.",
+          "- **NISAR timing:** the main validation input is June30, about 12 days after the June19 LiDAR scan. The map bundle uses a different June18 input. Their results must not be interchanged.", "",
           "## How this transfers",
           "The method needs a reference elevation survey, a tide gauge and the satellite images, so it can be repeated wherever a survey overlaps a NISAR pass, "
           "for example on eroding Indian coasts such as Odisha, Kerala or Puducherry. That is future work.", "",

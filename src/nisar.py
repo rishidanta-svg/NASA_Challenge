@@ -1,6 +1,9 @@
 
 """Process locally downloaded NISAR GCOV data for the FRF study area."""
 
+import os
+import argparse
+from pyproj import Transformer
 import numpy as np
 import pandas as pd
 import xarray as xr
@@ -15,21 +18,29 @@ GRANULE = (
     "20260630T235334_20260630T235409_P05023_N_F_J_001"
 )
 
-RAW = Path(__file__).resolve().parents[1] / "data" / "raw" / "nisar"
+RAW = Path(os.getenv("NISAR_RAW_DIR", Path(__file__).resolve().parents[1] / "data" / "raw" / "nisar"))
 
 
 def main():
-
-    files = list(RAW.glob("*.h5"))
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--input', default=os.getenv('NISAR_INPUT'), help='Path to the June30 GCOV HDF5 input')
+    parser.add_argument('--raw-dir', type=Path, default=RAW, help='Directory searched when --input is omitted')
+    parser.add_argument('--output-dir', type=Path, default=PROC, help='Destination for profiles and metadata')
+    args = parser.parse_args()
+    selected = args.input
+    granule = os.getenv("NISAR_GRANULE", GRANULE)
+    files = [Path(selected)] if selected else list(args.raw_dir.glob("*.h5"))
 
     if not files:
         raise FileNotFoundError(f"No NISAR HDF5 file found in {RAW}")
 
-    file = next((f for f in files if GRANULE in f.name), None)
+    file = next((f for f in files if granule in f.name), None)
 
     if file is None:
         raise FileNotFoundError(f"Expected granule not found in {RAW}")
 
+    if granule != GRANULE:
+        raise ValueError("This single-epoch reader currently supports only the documented June30 granule; use the geospatial pipeline for June18/October16.")
     print("Reading:", file.name)
 
     bounds = utm_window()
@@ -41,6 +52,9 @@ def main():
 
         g = f[grid]
 
+        epsg = int(g["projection"][()])
+        if epsg != 32618:
+            bounds = Transformer.from_crs(32618, epsg, always_xy=True).transform_bounds(*bounds, densify_pts=21)
         xs = g["xCoordinates"][:]
         ys = g["yCoordinates"][:]
 
@@ -122,9 +136,9 @@ def main():
         }
     )
 
-    PROC.mkdir(parents=True, exist_ok=True)
+    args.output_dir.mkdir(parents=True, exist_ok=True)
 
-    output = PROC / "nisar_profiles.nc"
+    output = args.output_dir / "nisar_profiles.nc"
 
     result.expand_dims(date=["2026-06"]).to_netcdf(output)
 
@@ -140,7 +154,7 @@ def main():
     "epsg": epsg
     }])
 
-    metadata.to_csv(PROC / "nisar_meta.csv", index=False)
+    metadata.to_csv(args.output_dir / "nisar_meta.csv", index=False)
 
     print("\nSUCCESS")
     print("Saved:", output)

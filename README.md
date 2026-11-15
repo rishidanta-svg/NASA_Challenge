@@ -1,4 +1,4 @@
-# Littoral — which coastline does each satellite see?
+# which coastline does each satellite see?
 
 **NASA Space Apps Challenge 2026 · Challenge #5 "Dancing with the SARs" · Duck, North Carolina (USACE Field Research Facility)**
 

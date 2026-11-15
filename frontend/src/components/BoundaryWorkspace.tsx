@@ -400,17 +400,6 @@ export function BoundaryWorkspace() {
             <p role="status">{nisar?.reason ?? 'Loading independent NISAR experiments…'}</p>
           ) : (
             <>
-              <div className="quality-note exploratory-note" style={{ marginTop: 0 }}>
-                <div className="panel-heading">
-                  <strong>Exploratory L-band SAR diagnostics (Withheld for operational mapping)</strong>
-                  <span className="badge badge-exploratory">Exploratory</span>
-                </div>
-                <p>
-                  NISAR L-band backscatter transitions are exploratory signals. They do NOT represent validated shoreline positions, confirmed erosion, or contribute to the 49.7% optical tide-correction reduction.
-                </p>
-              </div>
-
-              <h2>Can satellites estimate the beach’s height change?</h2>
               <p className="intro">
                 <span className="num">{t?.n ?? 0}</span> valid 10 m cells across one June–October interval. Predictions are scored out-of-sample on held-out alongshore strips with a 30 m spatial guard (vertical error in metres NAVD88).
               </p>

@@ -1,6 +1,8 @@
 """NISAR L2 GCOV (ASF, needs NASA Earthdata Login via ~/.netrc).
 Reads only the site window from the HDF5 over HTTPS (no full download),
 converts HH and HV backscatter to dB and samples along FRF rows."""
+import argparse
+from pathlib import Path
 import io
 import os
 from collections import OrderedDict
@@ -8,7 +10,6 @@ import numpy as np
 import pandas as pd
 import xarray as xr
 import h5py
-import earthaccess
 from pyproj import Transformer
 
 from frf import sample_rows, ROWS10, PROC
@@ -107,42 +108,68 @@ def read_window(f, bounds_utm18):
     out = {}
     for pol, ds in [("HH", "HHHH"), ("HV", "HVHV")]:
         a = g[ds][sl].astype("float64")
-        a[a <= 0] = np.nan
+        a[(a <= 0) | ~np.isfinite(a)] = np.nan
         out[pol] = xr.DataArray(10 * np.log10(a), coords={"y": ys[sl[0]], "x": xs[sl[1]]}, dims=("y", "x"))
     spacing = float(abs(xs[1] - xs[0])), float(abs(ys[1] - ys[0]))
     return out, spacing, epsg
 
 
 def main():
-    auth = earthaccess.login(strategy="environment") if os.environ.get("EARTHDATA_TOKEN") or os.environ.get("EARTHDATA_USERNAME") \
-        else earthaccess.login(strategy="netrc")
-    if not auth or not auth.authenticated:
-        raise SystemExit("Earthdata login failed: run src/earthdata_login.py first")
-    bounds = utm_window()
-    profs, meta = [], []
-    for key, cid in GRANULES.items():
-        res = earthaccess.search_data(concept_id=cid)
-        assert len(res) == 1, f"{cid}: {len(res)} results"
-        gr = res[0]
-        links = [u for u in gr.data_links(access="external")
-                 if u.startswith("https://") and u.endswith(".h5") and "QA_STATS" not in u and "PRIVATE" not in u]
-        assert len(links) == 1, f"{cid}: expected one science .h5 link, got {links}"
-        url = links[0]
-        fobj = HTTPRangeFile(earthaccess.get_requests_https_session(), url)
-        with h5py.File(fobj, "r") as f:
-            bands, spacing, epsg = read_window(f, bounds)
-        print(f"  {key} {cid}: EPSG {epsg}, pixel {spacing} m, window {bands['HH'].shape}, "
-              f"fetched {fobj.bytes_fetched / 1e6:.0f} MB of {fobj.size / 1e9:.2f} GB", flush=True)
-        profs.append(xr.Dataset({p: (("y", "x"), sample_rows(da, XGRID, epsg=epsg)) for p, da in bands.items()},
-                                coords={"y": ROWS10, "x": XGRID}).expand_dims(date=[key]))
-        t = gr["umm"]["TemporalExtent"]["RangeDateTime"]
-        meta.append({"date_key": key, "concept_id": cid, "granule_ur": gr["umm"]["GranuleUR"],
-                     **parse_ur(gr["umm"]["GranuleUR"]),
-                     "begin_utc": t["BeginningDateTime"], "end_utc": t["EndingDateTime"],
-                     "pixel_m_x": spacing[0], "pixel_m_y": spacing[1], "epsg": epsg, "url": url})
-    xr.concat(profs, dim="date").to_netcdf(PROC / "nisar_profiles.nc")
+    parser=argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--input', action='append', help='Local GCOV HDF5; repeat for multiple acquisitions')
+    parser.add_argument('--raw-dir',type=Path, default=os.getenv('NISAR_RAW_DIR'))
+    parser.add_argument('--output-dir',type=Path,default=PROC)
+    args=parser.parse_args()
+    inputs=args.input or ([os.environ['NISAR_INPUT']] if os.getenv('NISAR_INPUT') else [])
+    if args.raw_dir:
+        inputs.extend(str(p) for p in args.raw_dir.glob('*.h5'))
+        if not inputs: raise FileNotFoundError(f'No NISAR HDF5 files in {args.raw_dir}')
+    bounds=utm_window();profs=[];meta=[]
+    args.output_dir.mkdir(parents=True,exist_ok=True)
+    if inputs:
+        # Use recorded acquisition identity rather than assigning every file to June.
+        reference=pd.read_csv(PROC/'nisar_meta.csv')
+        seen=set()
+        for name in inputs:
+            path=Path(name)
+            matched=reference[reference.granule_ur.apply(lambda ur: ur in path.name)]
+            if len(matched)!=1:raise ValueError(f'Unrecognized or ambiguous NISAR acquisition: {path.name}')
+            record=matched.iloc[0].to_dict();key=record['date_key']
+            if key in seen:raise ValueError(f'Duplicate monthly analysis epoch: {key}')
+            seen.add(key)
+            with h5py.File(path,'r') as f:bands,spacing,epsg=read_window(f,bounds)
+            profs.append(xr.Dataset({p: (("y","x"),sample_rows(da,XGRID,epsg=epsg)) for p,da in bands.items()},coords={"y":ROWS10,"x":XGRID}).expand_dims(date=[key]))
+            record.update(pixel_m_x=spacing[0],pixel_m_y=spacing[1],epsg=epsg)
+            meta.append(record)
+    else:
+        import earthaccess
+        auth = earthaccess.login(strategy="environment") if os.environ.get("EARTHDATA_TOKEN") or os.environ.get("EARTHDATA_USERNAME") \
+            else earthaccess.login(strategy="netrc")
+        if not auth or not auth.authenticated:
+            raise SystemExit("Earthdata login failed: run src/earthdata_login.py first")
+        for key, cid in GRANULES.items():
+            res = earthaccess.search_data(concept_id=cid)
+            assert len(res) == 1, f"{cid}: {len(res)} results"
+            gr = res[0]
+            links = [u for u in gr.data_links(access="external")
+                     if u.startswith("https://") and u.endswith(".h5") and "QA_STATS" not in u and "PRIVATE" not in u]
+            assert len(links) == 1, f"{cid}: expected one science .h5 link, got {links}"
+            url = links[0]
+            fobj = HTTPRangeFile(earthaccess.get_requests_https_session(), url)
+            with h5py.File(fobj, "r") as f:
+                bands, spacing, epsg = read_window(f, bounds)
+            print(f"  {key} {cid}: EPSG {epsg}, pixel {spacing} m, window {bands['HH'].shape}, "
+                  f"fetched {fobj.bytes_fetched / 1e6:.0f} MB of {fobj.size / 1e9:.2f} GB", flush=True)
+            profs.append(xr.Dataset({p: (("y", "x"), sample_rows(da, XGRID, epsg=epsg)) for p, da in bands.items()},
+                                    coords={"y": ROWS10, "x": XGRID}).expand_dims(date=[key]))
+            t = gr["umm"]["TemporalExtent"]["RangeDateTime"]
+            meta.append({"date_key": key, "concept_id": cid, "granule_ur": gr["umm"]["GranuleUR"],
+                         **parse_ur(gr["umm"]["GranuleUR"]),
+                         "begin_utc": t["BeginningDateTime"], "end_utc": t["EndingDateTime"],
+                         "pixel_m_x": spacing[0], "pixel_m_y": spacing[1], "epsg": epsg, "url": url})
+    xr.concat(profs, dim="date").to_netcdf(args.output_dir / "nisar_profiles.nc")
     m = pd.DataFrame(meta)
-    m.to_csv(PROC / "nisar_meta.csv", index=False)
+    m.to_csv(args.output_dir / "nisar_meta.csv", index=False)
     print(m.drop(columns="url").to_string())
 
 

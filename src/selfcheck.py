@@ -13,6 +13,7 @@ import numpy as np
 import pandas as pd
 import xarray as xr
 
+from metadata import read_nisar_metadata
 from frf import fit_transform, PROC, edge_crossing
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -34,6 +35,7 @@ def md5(p):
 
 
 def main():
+    res.clear()
     # 1 lidar
     lm = pd.read_csv(PROC / "lidar_scan_meta.csv")
     ok = all(lm.set_index("date_key").scan_utc.str[:16].get(k) == v for k, v in DOC_LIDAR.items())
@@ -52,9 +54,17 @@ def main():
     # 3 product IDs and times
     nm = PROC / "nisar_meta.csv"
     if nm.exists():
-        n = pd.read_csv(nm).set_index("date_key")
-        ok = all(n.concept_id.get(k) == v for k, v in DOC_NISAR.items())
-        check("NISAR granule IDs match the team's document", ok, ", ".join(f"{k}: {v}" for k, v in n.concept_id.items()))
+        n = read_nisar_metadata(nm).set_index("date_key")
+        # Legacy metadata uses CMR concept IDs; newer files use full granule names.
+        # Do not equate the two or pass a different acquisition silently.
+        if "concept_id" in n:
+            ok = all(n.concept_id.get(k) == v for k, v in DOC_NISAR.items())
+            detail = ", ".join(f"{k}: {v}" for k, v in n.concept_id.items())
+        else:
+            ok = False
+            detail = "Current metadata uses granule names; original document pairing is not verified. "
+            detail += "; ".join(f"{r.Index}: {getattr(r, 'granule', 'missing ID')} at {getattr(r, 'begin_utc', 'missing time')}" for r in n.itertuples())
+        check("NISAR granule IDs match the team's document", ok, detail)
     else:
         check("NISAR granule IDs match the team's document", None, "NISAR not downloaded (no Earthdata login)")
     sb = pd.read_csv(OUT / "sensor_boundaries.csv")

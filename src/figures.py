@@ -1,5 +1,6 @@
 """Presentation graphs (Plotly -> PNG + HTML). Every number plotted comes from
 outputs/*.csv produced by score.py / lidar_boundaries.py."""
+import os
 from pathlib import Path
 import time
 try:  # one persistent renderer for all figures (reduces kaleido's startup race)
@@ -38,6 +39,8 @@ LAYOUT = dict(template="plotly_white", font=dict(size=16, family="Arial"),
 
 def save(fig, name):
     fig.write_html(FIG / f"{name}.html", include_plotlyjs="cdn")
+    if os.getenv("SARS_SKIP_PNG") == "1":
+        return
     for attempt in range(8):
         try:
             fig.write_image(FIG / f"{name}.png", scale=2)

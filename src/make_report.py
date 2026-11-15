@@ -136,7 +136,7 @@ def tag_feature_match(S, p, b):
     best = {d: s[s.date == d].set_index("lidar_boundary").RMSE_m.idxmin() for d in DATES + ["pooled"]
             if s[s.date == d].RMSE_m.notna().any()}
     pooled = s[(s.date == "pooled") & (s.lidar_boundary == b)].iloc[0]
-    every = all(best.get(d) == b for d in DATES if d in best)
+    every = all(best.get(d) == b for d in DATES)
     detail = "; ".join(f"{d}: closest to {BN[best[d]]}" for d in DATES if d in best)
     if every and pooled.RMSE_m <= pooled.pixel_m:
         return "SUPPORTED", detail
@@ -162,7 +162,7 @@ def tag_better(M, a, b, tgt):
     per = [(d, x.RMSE_m < y.RMSE_m) for d, x, y in zip(DATES, A, B) if x is not None and y is not None]
     worse = [d for d, ok in per if not ok]
     no_overlap = pa.RMSE_hi < pb.RMSE_lo
-    if not worse and no_overlap:
+    if len(per) == len(DATES) and not worse and no_overlap:
         return "SUPPORTED", worse
     if pa.RMSE_m < pb.RMSE_m and worse:
         return "NOT DEMONSTRATED (mixed)", worse

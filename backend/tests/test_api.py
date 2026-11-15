@@ -14,6 +14,7 @@ from backend.environment import observation
 from backend.raster import SIZE, tile_bounds
 
 DATA = ROOT / "data/processed/verified"
+UNIFIED = DATA / "unified"
 CLIENT = TestClient(create_app())
 
 
@@ -23,11 +24,43 @@ def xy(lng, lat, z):
 
 
 def test_metadata_and_missing_products(tmp_path):
-    assert len(CLIENT.get("/api/acquisitions").json()) == 4
+    acquisitions = CLIENT.get("/api/acquisitions").json()
+    assert len(acquisitions) == 28
+    assert {a["sensor"] for a in acquisitions} == {"LIDAR", "NISAR", "SENTINEL-1", "SENTINEL-2"}
+    assert len([a for a in acquisitions if a["group"] == "june"]) == 5
+    assert len([a for a in acquisitions if a["group"] == "october"]) == 4
+    assert len([a for a in acquisitions if a["group"] == "additional"]) == 19
+    # Verify distinct June Sentinel-1 passes (June 16 Track 4 vs June 30 Track 106)
+    june_s1 = CLIENT.get("/api/acquisitions?group=june&sensor=SENTINEL-1").json()
+    assert len(june_s1) == 2
+    assert {a["qa"]["relative_orbit"] for a in june_s1} == {4, 106}
+    # Verify matched environmental summary on acquisitions
+    s1_jun16 = next(a for a in june_s1 if a["qa"]["relative_orbit"] == 4)
+    assert s1_jun16["environment"]["water_level_m_mllw"] == 1.176
+    assert s1_jun16["environment"]["predicted_tide_stage"] == "rising"
+    assert s1_jun16["environment"]["wave_hs_m_17m"] == 0.734
+
     study = CLIENT.get("/api/study-area").json()
     assert study["geometry"]["coordinates"][0][0] == [-75.753384, 36.183704]
-    result = CLIENT.get("/api/analysis/FRF-950")
-    assert result.json()["status"] == "unavailable"
+    result = CLIENT.get("/api/analysis/FRF-950").json()
+    assert result["transect_id"] == "FRF-950"
+    assert result["inferred"] is True
+    assert result["state_scope"] == "observed boundary features; not full terrain or bathymetry"
+    assert len(result["epochs"]) == 3
+    jun_ep = next(e for e in result["epochs"] if e["date"] == "2026-06")
+    assert jun_ep["waterline"]["x_frf_m"] == 94.23
+    assert jun_ep["waterline"]["x_m"] == 44.23
+    assert jun_ep["dunetoe"]["accepted_x_frf_m"] == 62.8
+    assert jun_ep["dunetoe"]["accepted_x_m"] == 12.8
+    assert result["physics_model"]["status"] == "unavailable"
+    # Verify ambiguous VV/VH disagreement withholding on FRF-1050 (June 2026: VV=60.5 m, VH=109.5 m)
+    a1050 = CLIENT.get("/api/analysis/FRF-1050").json()
+    jun1050 = next(e for e in a1050["epochs"] if e["date"] == "2026-06")
+    assert jun1050["dunetoe"]["accepted_x_frf_m"] is None
+    assert jun1050["dunetoe"]["status"].startswith("ambiguous:")
+    assert CLIENT.get("/api/boundaries/s2-boundary-june.geojson").status_code == 200
+    assert CLIENT.get("/api/boundaries/nisar-boundary-october.geojson").status_code == 200
+    assert CLIENT.get("/api/boundaries/unknown.geojson").status_code == 404
     assert CLIENT.get("/api/transects/../private.txt").status_code == 404
     assert CLIENT.get("/api/tiles/lidar-dz-2026-oct-jun/4/16/0.png").status_code == 404
     assert CLIENT.get("/api/layers", headers={"Origin": "http://localhost:5173"}).headers[
@@ -37,10 +70,45 @@ def test_metadata_and_missing_products(tmp_path):
     assert missing.get("/api/terrain/change").json()["status"] == "unavailable"
 
 
+def test_unified_layers_preserve_full_sensor_coverage_and_168_overlap():
+    layers = {l["id"]: l for l in CLIENT.get("/api/layers").json()}
+    # Individual sensor layers must retain their full valid study-area coverage, not 168-cell clipped
+    assert layers["nisar-hh-june"]["qa"]["valid_study_cells"] == 1310
+    assert layers["s1-vv-2026-06-16"]["qa"]["valid_study_cells"] == 1450
+    assert layers["s1-vv-2026-06-30"]["qa"]["valid_study_cells"] == 1450
+    assert layers["s1-vv-2026-10-16"]["qa"]["valid_study_cells"] == 1450
+    assert layers["s2-ndwi-2026-06-18"]["qa"]["valid_study_cells"] == 1442
+    assert layers["s2-ndwi-2026-10-16"]["qa"]["valid_study_cells"] == 1450
+    assert layers["s1-vv-change"]["qa"]["valid_study_cells"] == 1450
+    assert layers["s2-ndwi-change"]["qa"]["valid_study_cells"] == 1442
+    # Only the explicit 4-sensor overlap layer and 10m LiDAR change have 168 cells
+    assert layers["all-sensor-overlap"]["qa"]["valid_study_cells"] == 168
+
+    pairs = CLIENT.get("/api/comparisons/pairs").json()
+    assert pairs["study_cells"] == 1450
+    assert pairs["change_valid_overlap_counts"]["all_sensor_valid_overlap"] == 168
+    assert pairs["change_valid_overlap_counts"]["nisar_HHHH_db_change_valid"] == 1310
+    assert pairs["change_valid_overlap_counts"]["s1_VV_gamma0_db_change_valid"] == 1450
+    assert pairs["change_valid_overlap_counts"]["s2_ndwi_change_valid"] == 1442
+    assert len(pairs["environment_contrasts"]) == 152
+
+    env_all = CLIENT.get("/api/environment/acquisitions").json()
+    assert len(env_all["acquisitions"]) == 28
+    lidar_id = "FRF-geomorphology_DEMs_duneLidarDEM_202606.nc#time_index=111"
+    env_lidar = CLIENT.get(f"/api/environment/acquisitions/{lidar_id}").json()
+    assert env_lidar["id"] == lidar_id
+    assert env_lidar["summary"]["water_level_m_mllw"] == 0.797
+    assert len(env_lidar["nearest"]) == 38
+
+
 def test_profiles_are_measured_and_have_explicit_reference():
     node = CLIENT.get("/api/transects/FRF-950").json()
     source = next(p for p in json.loads((DATA/"lidar/profiles.json").read_text())["profiles"] if p["id"] == "FRF-950")
-    assert node["boundaries"] == []
+    assert node["properties"]["x_origin_frf_m"] == 50.0
+    assert len(node["boundaries"]) >= 10
+    s2_jun = next(b for b in node["boundaries"] if b["sensor"] == "SENTINEL-2" and b["epoch_label"] == "June 2026")
+    assert s2_jun["x_frf_m"] == 94.23
+    assert s2_jun["x_m"] == 44.23
     for index, epoch in enumerate(("june", "october")):
         assert node["profiles"][index]["points"][0] == {"x_m": 0.0, "z_m": source[epoch][0]["z"]}
         assert node["profiles"][index]["acquired_at"] == source[epoch + "_utc"]
@@ -71,6 +139,26 @@ def test_exact_cog_and_web_mercator_pixel_colors():
     assert image[i,j].tolist() == [*rgb,255]
     empty = CLIENT.get("/api/tiles/nisar-hh-june/16/0/0.png")
     assert np.count_nonzero(np.array(Image.open(BytesIO(empty.content)))[:,:,3]) == 0
+
+    # Also verify multiband unified GeoTIFF tile rendering for Sentinel-1 (band 2) and Sentinel-2 (band 14)
+    s1_tif = UNIFIED / "june/15_Sentinel-1.tif"
+    with rasterio.open(s1_tif) as src:
+        band2 = src.read(2)
+        where = np.argwhere(np.isfinite(band2))
+        row, col = where[len(where)//2]
+        e, n = src.xy(row, col)
+        val_db = float(band2[row, col])
+    lng, lat = (v[0] for v in transform(32618, 4326, [e], [n]))
+    x, y = xy(lng, lat, z)
+    s1_tile = CLIENT.get(f"/api/tiles/s1-vv-2026-06-30/{z}/{x}/{y}.png")
+    assert s1_tile.status_code == 200
+    s1_img = np.array(Image.open(BytesIO(s1_tile.content)))
+    ex, ny = (v[0] for v in transform(32618, 3857, [e], [n]))
+    w, s, e_b, n_b = tile_bounds(z, x, y)
+    i, j = int((n_b - ny) / (n_b - s) * SIZE), int((ex - w) / (e_b - w) * SIZE)
+    expected_rgb = [int(round(np.interp(val_db, [-34, -18, 1], values))) for values in zip(
+        (23, 20, 51), (73, 117, 132), (251, 244, 193))]
+    assert s1_img[i, j].tolist() == [*expected_rgb, 255]
 
 
 def test_noaa_missing_never_becomes_zero():

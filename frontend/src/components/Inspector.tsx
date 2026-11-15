@@ -173,7 +173,7 @@ export function Inspector() {
               SEPARATE SENSOR BOUNDARY PICKS
             </div>
             {tData.boundaries.map((b, i) => (
-              <div key={`${b.type}-${b.epoch_label}-${i}`} className="env-row">
+              <div key={`${b.type}-${b.sensor}-${b.epoch_label}-${i}`} className="env-row">
                 <div>
                   <div style={{ fontSize: 11.5, fontWeight: 500 }}>
                     <span
@@ -194,22 +194,69 @@ export function Inspector() {
                     {b.epoch_label}
                   </div>
                 </div>
-                <div className="mono" style={{ fontSize: 11.5, whiteSpace: 'nowrap' }}>
-                  x = {b.x_m.toFixed(1)} m{b.uncertainty_m != null ? ` ± ${b.uncertainty_m} m` : ''}
+                <div className="mono" style={{ fontSize: 11.5, whiteSpace: 'nowrap', textAlign: 'right' }}>
+                  <div>
+                    FRF x = {(b.x_frf_m ?? b.x_m).toFixed(1)} m
+                    {b.uncertainty_m != null ? ` ± ${b.uncertainty_m} m` : ''}
+                  </div>
+                  <div className="muted" style={{ fontSize: 9.5 }}>
+                    line Δx = {b.x_m.toFixed(1)} m
+                  </div>
                 </div>
               </div>
             ))}
 
             {aData && (
-              <div className="slot-card" style={{ marginTop: 8 }}>
+              <div className="slot-card" style={{ marginTop: 8 }} data-testid="analysis-card">
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <span className="eyebrow">PHYSICS-INFORMED MODEL</span>
+                  <span className="eyebrow">COASTAL BOUNDARY RECONSTRUCTION</span>
                   <DataStateBadge state={analysis?.state ?? 'unavailable'} inferred />
                 </div>
                 <div className="slot-meta" style={{ marginTop: 4 }}>
-                  <strong>{aData.model_name}</strong> ({aData.model_version}) · Target: {aData.target_epoch_label}
+                  <strong>{aData.model_name}</strong> ({aData.model_version})
                 </div>
-                <div className="slot-meta">Uncertainty: {aData.uncertainty_method}</div>
+                <div className="slot-meta">Scope: {aData.state_scope}</div>
+                {aData.october_minus_june && (
+                  <div className="mono" style={{ fontSize: 11, marginTop: 6, lineHeight: 1.5 }}>
+                    <div>
+                      <strong>Oct − Jun Waterline Δx:</strong>{' '}
+                      {aData.october_minus_june.waterline_shift_m !== null
+                        ? `${aData.october_minus_june.waterline_shift_m > 0 ? '+' : ''}${aData.october_minus_june.waterline_shift_m.toFixed(2)} m`
+                        : '—'}
+                    </div>
+                    <div>
+                      <strong>Oct − Jun Dune-Toe Δx:</strong>{' '}
+                      {aData.october_minus_june.dunetoe_shift_m !== null
+                        ? `${aData.october_minus_june.dunetoe_shift_m > 0 ? '+' : ''}${aData.october_minus_june.dunetoe_shift_m.toFixed(2)} m`
+                        : 'Withheld (VV/VH disagreement)'}
+                    </div>
+                  </div>
+                )}
+
+                <div style={{ marginTop: 8, borderTop: '1px solid #1e2d3b', paddingTop: 6 }}>
+                  {aData.epochs.map((ep) => (
+                    <div key={ep.date} className="mono" style={{ fontSize: 10.5, marginBottom: 6, lineHeight: 1.45 }}>
+                      <div style={{ color: 'var(--cyan)', fontWeight: 600 }}>{ep.epoch_label}</div>
+                      <div>
+                        S2 NDWI Waterline: FRF x = {ep.waterline.x_frf_m?.toFixed(2) ?? '—'} m (±
+                        {ep.waterline.cv_rmse_m?.toFixed(2) ?? '—'} m)
+                      </div>
+                      <div style={{ color: 'var(--purple)' }}>
+                        S1 Bayes Dune Toe:{' '}
+                        {ep.dunetoe.accepted_x_frf_m !== null
+                          ? `FRF x = ${ep.dunetoe.accepted_x_frf_m.toFixed(1)} m (90% CI ${ep.dunetoe.ci90_low_frf_m?.toFixed(1)}–${ep.dunetoe.ci90_high_frf_m?.toFixed(1)} m, SD ${ep.dunetoe.posterior_sd_m?.toFixed(1)} m)`
+                          : `Withheld — ${ep.dunetoe.status} (MAP ${ep.dunetoe.bayes_map_x_frf_m?.toFixed(1) ?? '—'} m, |VV−VH| = ${ep.dunetoe.vv_vh_disagreement_m?.toFixed(1) ?? '—'} m)`}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="slot-meta" style={{ marginTop: 4, borderTop: '1px solid #1e2d3b', paddingTop: 5 }}>
+                  <strong>Physics Profile Model:</strong>{' '}
+                  {aData.physics_model?.status === 'available'
+                    ? `Active (${aData.physics_model.points.length} profile nodes)`
+                    : aData.physics_model?.reason ?? 'Awaiting V1 integration'}
+                </div>
               </div>
             )}
           </>

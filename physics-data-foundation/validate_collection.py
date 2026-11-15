@@ -38,7 +38,12 @@ def verify_release_files(output):
         path = (root / name).resolve()
         check(path.is_relative_to(root) and path not in expected, f"Invalid checksum path: {name}")
         with path.open("rb") as stream:
-            check(hashlib.file_digest(stream, "sha256").hexdigest() == sha, f"Checksum mismatch: {name}")
+            digest = (
+                hashlib.file_digest(stream, "sha256").hexdigest()
+                if hasattr(hashlib, "file_digest")
+                else hashlib.sha256(stream.read()).hexdigest()
+            )
+            check(digest == sha, f"Checksum mismatch: {name}")
         expected.add(path)
     actual = {p for p in root.rglob("*") if p.is_file() and p != checksum}
     check(expected == actual, "Release file inventory differs from SHA256SUMS")

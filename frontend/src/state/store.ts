@@ -78,9 +78,9 @@ export const useApp = create<AppState>((set) => ({
   cursor: null,
   mapErrors: [],
 
-  date: '2026-06-15',
+  date: '2026-06-18',
   compare: false,
-  compareDate: '2026-10-15',
+  compareDate: '2026-10-16',
   swipe: 0.5,
 
   selectedTransectId: null,

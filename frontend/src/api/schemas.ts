@@ -57,17 +57,50 @@ export type StudyArea = z.infer<typeof StudyAreaSchema>;
 export const SensorSchema = z.enum(['NISAR', 'SENTINEL-1', 'SENTINEL-2', 'LIDAR', 'MODEL', 'OTHER']);
 export type Sensor = z.infer<typeof SensorSchema>;
 
+export const AcquisitionEnvironmentSummarySchema = z.object({
+  water_level_m_mllw: z.number().nullable().optional(),
+  water_level_timestamp_utc: z.string().nullable().optional(),
+  water_level_offset_s: z.number().nullable().optional(),
+  tide_prediction_m_mllw: z.number().nullable().optional(),
+  predicted_tide_stage: z.string().nullable().optional(),
+  predicted_tide_slope_m_per_h: z.number().nullable().optional(),
+  observed_minus_predicted_m: z.number().nullable().optional(),
+  wave_hs_m_17m: z.number().nullable().optional(),
+  wave_tp_s_17m: z.number().nullable().optional(),
+  wave_dir_deg_17m: z.number().nullable().optional(),
+  wave_17m_timestamp_utc: z.string().nullable().optional(),
+  wave_17m_offset_s: z.number().nullable().optional(),
+  wave_hs_m_26m: z.number().nullable().optional(),
+  wave_tp_s_26m: z.number().nullable().optional(),
+  wind_speed_ms: z.number().nullable().optional(),
+  wind_dir_deg: z.number().nullable().optional(),
+  rain_10min_mm: z.number().nullable().optional(),
+  rain_24h_mm: z.number().nullable().optional(),
+  rain_72h_mm: z.number().nullable().optional(),
+  wave_hs_24h_max_m_17m: z.number().nullable().optional(),
+  total_water_level_2pct_navd88_m: z.number().nullable().optional(),
+  qualifying_station_matches: z.number().int().optional(),
+});
+export type AcquisitionEnvironmentSummary = z.infer<typeof AcquisitionEnvironmentSummarySchema>;
+
 export const AcquisitionSchema = z.object({
   id: z.string(),
   sensor: SensorSchema,
   product: z.string(),
   acquired_at: isoDateTime,
   acquired_end: isoDateTime.nullish(),
+  group: z.enum(['june', 'october', 'additional']).nullish(),
+  observation_index: z.number().int().nullish(),
+  reference_id: z.string().nullish(),
+  reference_utc: z.string().nullish(),
+  offset_from_reference_seconds: z.number().nullish(),
+  aligned_geotiff: z.string().nullish(),
   polarizations: z.array(z.string()).nullish(),
   orbit_direction: z.enum(['ascending', 'descending']).nullish(),
   cloud_cover_pct: z.number().min(0).max(100).nullish(),
   qa: z.record(z.unknown()).nullish(),
   source_url: z.string().url().nullish(),
+  environment: AcquisitionEnvironmentSummarySchema.nullish(),
 });
 export type Acquisition = z.infer<typeof AcquisitionSchema>;
 export const AcquisitionListSchema = z.array(AcquisitionSchema);
@@ -198,7 +231,10 @@ export const BoundaryPickSchema = z.object({
   definition: z.string(),
   epoch_label: z.string(),
   acquired_at: isoDateTime.nullable(),
+  /** Distance along the transect line from its start coordinate (m). */
   x_m: z.number().finite(),
+  /** Absolute USACE FRF cross-shore coordinate x (m). */
+  x_frf_m: z.number().finite().nullish(),
   uncertainty_m: z.number().nonnegative().nullish(),
 });
 export type BoundaryPick = z.infer<typeof BoundaryPickSchema>;
@@ -210,6 +246,7 @@ export const TransectSummarySchema = z.object({
     id: z.string(),
     label: z.string(),
     frf_y_m: z.number().nullish(),
+    x_origin_frf_m: z.number().finite().nullish(),
     /** Cross-shore reference: x_m measured along the line from its first coordinate. */
     x_reference: z.string(),
   }),
@@ -227,22 +264,105 @@ export const TransectDetailSchema = TransectSummarySchema.extend({
 export type TransectDetail = z.infer<typeof TransectDetailSchema>;
 
 // ---------- /api/analysis/{id} ----------
-export const AnalysisSchema = z.object({
-  transect_id: z.string(),
-  model_name: z.string(),
-  model_version: z.string(),
-  generated_at: isoDateTime,
-  inferred: z.literal(true),
-  target_epoch_label: z.string(),
-  vertical_datum: z.string(),
-  units: z.literal('m'),
-  /** z_m predicted, sigma_m one-standard-deviation uncertainty. */
+export const ReconstructedWaterlineSchema = z.object({
+  x_frf_m: z.number().finite().nullable(),
+  x_m: z.number().finite().nullable(),
+  cv_rmse_m: z.number().nonnegative().nullable(),
+  source: z.string(),
+  status: z.string(),
+  acquired_at: isoDateTime.nullish(),
+  granule_id: z.string().nullish(),
+  tide_aware_experimental_x_frf_m: z.number().finite().nullish(),
+  tide_aware_experimental_x_m: z.number().finite().nullish(),
+  tide_aware_cv_rmse_m: z.number().nonnegative().nullish(),
+  mndwi_x_frf_m: z.number().finite().nullish(),
+});
+export type ReconstructedWaterline = z.infer<typeof ReconstructedWaterlineSchema>;
+
+export const ReconstructedDunetoeSchema = z.object({
+  accepted_x_frf_m: z.number().finite().nullable(),
+  accepted_x_m: z.number().finite().nullable(),
+  bayes_map_x_frf_m: z.number().finite().nullable(),
+  bayes_map_x_m: z.number().finite().nullable(),
+  bayes_median_x_frf_m: z.number().finite().nullable(),
+  bayes_median_x_m: z.number().finite().nullable(),
+  ci90_low_frf_m: z.number().finite().nullable(),
+  ci90_low_m: z.number().finite().nullable(),
+  ci90_high_frf_m: z.number().finite().nullable(),
+  ci90_high_m: z.number().finite().nullable(),
+  posterior_sd_m: z.number().nonnegative().nullable(),
+  vv_vh_disagreement_m: z.number().nonnegative().nullable(),
+  vv_vh_disagreement_limit_m: z.number().nonnegative().nullable(),
+  cv_rmse_conservative_m: z.number().nonnegative().nullable(),
+  baseline_weighted_x_frf_m: z.number().finite().nullish(),
+  radar_vv_x_frf_m: z.number().finite().nullable(),
+  radar_vv_x_m: z.number().finite().nullable(),
+  radar_vh_x_frf_m: z.number().finite().nullable(),
+  radar_vh_x_m: z.number().finite().nullable(),
+  nisar_hh_x_frf_m: z.number().finite().nullish(),
+  nisar_hh_x_m: z.number().finite().nullish(),
+  nisar_hv_x_frf_m: z.number().finite().nullish(),
+  nisar_hv_x_m: z.number().finite().nullish(),
+  source: z.string(),
+  status: z.string(),
+  acquired_at: isoDateTime.nullish(),
+  granule_id: z.string().nullish(),
+});
+export type ReconstructedDunetoe = z.infer<typeof ReconstructedDunetoeSchema>;
+
+export const ValidationLidarRefsSchema = z.object({
+  wetdry_x_frf_m: z.number().finite().nullable(),
+  wetdry_x_m: z.number().finite().nullable(),
+  dunetoe_x_frf_m: z.number().finite().nullable(),
+  dunetoe_x_m: z.number().finite().nullable(),
+  contour_1p5m_x_frf_m: z.number().finite().nullable(),
+  contour_1p5m_x_m: z.number().finite().nullable(),
+  usage: z.string(),
+});
+export type ValidationLidarRefs = z.infer<typeof ValidationLidarRefsSchema>;
+
+export const AnalysisEpochSchema = z.object({
+  date: z.string(),
+  epoch_label: z.string(),
+  waterline: ReconstructedWaterlineSchema,
+  dunetoe: ReconstructedDunetoeSchema,
+  validation_lidar: ValidationLidarRefsSchema,
+});
+export type AnalysisEpoch = z.infer<typeof AnalysisEpochSchema>;
+
+export const PhysicsModelOutputSchema = z.object({
+  status: z.enum(['available', 'unavailable']),
+  reason: z.string().nullish(),
+  vertical_datum: z.string().nullish(),
+  target_epoch_label: z.string().nullish(),
   points: z
     .array(z.object({ x_m: z.number().finite(), z_m: z.number().finite(), sigma_m: z.number().nonnegative() }))
-    .min(2),
+    .default([]),
+});
+export type PhysicsModelOutput = z.infer<typeof PhysicsModelOutputSchema>;
+
+export const AnalysisSchema = z.object({
+  transect_id: z.string(),
+  frf_y_m: z.number().finite(),
+  x_origin_frf_m: z.number().finite(),
+  x_reference: z.string(),
+  analysis_crs: z.string().regex(/^EPSG:\d+$/),
+  model_name: z.string(),
+  model_version: z.string(),
+  state_scope: z.string(),
+  inferred: z.literal(true),
+  units: z.literal('m'),
   uncertainty_method: z.string(),
   inputs: z.array(z.string()),
-  skill: z.record(z.number()).nullish(),
+  epochs: z.array(AnalysisEpochSchema).min(1),
+  october_minus_june: z
+    .object({
+      waterline_shift_m: z.number().finite().nullable(),
+      dunetoe_shift_m: z.number().finite().nullable(),
+    })
+    .nullish(),
+  skill: z.record(z.number().nullable()).nullish(),
+  physics_model: PhysicsModelOutputSchema.nullish(),
 });
 export type Analysis = z.infer<typeof AnalysisSchema>;
 

@@ -39,8 +39,11 @@ The frontend provides independent scientific overlay slots (`frontend/src/config
 | `nisar-boundary` | `sensor` | `NISAR` | Extracted radar backscatter transition line (never equated with physical erosion) | `false` |
 | `s1-vv` | `sensor` | `SENTINEL-1` | C-band backscatter, VV polarisation (dB) | `false` |
 | `s1-vh` | `sensor` | `SENTINEL-1` | C-band backscatter, VH polarisation (dB) | `false` |
-| `s2-index` | `sensor` | `SENTINEL-2` | Optical spectral index (e.g. NDWI / NDVI) | `false` |
+| `s1-vv-change`, `s1-vh-change` | `sensor` | `SENTINEL-1` | Repeat-pass Track 106 C-band difference, Oct 16 − Jun 30, 2026 (dB) | `false` |
+| `s2-index` | `sensor` | `SENTINEL-2` | Cloud-screened optical spectral index (NDWI) | `false` |
+| `s2-ndwi-change` | `sensor` | `SENTINEL-2` | Clear-sky optical NDWI difference, Oct 16 − Jun 18, 2026 | `false` |
 | `s2-boundary` | `sensor` | `SENTINEL-2` | Instantaneous optical waterline at acquisition timestamp | `false` |
+| `all-sensor-overlap` | `measured` | `OTHER` | 4-sensor joint valid overlap mask (`168 / 1,450` 10 m cells) | `false` |
 | `model-dz` | `model` | `MODEL` | Physics-informed model elevation change estimate (m) | `true` |
 | `model-sigma` | `model` | `MODEL` | Model $1\sigma$ uncertainty (m) | `true` |
 
@@ -136,14 +139,26 @@ List of layer descriptors populating the scientific slots (and optional `raster_
 Summary descriptor and statistics for the primary LiDAR elevation-change product.
 
 ### 3.5 `GET /api/transects` & `GET /api/transects/{id}`
-- `GET /api/transects`: GeoJSON `FeatureCollection` of `LineString` shore-normal transects.
-- `GET /api/transects/{id}`: Transect geometry plus `profiles[]` (strictly increasing `x_m` in metres, `z_m` in `NAVD88` metres) and separate `boundaries[]` (`type: "radar" | "optical" | "terrain"`).
+- `GET /api/transects`: GeoJSON `FeatureCollection` of `LineString` shore-normal transects (`FRF-750`, `FRF-850`, `FRF-950`, `FRF-1050`, `FRF-1150`). Each feature's `properties` includes `x_origin_frf_m` (the USACE FRF cross-shore `x` coordinate at the transect line start) and `x_reference`.
+- `GET /api/transects/{id}`: Transect geometry plus:
+  - `profiles[]`: Measured June and October 2026 1 m USACE LiDAR elevation profiles (`x_m` strictly increasing distance along the transect from `x_origin_frf_m`, `z_m` in `NAVD88 (geoid12b)` metres).
+  - `boundaries[]`: Separate horizontal sensor and morphological boundary picks (`type: "radar" | "optical" | "terrain"`), including Sentinel-2 NDWI optical waterline, NISAR L-band HH and Sentinel-1 C-band VV/VH radar transitions, and LiDAR `B1_wetdry`, `B2_dunetoe`, `B3_contour` (`z = 1.50 m NAVD88`). Each pick carries both `x_m` (relative to transect line start, aligned with `profiles[].points[].x_m`) and `x_frf_m` (absolute FRF cross-shore distance in metres), plus `uncertainty_m`.
 
 ### 3.6 `GET /api/analysis/{id}`
-Physics-informed model output along transect `{id}`. Must declare `"inferred": true` and provide per-point `sigma_m` ($1\sigma$ uncertainty in metres).
+Feature-separated coastal boundary reconstruction along transect `{id}` (`state_scope: "observed boundary features; not full terrain or bathymetry"`, `inferred: true`, `units: "m"`).
+- Returns per-epoch (`2026-06`, `2026-09`, `2026-10`) horizontal boundary state:
+  - `waterline`: Validated Sentinel-2 NDWI optical waterline (`x_frf_m`, `x_m`, spatial block-CV `cv_rmse_m`, `source`, `status`, `acquired_at`, `granule_id`, plus experimental tide-aware `tide_aware_experimental_x_frf_m` and `mndwi_x_frf_m`).
+  - `dunetoe`: Generalized-Bayesian Sentinel-1 VV/VH dune-toe reconstruction (`accepted_x_frf_m` / `accepted_x_m` when accepted or `null` when withheld due to VV/VH disagreement, `bayes_map_x_frf_m`, `bayes_median_x_frf_m`, 90% credible interval `ci90_low_frf_m`..`ci90_high_frf_m`, `posterior_sd_m`, `vv_vh_disagreement_m`, `vv_vh_disagreement_limit_m`, raw `radar_vv_x_frf_m`, `radar_vh_x_frf_m`, `nisar_hh_x_frf_m`, `nisar_hv_x_frf_m`, and `status`).
+  - `validation_lidar`: Independent LiDAR validation references (`wetdry_x_frf_m`, `dunetoe_x_frf_m`, `contour_1p5m_x_frf_m`, used for scoring only and never fused into satellite estimates).
+- Includes `october_minus_june` horizontal shifts (`waterline_shift_m`, `dunetoe_shift_m`), cross-validated `skill` summary metrics, and a dedicated `physics_model` slot (`status: "unavailable" | "available"`, `points: [{x_m, z_m, sigma_m}]`) so vertical physics-model profile predictions are cleanly separated from horizontal boundary positions.
 
-### 3.7 `GET /api/environment/latest`
-Latest verified NOAA/USACE environmental measurements at Duck Pier (station `8651370`), with `observed_at` UTC timestamps, `units`, `datum`, and `qc_flag`.
+### 3.6b `GET /api/boundaries/{id}.geojson`
+Returns `EPSG:4326` GeoJSON `FeatureCollection` polylines for the `nisar-boundary` (`nisar-boundary-june`, `nisar-boundary-october`) and `s2-boundary` (`s2-boundary-june`, `s2-boundary-october`) overlay slots across all 50 FRF rows (`y = 700..1190 m`).
+
+### 3.7 `GET /api/environment/latest`, `GET /api/environment/acquisitions`, & `GET /api/comparisons/pairs`
+- `GET /api/environment/latest`: Latest verified NOAA/USACE environmental measurements at Duck Pier (station `8651370`), with `observed_at` UTC timestamps, `units`, `datum`, and `qc_flag`.
+- `GET /api/environment/acquisitions` & `GET /api/environment/acquisitions/{id}`: Matched acquisition-time environmental observations (`environment/nearest.parquet`, `environment/tide_stage.parquet`, `environment/antecedent.parquet`) and cross-date environmental contrasts (`environment/cross_date.parquet`) across all 28 verified acquisitions.
+- `GET /api/comparisons/pairs`: Cross-date pair definitions (`cross_date_pairs.json`), per-sensor valid cell counts (`1,310` NISAR, `1,450` Sentinel-1, `1,442` Sentinel-2, `168` LiDAR 10 m & `all_sensor_valid_overlap`), and environmental contrasts.
 
 ### 3.8 Raster and observed-geometry assets
 

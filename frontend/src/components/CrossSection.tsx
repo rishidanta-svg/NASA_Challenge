@@ -32,6 +32,10 @@ export function CrossSection() {
   const a = analysis?.data;
   const june: Profile | undefined = t?.profiles[0];
   const october: Profile | undefined = t?.profiles[1];
+  const xOrigin = t?.properties.x_origin_frf_m ?? a?.x_origin_frf_m ?? 0;
+  const modelPoints = a?.physics_model?.status === 'available' ? a.physics_model.points : [];
+  const octAnalysis = a?.epochs.find((e) => e.date === '2026-10') ?? a?.epochs[a.epochs.length - 1];
+  const junAnalysis = a?.epochs.find((e) => e.date === '2026-06') ?? a?.epochs[0];
 
   const W = 760;
   const H = 155;
@@ -50,9 +54,9 @@ export function CrossSection() {
     pts.map((p, i) => `${i === 0 || p.x_m - pts[i - 1]!.x_m > maxStep ? 'M' : 'L'}${sx(p.x_m).toFixed(1)},${sy(p.z_m).toFixed(1)}`).join(' ');
 
   const modelBandPath = () => {
-    if (!a?.points.length) return '';
-    const upper = a.points.map((p, i) => `${i === 0 ? 'M' : 'L'}${sx(p.x_m).toFixed(1)},${sy(p.z_m + p.sigma_m).toFixed(1)}`);
-    const lower = [...a.points]
+    if (!modelPoints.length) return '';
+    const upper = modelPoints.map((p, i) => `${i === 0 ? 'M' : 'L'}${sx(p.x_m).toFixed(1)},${sy(p.z_m + p.sigma_m).toFixed(1)}`);
+    const lower = [...modelPoints]
       .reverse()
       .map((p) => `L${sx(p.x_m).toFixed(1)},${sy(p.z_m - p.sigma_m).toFixed(1)}`);
     return `${upper.join(' ')} ${lower.join(' ')} Z`;
@@ -65,7 +69,7 @@ export function CrossSection() {
 
   const hJune = hoverX !== null ? nearest(june?.points, hoverX) : null;
   const hOct = hoverX !== null ? nearest(october?.points, hoverX) : null;
-  const hMod = hoverX !== null ? nearest(a?.points, hoverX) : null;
+  const hMod = hoverX !== null ? nearest(modelPoints, hoverX) : null;
 
   return (
     <section
@@ -87,7 +91,7 @@ export function CrossSection() {
           </label>
           <label style={{ display: 'inline-flex', alignItems: 'center', gap: 5, cursor: 'pointer' }}>
             <input type="checkbox" checked={showModel} onChange={(e) => setShowModel(e.target.checked)} />
-            <span style={{ color: 'var(--purple)' }}>Model ± 1σ (inferred)</span>
+            <span style={{ color: 'var(--purple)' }}>Bayesian state / CI90 (inferred)</span>
           </label>
           <button
             onClick={() => set({ bottomOpen: !bottomOpen })}
@@ -155,33 +159,81 @@ export function CrossSection() {
 
               {/* Separate sensor boundary guides */}
               {showGuides &&
-                t.boundaries.map((b, idx) => {
-                  const x = sx(b.x_m);
-                  const col = b.type === 'radar' ? '#65dfce' : b.type === 'optical' ? '#edbf7c' : '#db9d82';
+                t.boundaries
+                  .filter((b) => b.x_m >= xMin - 5 && b.x_m <= xMax + 5)
+                  .map((b, idx) => {
+                    const x = sx(b.x_m);
+                    const col = b.type === 'radar' ? '#65dfce' : b.type === 'optical' ? '#edbf7c' : '#db9d82';
+                    return (
+                      <g key={`${b.type}-${b.sensor}-${b.epoch_label}-${idx}`}>
+                        <line
+                          x1={x}
+                          y1={pad.t}
+                          x2={x}
+                          y2={H - pad.b}
+                          stroke={col}
+                          strokeOpacity={0.45}
+                          strokeDasharray="3 3"
+                        />
+                        <text x={x + 3} y={pad.t + 9 + (idx % 6) * 11} fill={col} fontSize="7.5" fontFamily="monospace">
+                          {b.sensor} ({b.epoch_label.slice(0, 3)})
+                        </text>
+                      </g>
+                    );
+                  })}
+
+              {/* Bayesian reconstructed horizontal boundary intervals (90% CI) + accepted dune-toe / waterline */}
+              {showModel &&
+                [junAnalysis, octAnalysis].filter(Boolean).map((ep, idx) => {
+                  if (!ep) return null;
+                  const dt = ep.dunetoe;
+                  const ciLow = dt.ci90_low_m;
+                  const ciHigh = dt.ci90_high_m;
+                  const acc = dt.accepted_x_m;
+                  const labelTag = ep.date === '2026-06' ? 'Jun' : 'Oct';
                   return (
-                    <g key={`${b.type}-${b.epoch_label}-${idx}`}>
-                      <line
-                        x1={x}
-                        y1={pad.t}
-                        x2={x}
-                        y2={H - pad.b}
-                        stroke={col}
-                        strokeOpacity={0.5}
-                        strokeDasharray="3 3"
-                      />
-                      <text x={x + 3} y={pad.t + 9 + idx * 11} fill={col} fontSize="7.5" fontFamily="monospace">
-                        {b.type.toUpperCase()} ({b.epoch_label.slice(0, 3)})
-                      </text>
+                    <g key={`bayes-${ep.date}`}>
+                      {ciLow !== null && ciHigh !== null && (
+                        <rect
+                          x={sx(Math.max(xMin, ciLow))}
+                          y={pad.t}
+                          width={Math.max(2, sx(Math.min(xMax, ciHigh)) - sx(Math.max(xMin, ciLow)))}
+                          height={H - pad.t - pad.b}
+                          fill="rgba(213, 139, 216, 0.12)"
+                        />
+                      )}
+                      {acc !== null && (
+                        <>
+                          <line
+                            x1={sx(acc)}
+                            y1={pad.t}
+                            x2={sx(acc)}
+                            y2={H - pad.b}
+                            stroke="#d58bd8"
+                            strokeWidth="1.6"
+                            strokeDasharray="5 2"
+                          />
+                          <text
+                            x={sx(acc) + 3}
+                            y={H - pad.b - 6 - idx * 11}
+                            fill="#d58bd8"
+                            fontSize="8"
+                            fontFamily="monospace"
+                          >
+                            Bayes Dune ({labelTag})
+                          </text>
+                        </>
+                      )}
                     </g>
                   );
                 })}
 
-              {/* Model 1σ uncertainty band + curve */}
-              {showModel && a && (
+              {/* Optional vertical physics-model 1σ uncertainty band + curve when Physics V1 profile is provided */}
+              {showModel && modelPoints.length >= 2 && (
                 <>
                   <path d={modelBandPath()} fill="rgba(213, 139, 216, 0.18)" />
                   <path
-                    d={linePath(a.points)}
+                    d={linePath(modelPoints)}
                     fill="none"
                     stroke="#d58bd8"
                     strokeWidth="1.6"
@@ -210,14 +262,16 @@ export function CrossSection() {
           <div className="slot-card" style={{ margin: 0, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
             <div>
               <div style={{ display: 'flex', gap: 10, fontSize: 11, fontFamily: 'var(--font-mono)', flexWrap: 'wrap' }}>
-                <span style={{ color: '#65dfce' }}>━ June</span>
-                <span style={{ color: '#edbf7c' }}>━ October</span>
-                {showModel && <span style={{ color: '#d58bd8' }}>┅ Model ± 1σ</span>}
+                <span style={{ color: '#65dfce' }}>━ June LiDAR</span>
+                <span style={{ color: '#edbf7c' }}>━ Oct LiDAR</span>
+                {showModel && <span style={{ color: '#d58bd8' }}>┅ Bayes Dune (90% CI)</span>}
               </div>
               <div className="mono" style={{ fontSize: 11, marginTop: 8, lineHeight: 1.5 }}>
                 {hoverX !== null && hJune && hOct ? (
                   <>
-                    <div>Along transect = {hJune.x_m.toFixed(1)} m</div>
+                    <div>
+                      Along transect = {hJune.x_m.toFixed(1)} m (FRF x = {(hJune.x_m + xOrigin).toFixed(1)} m)
+                    </div>
                     <div>
                       June z = {hJune.z_m.toFixed(2)} m · Oct z = {hOct.z_m.toFixed(2)} m (Δz ={' '}
                       {(hOct.z_m - hJune.z_m).toFixed(2)} m)
@@ -228,13 +282,26 @@ export function CrossSection() {
                       </div>
                     )}
                   </>
+                ) : octAnalysis ? (
+                  <>
+                    <div>
+                      <strong>Oct S2 Waterline:</strong> FRF x = {octAnalysis.waterline.x_frf_m?.toFixed(1) ?? '—'} m (±
+                      {octAnalysis.waterline.cv_rmse_m?.toFixed(1) ?? '—'} m)
+                    </div>
+                    <div style={{ color: 'var(--purple)' }}>
+                      <strong>Oct Bayes Dune:</strong>{' '}
+                      {octAnalysis.dunetoe.accepted_x_frf_m !== null
+                        ? `FRF x = ${octAnalysis.dunetoe.accepted_x_frf_m.toFixed(1)} m (90% CI ${octAnalysis.dunetoe.ci90_low_frf_m?.toFixed(1)}–${octAnalysis.dunetoe.ci90_high_frf_m?.toFixed(1)} m)`
+                        : `Withheld (${octAnalysis.dunetoe.status})`}
+                    </div>
+                  </>
                 ) : (
                   <span className="muted">Hover across the cross-section to inspect x/z values and uncertainty.</span>
                 )}
               </div>
             </div>
             <div className="slot-meta">
-              Datum: {june.vertical_datum} · Units: {june.units}
+              Datum: {june.vertical_datum} · Units: {june.units} · {t.properties.x_reference}
             </div>
           </div>
         </div>

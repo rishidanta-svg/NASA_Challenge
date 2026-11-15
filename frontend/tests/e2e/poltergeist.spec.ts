@@ -1,7 +1,8 @@
 import { expect, test } from '@playwright/test';
 
-test('POLTERGEIST displays live NOAA and verified June and October Duck FRF layers in 2D and 3D', async ({ page }, info) => {
+test('POLTERGEIST displays live NOAA and verified 28-acquisition Duck FRF layers in 2D and 3D', async ({ page }, info) => {
   const images = new Set<string>();
+  const boundaries = new Set<string>();
   const errors: string[] = [];
   const failures: string[] = [];
   let basemapLoaded = false;
@@ -12,6 +13,9 @@ test('POLTERGEIST displays live NOAA and verified June and October Duck FRF laye
     const layer = /^\/api\/tiles\/([^/]+)\//.exec(url.pathname)?.[1];
     if (layer && response.ok() && response.headers()['content-type'] === 'image/png') images.add(layer);
     if (layer && response.status() >= 400) failures.push(`${layer} ${response.status()}`);
+    const bnd = /^\/api\/boundaries\/([^/]+\.geojson)$/.exec(url.pathname)?.[1];
+    if (bnd && response.ok()) boundaries.add(bnd);
+    if (bnd && response.status() >= 400) failures.push(`${bnd} ${response.status()}`);
   });
   const noaa = page.waitForResponse((r) => r.url().endsWith('/api/environment/latest') && r.ok());
 
@@ -22,10 +26,25 @@ test('POLTERGEIST displays live NOAA and verified June and October Duck FRF laye
 
   const zoom = () => page.locator('.map-hud-camera').innerText().then((value) => Number(/Z ([0-9.]+)/.exec(value)?.[1]));
   await expect.poll(zoom).toBeGreaterThan(15);
+  await expect(page.getByTestId('timeline-acquisitions-summary')).toContainText('28 verified acquisitions');
   const dz = page.getByTestId('slot-lidar-dz');
   await expect(dz.getByRole('img')).toHaveAccessibleName('Color scale from -2.5 to 2.5 m');
   await expect.poll(() => images.has('lidar-dz-2026-oct-jun'), { timeout: 20_000 }).toBe(true);
-  for (const slot of ['nisar-boundary','s1-vv','s1-vh','s2-index','s2-boundary','model-dz','model-sigma']) {
+
+  for (const slot of [
+    'nisar-boundary',
+    's2-boundary',
+    's1-vv',
+    's1-vh',
+    's2-index',
+    's1-vv-change',
+    's1-vh-change',
+    's2-ndwi-change',
+    'all-sensor-overlap',
+  ]) {
+    await expect(page.getByTestId(`slot-${slot}`).getByText('REAL')).toBeVisible();
+  }
+  for (const slot of ['model-dz', 'model-sigma']) {
     await expect(page.getByTestId(`slot-${slot}`).getByText('AWAITING')).toBeVisible();
   }
 
@@ -33,6 +52,9 @@ test('POLTERGEIST displays live NOAA and verified June and October Duck FRF laye
   await expect(page.getByTestId('cross-section')).toContainText('FRF y = 950 m (FRF-950)');
   await expect(page.getByTestId('cross-section')).toContainText('REAL · VERIFIED');
   await expect(page.getByRole('img', {name: 'Cross-shore elevation profile for FRF y = 950 m'})).toBeVisible();
+  await expect(page.getByTestId('analysis-card')).toContainText('Feature-Separated Coastal Boundary Reconstruction');
+  await expect(page.getByTestId('analysis-card')).toContainText('S2 NDWI Waterline: FRF x = 94.23 m');
+  await expect(page.getByTestId('analysis-card')).toContainText('S1 Bayes Dune Toe: FRF x = 62.8 m');
   const environment = await (await noaa).json();
   const water = environment.observations.find((item: { variable: string }) => item.variable === 'water_level');
   expect(water.station_id).toBe('8651370');
@@ -40,10 +62,20 @@ test('POLTERGEIST displays live NOAA and verified June and October Duck FRF laye
   expect(Number.isFinite(water.value)).toBe(true);
   await expect(page.getByTestId('env-panel')).toContainText('Water level');
   await expect(page.getByTestId('env-panel')).toContainText('NAVD88');
+  await expect(page.getByTestId('matched-acq-environment')).toContainText('VERIFIED MATCH');
+  await expect(page.getByTestId('matched-acq-environment')).toContainText('NOAA 8651370 Water Level:');
   await dz.scrollIntoViewIfNeeded();
   await page.screenshot({ path: info.outputPath('duck-2d-measured-change.png') });
 
   const toggle = (id: string) => page.getByTestId(`slot-${id}`).getByRole('checkbox');
+  for (const [slot, geojsonId] of [
+    ['nisar-boundary', 'nisar-boundary-june.geojson'],
+    ['s2-boundary', 's2-boundary-june.geojson'],
+  ]) {
+    await toggle(slot!).check();
+    await expect.poll(() => boundaries.has(geojsonId!)).toBe(true);
+    await toggle(slot!).uncheck();
+  }
   await toggle('lidar-dz').uncheck();
   for (const [slot, layer] of [
     ['lidar-elevation', 'lidar-elevation-june'],
@@ -51,11 +83,25 @@ test('POLTERGEIST displays live NOAA and verified June and October Duck FRF laye
     ['nisar-quality', 'nisar-quality-june'],
     ['nisar-hh-change', 'nisar-hh-change'],
     ['nisar-hv-change', 'nisar-hv-change'],
+    ['s1-vv', 's1-vv-2026-06-16'],
+    ['s1-vh', 's1-vh-2026-06-16'],
+    ['s2-index', 's2-ndwi-2026-06-18'],
+    ['s1-vv-change', 's1-vv-change'],
+    ['s2-ndwi-change', 's2-ndwi-change'],
+    ['all-sensor-overlap', 'all-sensor-overlap'],
   ]) {
     await toggle(slot!).check();
     await expect.poll(() => images.has(layer!)).toBe(true);
     await toggle(slot!).uncheck();
   }
+  // Verify distinct June 30 Track 106 Sentinel-1 repeat-pass reference
+  await toggle('s1-vv').check();
+  await page.getByRole('button', { name: 'Jun 30 S1' }).click();
+  await expect(page.getByTestId('slot-s1-vv')).toContainText('June 30, 2026 (Track 106 · June repeat-pass)');
+  await expect.poll(() => images.has('s1-vv-2026-06-30')).toBe(true);
+  await toggle('s1-vv').uncheck();
+  await page.getByRole('button', { name: 'Jun 2026' }).click();
+
   for (const pol of ['hh', 'hv']) {
     await toggle(`nisar-${pol}`).check();
     await expect.poll(() => images.has(`nisar-${pol}-june`)).toBe(true);

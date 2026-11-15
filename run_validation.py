@@ -18,13 +18,22 @@ if not skip:
     else:
         print("!! No Earthdata login (~/.netrc or EARTHDATA_TOKEN): NISAR step skipped. "
               "Run: .venv/bin/python src/earthdata_login.py")
-# report is written, checked against the CSVs, then rewritten with the check results
-steps += ["lidar_boundaries.py", "lidar_sanity.py", "score.py", "figures.py",
-          "make_report.py", "selfcheck.py", "make_report.py"]
+# Rebuild boundaries, score sensors, generate the Bayesian reconstruction,
+# then create and independently check the report.
+steps += [
+    "lidar_boundaries.py",
+    "lidar_sanity.py",
+    "score.py",
+    "reconstruct.py",
+    "figures.py",
+    "make_report.py",
+    "selfcheck.py",
+    "make_report.py",
+]
 
 for s in steps:
     print(f"\n===== {s} =====", flush=True)
     r = subprocess.run([PY, s], cwd=SRC)
     if r.returncode != 0:
         sys.exit(f"step {s} failed")
-print("\nDone. See outputs/ and VALIDATION_SUMMARY.md")
+print("\nDone. See outputs/, outputs/reconstructed_state.csv, and VALIDATION_SUMMARY.md")

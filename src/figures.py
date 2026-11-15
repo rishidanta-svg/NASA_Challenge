@@ -1,6 +1,12 @@
 """Presentation graphs (Plotly -> PNG + HTML). Every number plotted comes from
 outputs/*.csv produced by score.py / lidar_boundaries.py."""
 from pathlib import Path
+import time
+try:  # one persistent renderer for all figures (reduces kaleido's startup race)
+    import kaleido
+    kaleido.start_sync_server(silence_warnings=True)
+except Exception:
+    pass
 import numpy as np
 import pandas as pd
 import xarray as xr
@@ -32,12 +38,13 @@ LAYOUT = dict(template="plotly_white", font=dict(size=16, family="Arial"),
 
 def save(fig, name):
     fig.write_html(FIG / f"{name}.html", include_plotlyjs="cdn")
-    for _ in range(3):
+    for attempt in range(8):
         try:
             fig.write_image(FIG / f"{name}.png", scale=2)
             break
-        except Exception as e:  # kaleido is occasionally flaky; retry
+        except Exception as e:  # kaleido has a known startup race ("kaleido_scopes is not defined"); retry
             err = e
+            time.sleep(1 + attempt)
     else:
         raise err
     print("saved", name)

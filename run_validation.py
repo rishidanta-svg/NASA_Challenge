@@ -12,19 +12,24 @@ have_login = (Path.home() / ".netrc").exists() or bool(os.environ.get("EARTHDATA
 
 steps = []
 if not skip:
-    steps += ["fetch_lidar_tide.py", "s2.py", "s1.py"]
+    steps += ["fetch_lidar_tide.py", "fetch_calibration.py", "s2.py", "s1.py"]
     if have_login:
         steps.append("nisar.py")
     else:
         print("!! No Earthdata login (~/.netrc or EARTHDATA_TOKEN): NISAR step skipped. "
               "Run: .venv/bin/python src/earthdata_login.py")
 # report is written, checked against the CSVs, then rewritten with the check results
-steps += ["lidar_boundaries.py", "lidar_sanity.py", "score.py", "figures.py",
-          "make_report.py", "selfcheck.py", "make_report.py"]
+steps += ["lidar_boundaries.py", "lidar_sanity.py", "score.py", "improvements.py", "figures.py",
+          "make_report.py", "export_app_data.py", "selfcheck.py", "make_report.py", "export_app_data.py"]
 
+# Steps that render PNGs use kaleido, which has an intermittent startup race; a fresh process fixes it.
+RETRY = {"lidar_sanity.py": 3, "figures.py": 3}
 for s in steps:
-    print(f"\n===== {s} =====", flush=True)
-    r = subprocess.run([PY, s], cwd=SRC)
-    if r.returncode != 0:
+    for attempt in range(1, RETRY.get(s, 1) + 1):
+        print(f"\n===== {s} =====" + (f" (retry {attempt})" if attempt > 1 else ""), flush=True)
+        r = subprocess.run([PY, s], cwd=SRC)
+        if r.returncode == 0:
+            break
+    else:
         sys.exit(f"step {s} failed")
-print("\nDone. See outputs/ and VALIDATION_SUMMARY.md")
+print("\nDone. See outputs/, VALIDATION_SUMMARY.md and the app in dist/ (open dist/index.html).")

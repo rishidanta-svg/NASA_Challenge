@@ -1,7 +1,9 @@
 """NISAR L2 GCOV (ASF, needs NASA Earthdata Login via ~/.netrc).
 Reads only the site window from the HDF5 over HTTPS (no full download),
 converts HH and HV backscatter to dB and samples along FRF rows."""
+import io
 import os
+from collections import OrderedDict
 import numpy as np
 import pandas as pd
 import xarray as xr
@@ -16,6 +18,66 @@ from s2 import utm_window, XGRID
 # September: found by searching CMR (NISAR_L2_GCOV_PROVISIONAL_V1) for 2026-09-28..10-01 over the
 # site; it is an ASCENDING pass (track 162, frame 020), i.e. a different viewing geometry.
 GRANULES = {"2026-06": "G4250721321-ASF", "2026-09": "G4331248374-ASF", "2026-10": "G4376256706-ASF"}
+
+
+class HTTPRangeFile(io.RawIOBase):
+    """Read-only, seekable file over HTTP range requests (authenticated session),
+    so h5py fetches only the bytes it needs instead of the ~5 GB file.
+    (earthaccess.open fails here because its size probe does not follow ASF's redirect.)"""
+    BLOCK = 4 * 1024 * 1024
+
+    def __init__(self, session, url):
+        self.s, self.url, self.pos, self.cache = session, url, 0, OrderedDict()
+        r = self.s.get(url, headers={"Range": "bytes=0-0"}, timeout=120, stream=True)
+        if r.status_code != 206:
+            raise IOError(f"range request failed: HTTP {r.status_code}")
+        self.size = int(r.headers["Content-Range"].split("/")[1])
+        self.bytes_fetched = 0
+
+    def readable(self): return True
+    def seekable(self): return True
+    def tell(self): return self.pos
+
+    def seek(self, off, whence=0):
+        self.pos = off if whence == 0 else self.pos + off if whence == 1 else self.size + off
+        return self.pos
+
+    def _block(self, i):
+        if i in self.cache:
+            self.cache.move_to_end(i)
+            return self.cache[i]
+        a = i * self.BLOCK
+        b = min(a + self.BLOCK, self.size) - 1
+        for attempt in range(4):
+            try:
+                r = self.s.get(self.url, headers={"Range": f"bytes={a}-{b}"}, timeout=180)
+                if r.status_code == 206 and len(r.content) == b - a + 1:
+                    break
+            except Exception:
+                pass
+        else:
+            raise IOError(f"failed to fetch bytes {a}-{b}")
+        self.bytes_fetched += len(r.content)
+        self.cache[i] = r.content
+        if len(self.cache) > 64:
+            self.cache.popitem(last=False)
+        return r.content
+
+    def readinto(self, buf):
+        n = min(len(buf), self.size - self.pos)
+        if n <= 0:
+            return 0
+        out, p, end = memoryview(buf), self.pos, self.pos + n
+        k = 0
+        while p < end:
+            i = p // self.BLOCK
+            blk = self._block(i)
+            s0 = p - i * self.BLOCK
+            take = min(len(blk) - s0, end - p)
+            out[k:k + take] = blk[s0:s0 + take]
+            k += take; p += take
+        self.pos = end
+        return n
 
 
 def parse_ur(ur):
@@ -66,9 +128,11 @@ def main():
                  if u.startswith("https://") and u.endswith(".h5") and "QA_STATS" not in u and "PRIVATE" not in u]
         assert len(links) == 1, f"{cid}: expected one science .h5 link, got {links}"
         url = links[0]
-        fobj = earthaccess.open([url])[0]
+        fobj = HTTPRangeFile(earthaccess.get_requests_https_session(), url)
         with h5py.File(fobj, "r") as f:
             bands, spacing, epsg = read_window(f, bounds)
+        print(f"  {key} {cid}: EPSG {epsg}, pixel {spacing} m, window {bands['HH'].shape}, "
+              f"fetched {fobj.bytes_fetched / 1e6:.0f} MB of {fobj.size / 1e9:.2f} GB", flush=True)
         profs.append(xr.Dataset({p: (("y", "x"), sample_rows(da, XGRID, epsg=epsg)) for p, da in bands.items()},
                                 coords={"y": ROWS10, "x": XGRID}).expand_dims(date=[key]))
         t = gr["umm"]["TemporalExtent"]["RangeDateTime"]

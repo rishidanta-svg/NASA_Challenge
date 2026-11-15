@@ -155,6 +155,45 @@ def main():
     else:
         check("Every number in the summary's results table matches metrics.csv", None, "summary not written yet")
 
+    # 9 independent test: calibration lidar is separate, and folds hold out date AND place
+    cm = PROC / "lidar_calibration_meta.csv"
+    if cm.exists() and (OUT / "improvements_predictions.csv").exists():
+        c = pd.read_csv(cm)
+        ok = bool(((c.days_before >= 1) & (c.coregQCFlag == 1)).all() and not set(c.calibration_scan_utc.str[:16]) & set(lm.scan_utc.str[:16]))
+        check("Physics uses separate calibration lidar scans (never the evaluated scans), all QC flag 1", ok,
+              "; ".join(f"{r.date_key}: {r.calibration_scan_utc} ({r.days_before:.1f} days before)" for r in c.itertuples()))
+        P = pd.read_csv(OUT / "improvements_predictions.csv")
+        F_ = folds.assign(block=(folds.index // 10))
+        L_ = lidar.merge(F_[["y", "block"]], on="y")
+        bad = 0
+        for grp, tgt in [("waterline", "B1_wetdry"), ("dune line", "B2_dunetoe")]:
+            pr = P[P.group == grp].merge(F_[["y", "block"]], on="y")
+            for (d, k), te in pr.groupby(["date", "block"]):
+                want = np.nanmedian(L_[(L_.date != d) & (L_.block != k)][tgt])
+                bad += int(not np.allclose(te.BASE_typical, want))
+        check("Independent test folds exclude the held-out date and place (baseline recomputed for all 15 folds x 2 groups)",
+              bad == 0, "all folds match" if bad == 0 else f"{bad} folds differ")
+    else:
+        check("Physics uses separate calibration lidar scans (never the evaluated scans), all QC flag 1", None, "independent test not run")
+
+    # 10 the web app shows exactly the pipeline's numbers
+    app = ROOT / "dist" / "data.js"
+    if app.exists():
+        import json
+        import make_report as mr
+        t = app.read_text()
+        A = json.loads(t[t.index("{"):t.rindex("}") + 1])
+        M = pd.read_csv(OUT / "metrics.csv")
+        lb_ = {"lidar wet/dry edge": "B1_wetdry", "lidar dune toe": "B2_dunetoe"}
+        bad = [r["product"] for r in A["table"]
+               if abs(mr.g(M, r["product"], lb_[r["compared_with"]]).RMSE_m - r["rmse_m"]) > 0.051]
+        s = pd.read_csv(OUT / "lidar_sanity.csv", index_col=0)["value"]
+        bad += [] if abs(A["lowering"]["median_dz_m"] - s["median_dz_m"]) < 5e-4 else ["lowering"]
+        check("Web app (dist/data.js) shows the same accuracy and lowering numbers as the CSVs", not bad,
+              f"{len(A['table'])} sensors, {len(A['claims'])} claims, {len(A['profiles'])} rows checked" if not bad else "mismatch: " + ", ".join(bad))
+    else:
+        check("Web app (dist/data.js) shows the same accuracy and lowering numbers as the CSVs", None, "dist/data.js not generated yet")
+
     pd.DataFrame(res).to_csv(OUT / "self_checks.csv", index=False)
     if any(r["status"] == "FAIL" for r in res):
         sys.exit("self-check FAILED")

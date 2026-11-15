@@ -52,14 +52,18 @@ def rmse_lookup(metrics):
             for r in m.itertuples() if np.isfinite(r.RMSE_m) and r.RMSE_m > 0}
 
 
-def weighted_position(values, sigmas):
-    """Inverse-variance weighted position; returns estimate and weights."""
+def weighted_position(values, error_scales):
+    """Inverse-square error-scale weighted position; returns estimate and weights.
+
+    Cross-validated RMSE is used as a practical reliability scale, not claimed
+    to be a calibrated Gaussian standard deviation.
+    """
     values = np.asarray(values, dtype=float)
-    sigmas = np.asarray(sigmas, dtype=float)
-    ok = np.isfinite(values) & np.isfinite(sigmas) & (sigmas > 0)
+    error_scales = np.asarray(error_scales, dtype=float)
+    ok = np.isfinite(values) & np.isfinite(error_scales) & (error_scales > 0)
     if not ok.any():
         return np.nan, []
-    w = 1.0 / np.square(sigmas[ok])
+    w = 1.0 / np.square(error_scales[ok])
     return float(np.sum(w * values[ok]) / np.sum(w)), w.tolist()
 
 
@@ -82,7 +86,7 @@ def main():
     # Waterline: raw NDWI is the primary estimate. Its uncertainty is the
     # date-specific spatial-CV RMSE against the LiDAR wet/dry edge.
     state["waterline_x_m"] = state.get(WATER_PRODUCT, np.nan)
-    state["waterline_sigma_m"] = [
+    state["waterline_cv_rmse_m"] = [
         rmse.get((WATER_PRODUCT, "B1_wetdry", d), np.nan)
         for d in state.date
     ]
@@ -95,7 +99,7 @@ def main():
     state["waterline_tideaware_experimental_x_m"] = state.get(
         EXPERIMENTAL_WATER_PRODUCT, np.nan
     )
-    state["waterline_tideaware_sigma_m"] = [
+    state["waterline_tideaware_cv_rmse_m"] = [
         rmse.get((EXPERIMENTAL_WATER_PRODUCT, "B1_wetdry", d), np.nan)
         for d in state.date
     ]
@@ -111,10 +115,10 @@ def main():
         sh = rmse.get(("S1_VH", "B2_dunetoe", r.date), np.nan)
         estimate, weights = weighted_position([vv, vh], [sv, sh])
         dune_x.append(estimate)
-        # Conservative uncertainty: do not claim independent-sensor gain.
-        valid_sigmas = [s for s, x in ((sv, vv), (sh, vh))
+        # Conservative error scale: do not claim independent-sensor gain.
+        valid_scales = [s for s, x in ((sv, vv), (sh, vh))
                         if np.isfinite(x) and np.isfinite(s)]
-        dune_sigma.append(max(valid_sigmas) if valid_sigmas else np.nan)
+        dune_sigma.append(max(valid_scales) if valid_scales else np.nan)
         if len(weights) == 2:
             vv_weights.append(weights[0] / sum(weights))
             vh_weights.append(weights[1] / sum(weights))
@@ -126,7 +130,7 @@ def main():
             vv_weights.append(np.nan); vh_weights.append(np.nan)
 
     state["dunetoe_x_m"] = dune_x
-    state["dunetoe_sigma_conservative_m"] = dune_sigma
+    state["dunetoe_cv_rmse_conservative_m"] = dune_sigma
     state["dunetoe_weight_vv"] = vv_weights
     state["dunetoe_weight_vh"] = vh_weights
     state["dunetoe_source"] = np.where(

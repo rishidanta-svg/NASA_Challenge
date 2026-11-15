@@ -1,0 +1,3 @@
+# Preserve the byte-for-byte hashes in the generated manifests on every platform.
+data/processed/verified/** -text
+data/processed/verified/**/*.csv whitespace=cr-at-eol

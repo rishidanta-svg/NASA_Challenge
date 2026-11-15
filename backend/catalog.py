@@ -1,14 +1,57 @@
 """Adapt the verified pipeline and unified 28-acquisition bundles to the frontend data contract."""
 
-from datetime import datetime
+from datetime import datetime, timezone
 import json
+import logging
 import math
 from math import cos, radians, sin
 from pathlib import Path
+from zoneinfo import ZoneInfo
 
 from rasterio.warp import transform
 
 from .reconstruction import CoastalReconstructionStore
+
+logger = logging.getLogger(__name__)
+
+NEAREST_REQUIRED_COLUMNS = frozenset({
+    "id",
+    "station_id",
+    "variable",
+    "value",
+    "timestamp_utc",
+    "offset_seconds",
+})
+TIDE_REQUIRED_COLUMNS = frozenset({
+    "id",
+    "acquisition_utc",
+    "group",
+    "predicted_tide_stage",
+    "predicted_tide_slope_m_per_h",
+    "observed_minus_predicted_m_at_obs_time",
+})
+ANTECEDENT_REQUIRED_COLUMNS = frozenset({
+    "id",
+    "station_id",
+    "variable",
+    "window_hours",
+    "rain_sum_mm",
+    "max",
+})
+CROSS_DATE_REQUIRED_COLUMNS = frozenset({
+    "station_id",
+    "variable",
+    "unit",
+    "pair_sensor",
+    "june_id",
+    "october_id",
+    "change_valid",
+    "october_minus_june",
+})
+
+
+class EnvironmentLoadError(RuntimeError):
+    """Raised when unified environmental Parquet loading fails; str(exc) is safe for public responses."""
 
 BBOX = [-75.753384, 36.183704, -75.750335, 36.188260]
 VERTICAL = "NAVD88 (geoid12b)"
@@ -65,15 +108,97 @@ def _clean_val(val):
     return val
 
 
-def _read_parquet_rows(path: Path):
-    if not path.is_file():
-        return []
+def _format_ns_timestamp(ns, tz_name):
+    if ns is None:
+        return None
+    sec, rem_ns = divmod(ns, 1_000_000_000)
+    if tz_name in (None, ""):
+        dt = datetime.fromtimestamp(sec)
+        offset = ""
+    elif tz_name in ("UTC", "Etc/UTC", "+00:00", "Z"):
+        dt = datetime.fromtimestamp(sec, tz=timezone.utc)
+        offset = "+00:00"
+    else:
+        dt = datetime.fromtimestamp(sec, tz=timezone.utc).astimezone(ZoneInfo(tz_name))
+        iso_tz = dt.isoformat()
+        offset = iso_tz[-6:] if len(iso_tz) >= 6 and iso_tz[-6] in ("+", "-") else ""
+    base = dt.strftime("%Y-%m-%dT%H:%M:%S")
+    if rem_ns == 0:
+        return base + offset
+    us, sub_ns = divmod(rem_ns, 1000)
+    if sub_ns == 0:
+        return f"{base}.{us:06d}{offset}"
+    return f"{base}.{rem_ns:09d}{offset}"
+
+
+def _read_parquet_rows(path: Path, required_columns=None):
+    """Read a Parquet file into cleaned row dicts, raising EnvironmentLoadError with server logs on failure."""
     try:
+        import pyarrow as pa
         import pyarrow.parquet as pq
-        rows = pq.read_table(path).to_pylist()
+    except Exception as exc:
+        logger.error(
+            "Failed to import PyArrow while loading unified_environment Parquet file %s (%s): %s",
+            path,
+            type(exc).__name__,
+            exc,
+            exc_info=True,
+        )
+        raise EnvironmentLoadError(
+            "Environmental dataset failed to load: Parquet dependency is unavailable or incompatible"
+        ) from exc
+
+    if not path.is_file():
+        logger.error(
+            "Missing unified_environment Parquet file %s (FileNotFoundError)",
+            path,
+        )
+        raise EnvironmentLoadError("Environmental dataset failed to load: required Parquet file is missing")
+
+    try:
+        table = pq.read_table(path)
+    except Exception as exc:
+        logger.error(
+            "Failed to read unified_environment Parquet file %s (%s): %s",
+            path,
+            type(exc).__name__,
+            exc,
+            exc_info=True,
+        )
+        raise EnvironmentLoadError("Environmental dataset failed to load: unreadable or corrupted Parquet file") from exc
+
+    if required_columns:
+        missing_cols = sorted(set(required_columns) - set(table.column_names))
+        if missing_cols:
+            logger.error(
+                "Incompatible schema in unified_environment Parquet file %s (SchemaError): "
+                "missing required columns %s; found %s",
+                path,
+                missing_cols,
+                list(table.column_names),
+            )
+            raise EnvironmentLoadError("Environmental dataset failed to load: unexpected Parquet schema")
+
+    try:
+        # Convert nanosecond timestamps directly so lightweight API installs do not require pandas.
+        for idx, field in enumerate(table.schema):
+            if pa.types.is_timestamp(field.type) and field.type.unit == "ns":
+                formatted = pa.array(
+                    [_format_ns_timestamp(v, field.type.tz) for v in table[idx].cast(pa.int64()).to_pylist()],
+                    type=pa.string(),
+                )
+                table = table.set_column(idx, field.name, formatted)
+        rows = table.to_pylist()
         return [{k: _clean_val(v) for k, v in r.items()} for r in rows]
-    except Exception:
-        return []
+    except Exception as exc:
+        logger.error(
+            "Failed to decode rows from unified_environment Parquet file %s (%s): %s",
+            path,
+            type(exc).__name__,
+            exc,
+            exc_info=True,
+        )
+        raise EnvironmentLoadError("Environmental dataset failed to load: row decoding error") from exc
 
 
 def _format_date_label(date_str: str) -> str:
@@ -108,6 +233,8 @@ class Catalog:
         self.environment_qa = read_json(self.unified_root / "environment/environment_qa.json")
         self.acq_environment = {}
         self.cross_date_environment = []
+        self.environment_status = "unavailable"
+        self.environment_error = None
 
         self.reconstruction = CoastalReconstructionStore(root)
         self._load_unified_environment()
@@ -123,97 +250,136 @@ class Catalog:
     def _load_unified_environment(self):
         env_dir = self.unified_root / "environment"
         if not env_dir.is_dir():
+            if self.unified_manifest.get("observations"):
+                logger.error(
+                    "Missing unified_environment directory %s (FileNotFoundError): "
+                    "unified acquisition manifest is present",
+                    env_dir,
+                )
+                self.environment_status = "error"
+                self.environment_error = (
+                    "Environmental dataset failed to load: required environmental directory is missing"
+                )
+            else:
+                self.environment_status = "unavailable"
+                self.environment_error = None
             return
-        nearest_rows = _read_parquet_rows(env_dir / "nearest.parquet")
-        tide_rows = _read_parquet_rows(env_dir / "tide_stage.parquet")
-        ant_rows = _read_parquet_rows(env_dir / "antecedent.parquet")
-        self.cross_date_environment = _read_parquet_rows(env_dir / "cross_date.parquet")
 
-        nearest_by_id = {}
-        for r in nearest_rows:
-            nearest_by_id.setdefault(r["id"], []).append(r)
+        try:
+            nearest_rows = _read_parquet_rows(env_dir / "nearest.parquet", NEAREST_REQUIRED_COLUMNS)
+            tide_rows = _read_parquet_rows(env_dir / "tide_stage.parquet", TIDE_REQUIRED_COLUMNS)
+            ant_rows = _read_parquet_rows(env_dir / "antecedent.parquet", ANTECEDENT_REQUIRED_COLUMNS)
+            self.cross_date_environment = _read_parquet_rows(
+                env_dir / "cross_date.parquet", CROSS_DATE_REQUIRED_COLUMNS
+            )
 
-        tide_by_id = {r["id"]: r for r in tide_rows}
+            nearest_by_id = {}
+            for r in nearest_rows:
+                nearest_by_id.setdefault(r["id"], []).append(r)
 
-        ant_by_id = {}
-        for r in ant_rows:
-            ant_by_id.setdefault(r["id"], []).append(r)
+            tide_by_id = {r["id"]: r for r in tide_rows}
 
-        all_ids = set(nearest_by_id) | set(tide_by_id) | set(ant_by_id)
-        for oid in all_ids:
-            nrows = nearest_by_id.get(oid, [])
-            trow = tide_by_id.get(oid, {})
-            arows = ant_by_id.get(oid, [])
+            ant_by_id = {}
+            for r in ant_rows:
+                ant_by_id.setdefault(r["id"], []).append(r)
 
-            lookup = {(r["station_id"], r["variable"]): r for r in nrows}
-            ant_lookup = {(r["station_id"], r["variable"], r["window_hours"]): r for r in arows}
+            all_ids = set(nearest_by_id) | set(tide_by_id) | set(ant_by_id)
+            for oid in all_ids:
+                nrows = nearest_by_id.get(oid, [])
+                trow = tide_by_id.get(oid, {})
+                arows = ant_by_id.get(oid, [])
 
-            def _val(station, var):
-                item = lookup.get((station, var))
-                return round(float(item["value"]), 3) if item and item.get("value") is not None else None
+                lookup = {(r["station_id"], r["variable"]): r for r in nrows}
+                ant_lookup = {(r["station_id"], r["variable"], r["window_hours"]): r for r in arows}
 
-            def _off(station, var):
-                item = lookup.get((station, var))
-                return round(float(item["offset_seconds"]), 1) if item and item.get("offset_seconds") is not None else None
+                def _val(station, var):
+                    item = lookup.get((station, var))
+                    return round(float(item["value"]), 3) if item and item.get("value") is not None else None
 
-            def _ts(station, var):
-                item = lookup.get((station, var))
-                return item.get("timestamp_utc") if item else None
+                def _off(station, var):
+                    item = lookup.get((station, var))
+                    return round(float(item["offset_seconds"]), 1) if item and item.get("offset_seconds") is not None else None
 
-            rain24 = ant_lookup.get(("USACE FRF rain gauge", "rain_10min", 24), {}).get("rain_sum_mm")
-            rain72 = ant_lookup.get(("USACE FRF rain gauge", "rain_10min", 72), {}).get("rain_sum_mm")
-            hs24_max = ant_lookup.get(("USACE FRF Waverider 17m", "wave_significant_height", 24), {}).get("max")
+                def _ts(station, var):
+                    item = lookup.get((station, var))
+                    return item.get("timestamp_utc") if item else None
 
-            qualifying = sum(1 for r in nrows if r.get("value") is not None)
-            summary = {
-                "water_level_m_mllw": _val("NOAA CO-OPS 8651370", "water_level"),
-                "water_level_timestamp_utc": _ts("NOAA CO-OPS 8651370", "water_level"),
-                "water_level_offset_s": _off("NOAA CO-OPS 8651370", "water_level"),
-                "tide_prediction_m_mllw": _val("NOAA CO-OPS 8651370", "tide_prediction"),
-                "predicted_tide_stage": trow.get("predicted_tide_stage"),
-                "predicted_tide_slope_m_per_h": (
-                    round(float(trow["predicted_tide_slope_m_per_h"]), 3)
-                    if trow.get("predicted_tide_slope_m_per_h") is not None
-                    else None
-                ),
-                "observed_minus_predicted_m": (
-                    round(float(trow["observed_minus_predicted_m_at_obs_time"]), 3)
-                    if trow.get("observed_minus_predicted_m_at_obs_time") is not None
-                    else None
-                ),
-                "wave_hs_m_17m": _val("USACE FRF Waverider 17m", "wave_significant_height"),
-                "wave_tp_s_17m": _val("USACE FRF Waverider 17m", "wave_peak_period"),
-                "wave_dir_deg_17m": _val("USACE FRF Waverider 17m", "wave_peak_direction"),
-                "wave_17m_timestamp_utc": _ts("USACE FRF Waverider 17m", "wave_significant_height"),
-                "wave_17m_offset_s": _off("USACE FRF Waverider 17m", "wave_significant_height"),
-                "wave_hs_m_26m": _val("USACE FRF Waverider 26m", "wave_significant_height"),
-                "wave_tp_s_26m": _val("USACE FRF Waverider 26m", "wave_peak_period"),
-                "wind_speed_ms": (
-                    _val("NOAA CO-OPS 8651370", "wind_speed")
-                    if _val("NOAA CO-OPS 8651370", "wind_speed") is not None
-                    else _val("NDBC DUKN7", "wind_speed")
-                ),
-                "wind_dir_deg": (
-                    _val("NOAA CO-OPS 8651370", "wind_direction")
-                    if _val("NOAA CO-OPS 8651370", "wind_direction") is not None
-                    else _val("NDBC DUKN7", "wind_direction")
-                ),
-                "rain_10min_mm": _val("USACE FRF rain gauge", "rain_10min"),
-                "rain_24h_mm": round(float(rain24), 2) if rain24 is not None else None,
-                "rain_72h_mm": round(float(rain72), 2) if rain72 is not None else None,
-                "wave_hs_24h_max_m_17m": round(float(hs24_max), 3) if hs24_max is not None else None,
-                "total_water_level_2pct_navd88_m": _val("USACE FRF lidar wave runup", "total_water_level_2pct"),
-                "qualifying_station_matches": qualifying,
-            }
-            self.acq_environment[oid] = {
-                "id": oid,
-                "acquisition_utc": trow.get("acquisition_utc"),
-                "group": trow.get("group"),
-                "summary": summary,
-                "tide_stage": trow,
-                "nearest": nrows,
-                "antecedent": arows,
-            }
+                rain24 = ant_lookup.get(("USACE FRF rain gauge", "rain_10min", 24), {}).get("rain_sum_mm")
+                rain72 = ant_lookup.get(("USACE FRF rain gauge", "rain_10min", 72), {}).get("rain_sum_mm")
+                hs24_max = ant_lookup.get(("USACE FRF Waverider 17m", "wave_significant_height", 24), {}).get("max")
+
+                qualifying = sum(1 for r in nrows if r.get("value") is not None)
+                summary = {
+                    "water_level_m_mllw": _val("NOAA CO-OPS 8651370", "water_level"),
+                    "water_level_timestamp_utc": _ts("NOAA CO-OPS 8651370", "water_level"),
+                    "water_level_offset_s": _off("NOAA CO-OPS 8651370", "water_level"),
+                    "tide_prediction_m_mllw": _val("NOAA CO-OPS 8651370", "tide_prediction"),
+                    "predicted_tide_stage": trow.get("predicted_tide_stage"),
+                    "predicted_tide_slope_m_per_h": (
+                        round(float(trow["predicted_tide_slope_m_per_h"]), 3)
+                        if trow.get("predicted_tide_slope_m_per_h") is not None
+                        else None
+                    ),
+                    "observed_minus_predicted_m": (
+                        round(float(trow["observed_minus_predicted_m_at_obs_time"]), 3)
+                        if trow.get("observed_minus_predicted_m_at_obs_time") is not None
+                        else None
+                    ),
+                    "wave_hs_m_17m": _val("USACE FRF Waverider 17m", "wave_significant_height"),
+                    "wave_tp_s_17m": _val("USACE FRF Waverider 17m", "wave_peak_period"),
+                    "wave_dir_deg_17m": _val("USACE FRF Waverider 17m", "wave_peak_direction"),
+                    "wave_17m_timestamp_utc": _ts("USACE FRF Waverider 17m", "wave_significant_height"),
+                    "wave_17m_offset_s": _off("USACE FRF Waverider 17m", "wave_significant_height"),
+                    "wave_hs_m_26m": _val("USACE FRF Waverider 26m", "wave_significant_height"),
+                    "wave_tp_s_26m": _val("USACE FRF Waverider 26m", "wave_peak_period"),
+                    "wind_speed_ms": (
+                        _val("NOAA CO-OPS 8651370", "wind_speed")
+                        if _val("NOAA CO-OPS 8651370", "wind_speed") is not None
+                        else _val("NDBC DUKN7", "wind_speed")
+                    ),
+                    "wind_dir_deg": (
+                        _val("NOAA CO-OPS 8651370", "wind_direction")
+                        if _val("NOAA CO-OPS 8651370", "wind_direction") is not None
+                        else _val("NDBC DUKN7", "wind_direction")
+                    ),
+                    "rain_10min_mm": _val("USACE FRF rain gauge", "rain_10min"),
+                    "rain_24h_mm": round(float(rain24), 2) if rain24 is not None else None,
+                    "rain_72h_mm": round(float(rain72), 2) if rain72 is not None else None,
+                    "wave_hs_24h_max_m_17m": round(float(hs24_max), 3) if hs24_max is not None else None,
+                    "total_water_level_2pct_navd88_m": _val("USACE FRF lidar wave runup", "total_water_level_2pct"),
+                    "qualifying_station_matches": qualifying,
+                }
+                self.acq_environment[oid] = {
+                    "id": oid,
+                    "acquisition_utc": trow.get("acquisition_utc"),
+                    "group": trow.get("group"),
+                    "summary": summary,
+                    "tide_stage": trow,
+                    "nearest": nrows,
+                    "antecedent": arows,
+                }
+        except EnvironmentLoadError as exc:
+            self.environment_status = "error"
+            self.environment_error = str(exc)
+            self.acq_environment = {}
+            self.cross_date_environment = []
+            return
+        except Exception as exc:
+            logger.error(
+                "Unexpected error processing unified_environment dataset under %s (%s): %s",
+                env_dir,
+                type(exc).__name__,
+                exc,
+                exc_info=True,
+            )
+            self.environment_status = "error"
+            self.environment_error = "Environmental dataset failed to load: unexpected processing error"
+            self.acq_environment = {}
+            self.cross_date_environment = []
+            return
+
+        self.environment_status = "available"
+        self.environment_error = None
 
     def _load_unified_acquisitions(self):
         """Replace self.acquisitions with all 28 verified acquisitions from acquisition_manifest.json."""
@@ -689,10 +855,16 @@ class Catalog:
     def comparisons(self):
         if not self.cross_date_pairs:
             return {"status": "unavailable", "reason": "Unified cross-date comparison bundle is unavailable"}
-        return {
+        payload = {
             "study_cells": self.geospatial_qa.get("study_cells", 1450),
             "reference_grid": self.geospatial_qa.get("reference_grid"),
             "pairs": self.cross_date_pairs,
             "change_valid_overlap_counts": self.geospatial_qa.get("change_valid_overlap_counts", {}),
-            "environment_contrasts": self.cross_date_environment,
+            "environment_status": self.environment_status,
+            "environment_contrasts": self.cross_date_environment if self.environment_status == "available" else None,
         }
+        if self.environment_status == "error":
+            payload["environment_error"] = self.environment_error
+        elif self.environment_status == "unavailable":
+            payload["environment_reason"] = "Unified environmental dataset is unavailable"
+        return payload

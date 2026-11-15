@@ -1,0 +1,25 @@
+{
+  "metadata_version": "1.0",
+  "project": "POLTERGEIST",
+  "acknowledgment": "Portions of Poltergeist's code and descriptive text were generated with AI/SI assistance using OpenAI ChatGPT/Codex.",
+  "code": {
+    "ai_si_assisted": true,
+    "tools": [
+      "OpenAI ChatGPT",
+      "OpenAI Codex"
+    ],
+    "scope": "Assistance with code generation, debugging, user interface development, documentation and analysis workflows."
+  },
+  "data": {
+    "source_observations_ai_si_generated": false,
+    "source_providers": [
+      "NASA–ISRO NISAR",
+      "Copernicus Sentinel-1",
+      "Copernicus Sentinel-2",
+      "USACE FRF",
+      "NOAA"
+    ],
+    "derived_products": "Derived maps, profiles, statistics and model outputs are computed from attributed scientific inputs using processing code developed with AI/SI assistance; they are not fabricated measurements.",
+    "limitations": "AI/SI assistance does not establish scientific accuracy. Dataset provenance, acquisition times, validation results and limitations must be considered separately."
+  }
+}

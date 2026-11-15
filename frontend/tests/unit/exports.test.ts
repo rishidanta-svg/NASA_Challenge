@@ -7,6 +7,10 @@ const evidence=CoastalEvidenceSchema.parse({processing_version:'verified-1',stat
 describe('scientific exports',()=>{
   it('reports measured values, target scope, withheld models and escaped provenance',()=>{
     const html=studyBrief(evidence,null,'2026-11-15T00:00:00Z');
+    expect(html).toContain('AI/SI generation acknowledgment');
+    expect(html).toContain('name="ai-si-generation"');
+    expect(html).toContain('OpenAI ChatGPT/Codex');
+    expect(html).toContain('not AI/SI-generated');
     expect(html).toContain('-0.31 m');expect(html).toContain('17,466');
     expect(html).toContain('7.42 m');expect(html).toContain('3.73 m');
     expect(html).toContain('horizontal position error');expect(html).toContain('not a general accuracy claim');
@@ -24,5 +28,8 @@ describe('scientific exports',()=>{
     expect(csv[2]).toContain('"1","51","2","1.5","-0.5"');
     expect(csv[3]).toContain('"2","52","","1",""');
     expect(csv[0]).toContain('vertical_datum');
+    expect(csv[0]).toContain('ai_si_generation_acknowledgment');
+    expect(csv[1]).toContain('OpenAI ChatGPT/Codex');
+    expect(csv[1]).toContain('"false"');
   });
 });

@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { GENERATION_METADATA } from '../config/generation';
 import { getCoastalEvidence, type Sourced } from '../api/client';
 import type { CoastalEvidence, LayerDescriptor } from '../api/schemas';
 import { BASEMAPS, type BasemapId } from '../config/basemaps';
@@ -176,6 +177,13 @@ export function MapTools({ panel, onRefresh }: { panel: 'layers' | 'compare' | '
           <p>Live station telemetry is separate from the June–October 2026 study acquisitions.</p>
           <EnvironmentPanel />
         </details>
+
+        <section aria-label="AI/SI generation acknowledgment">
+          <h2>AI/SI generation acknowledgment</h2>
+          <p>{GENERATION_METADATA.acknowledgment}</p>
+          <p>{GENERATION_METADATA.data.derived_products}</p>
+          <small>Source satellite, LiDAR and environmental observations are not AI/SI-generated.</small>
+        </section>
 
         <button className="full-button" onClick={onRefresh}>
           Refresh study data

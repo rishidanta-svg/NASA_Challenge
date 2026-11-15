@@ -323,6 +323,12 @@ def test_health_and_optional_spa_serving(tmp_path, monkeypatch):
     monkeypatch.setenv("POLTERGEIST_FRONTEND_DIST", str(dist))
 
     client = TestClient(create_app())
+    generation = client.get("/api/metadata/generation")
+    assert generation.status_code == 200
+    assert generation.json()["code"]["ai_si_assisted"] is True
+    assert generation.json()["data"]["source_observations_ai_si_generated"] is False
+    assert "OpenAI ChatGPT/Codex" in generation.json()["acknowledgment"]
+
     health = client.get("/health")
     assert health.status_code == 200
     assert health.json()["status"] == "ok"

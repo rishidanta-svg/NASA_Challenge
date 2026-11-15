@@ -3,6 +3,7 @@ WORKDIR /app/frontend
 COPY frontend/package.json frontend/package-lock.json ./
 RUN npm ci --no-audit --no-fund
 COPY frontend/ ./
+COPY backend/generation_metadata.json /app/backend/generation_metadata.json
 ARG VITE_API_BASE_URL=
 ENV VITE_API_BASE_URL=${VITE_API_BASE_URL}
 RUN npm run build

@@ -20,6 +20,7 @@ from .raster import render
 
 ROOT = Path(__file__).resolve().parents[1]
 CACHE = {"Cache-Control": "public, max-age=300"}
+GENERATION_METADATA = read_json(Path(__file__).with_name("generation_metadata.json"))
 
 
 def create_app(root=None, unified_root=None):
@@ -34,7 +35,7 @@ def create_app(root=None, unified_root=None):
     nisar = NisarExperiments(catalog)
     catalog.layers.update(nisar.descriptors)
     env = Environment()
-    app = FastAPI(title="POLTERGEIST", version="1.0")
+    app = FastAPI(title="POLTERGEIST", version="1.0", description=GENERATION_METADATA["acknowledgment"])
     origins = os.getenv(
         "POLTERGEIST_CORS_ORIGINS",
         "http://localhost:5173,http://localhost:4173,http://127.0.0.1:5173,http://127.0.0.1:4173",
@@ -61,6 +62,10 @@ def create_app(root=None, unified_root=None):
     @app.get("/health")
     def health():
         return {"status": "ok", "environment_status": catalog.environment_status}
+
+    @app.get("/api/metadata/generation")
+    def generation_metadata():
+        return JSONResponse(GENERATION_METADATA, headers=CACHE)
 
     @app.get("/api/study-area")
     def study():

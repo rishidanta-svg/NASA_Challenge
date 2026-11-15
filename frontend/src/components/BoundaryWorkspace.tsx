@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { GENERATION_METADATA } from '../config/generation';
 import { getAnalysis, getCoastalEvidence, getNisarEvidence, type Sourced } from '../api/client';
 import type { Analysis, CoastalEvidence, NisarEvidence } from '../api/schemas';
 import { saveDownload, studyBrief } from '../lib/exports';
@@ -88,7 +89,7 @@ export function BoundaryWorkspace({ onShowMapLayer, onStartTour }: BoundaryWorks
   const nisarAcqJune = (n?.input_qa as { source_acquisitions?: { june?: Record<string, unknown> } } | undefined)?.source_acquisitions?.june;
 
   function download() {
-    const payload = { coastal_observations: c, transect: a?.coastal_observations, nisar_experiment: n };
+    const payload = { generation_metadata: GENERATION_METADATA, coastal_observations: c, transect: a?.coastal_observations, nisar_experiment: n };
     const url = URL.createObjectURL(new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' }));
     const link = document.createElement('a');
     link.href = url;

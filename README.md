@@ -6,6 +6,12 @@ POLTERGEIST integrates airborne **USACE LiDAR** elevation truth, **Sentinel-2** 
 
 > **Research observatory notice:** Observed quantities, conditional tide-adjusted estimates, exploratory SAR signals, and withheld models are strictly distinguished throughout the API and UI.
 
+## AI/SI generation acknowledgment
+
+Portions of Poltergeist's code and descriptive text were generated with AI/SI assistance using OpenAI ChatGPT/Codex. Derived maps, profiles, statistics and model outputs are computed from attributed scientific inputs using processing code developed with AI/SI assistance; they are not fabricated measurements.
+
+Original satellite, LiDAR and environmental observations come from their attributed providers; they are not AI/SI-generated observations. See [machine-readable generation metadata](backend/generation_metadata.json), also served at `/api/metadata/generation`. The same acknowledgment accompanies the site and downloaded results.
+
 ---
 
 ## Core Capabilities

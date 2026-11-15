@@ -1,0 +1,13 @@
+.git
+.venv*
+.pytest_cache
+__pycache__
+*.pyc
+frontend/node_modules
+frontend/dist
+frontend/test-results
+legacy
+reports
+outputs
+data/raw
+data/interim

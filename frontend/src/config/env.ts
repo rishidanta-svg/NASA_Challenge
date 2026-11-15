@@ -4,7 +4,14 @@ export type EnvironmentSourceMode = 'auto' | 'noaa' | 'api';
 
 const env = import.meta.env;
 
-export const API_BASE_URL: string = String(env.VITE_API_BASE_URL || 'http://localhost:8000').replace(/\/+$/, '');
+const rawApiBase = env.VITE_API_BASE_URL;
+export const API_BASE_URL: string = (
+  rawApiBase !== undefined
+    ? String(rawApiBase)
+    : typeof window !== 'undefined' && !['localhost', '127.0.0.1'].includes(window.location.hostname)
+      ? ''
+      : 'http://localhost:8000'
+).replace(/\/+$/, '');
 
 const mode = String(env.VITE_ENVIRONMENT_SOURCE || 'auto');
 export const ENVIRONMENT_SOURCE: EnvironmentSourceMode =

@@ -10,6 +10,7 @@ import re
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, JSONResponse, Response
+from fastapi.staticfiles import StaticFiles
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from .catalog import Catalog, read_json
@@ -34,10 +35,16 @@ def create_app(root=None, unified_root=None):
     catalog.layers.update(nisar.descriptors)
     env = Environment()
     app = FastAPI(title="POLTERGEIST", version="1.0")
-    origins = os.getenv("POLTERGEIST_CORS_ORIGINS",
-                        "http://localhost:5173,http://localhost:4173,http://127.0.0.1:5173,http://127.0.0.1:4173")
-    app.add_middleware(CORSMiddleware, allow_origins=[o.strip() for o in origins.split(",")],
-                       allow_methods=["GET"], allow_headers=["Accept"])
+    origins = os.getenv(
+        "POLTERGEIST_CORS_ORIGINS",
+        "http://localhost:5173,http://localhost:4173,http://127.0.0.1:5173,http://127.0.0.1:4173",
+    )
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=[o.strip() for o in origins.split(",") if o.strip()],
+        allow_methods=["GET"],
+        allow_headers=["Accept"],
+    )
 
     @app.exception_handler(StarletteHTTPException)
     async def problem(_request: Request, exc):
@@ -50,6 +57,10 @@ def create_app(root=None, unified_root=None):
         return JSONResponse(status_code=500, media_type="application/problem+json",
                             content={"title": "Internal server error", "status": 500,
                                      "detail": "The product could not be served"})
+
+    @app.get("/health")
+    def health():
+        return {"status": "ok", "environment_status": catalog.environment_status}
 
     @app.get("/api/study-area")
     def study():
@@ -246,6 +257,21 @@ def create_app(root=None, unified_root=None):
         if path is None:
             raise HTTPException(404, "Unknown raster")
         return FileResponse(path, media_type="image/tiff", filename=path.name, headers=CACHE)
+
+    frontend_dist = Path(os.getenv("POLTERGEIST_FRONTEND_DIST", ROOT / "frontend/dist")).resolve()
+    if (frontend_dist / "index.html").is_file():
+        if (frontend_dist / "assets").is_dir():
+            app.mount("/assets", StaticFiles(directory=frontend_dist / "assets"), name="frontend-assets")
+
+        @app.get("/{full_path:path}", include_in_schema=False)
+        def spa(full_path: str):
+            if full_path.startswith("api/") or full_path == "api":
+                raise HTTPException(404, "Not found")
+            if full_path:
+                candidate = (frontend_dist / full_path).resolve()
+                if candidate.is_relative_to(frontend_dist) and candidate.is_file():
+                    return FileResponse(candidate)
+            return FileResponse(frontend_dist / "index.html")
 
     return app
 

@@ -313,3 +313,27 @@ def test_environment_failure_unexpected_schema(tmp_path, caplog):
     pq.write_table(pa.table({"unexpected_col": [1, 2, 3]}), env_dir / "nearest.parquet")
     client = TestClient(create_app(root))
     _assert_env_error_response_and_logs(client, caplog, "nearest.parquet", "SchemaError")
+
+
+def test_health_and_optional_spa_serving(tmp_path, monkeypatch):
+    dist = tmp_path / "dist"
+    (dist / "assets").mkdir(parents=True)
+    (dist / "index.html").write_text("<!doctype html><title>Poltergeist</title>", encoding="utf8")
+    (dist / "assets" / "app.js").write_text("console.log('ok');", encoding="utf8")
+    monkeypatch.setenv("POLTERGEIST_FRONTEND_DIST", str(dist))
+
+    client = TestClient(create_app())
+    health = client.get("/health")
+    assert health.status_code == 200
+    assert health.json()["status"] == "ok"
+
+    root_page = client.get("/")
+    assert root_page.status_code == 200
+    assert "Poltergeist" in root_page.text
+
+    asset = client.get("/assets/app.js")
+    assert asset.status_code == 200
+    assert "ok" in asset.text
+
+    unknown_api = client.get("/api/does-not-exist")
+    assert unknown_api.status_code == 404

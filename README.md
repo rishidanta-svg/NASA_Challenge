@@ -49,4 +49,8 @@ Frontend contract tests: in `frontend/` run `POLTERGEIST_PYTHON=/absolute/path/t
 - [Reproduction and audit](docs/REPRODUCTION.md)
 - [Historical independent validation](VALIDATION_SUMMARY.md)
 
-Deployment requires a separately hosted Python API and the actual frontend origin in `POLTERGEIST_CORS_ORIGINS`. Build the UI with `VITE_API_BASE_URL=https://your-api-host npm --prefix frontend run build`, then serve `frontend/dist/`. Do not deploy the historical root `dist/` by accident. Original source-environment pins are retained in `legacy/requirements-science-verified.txt`; the integrated install uses the compatible API/validation stack above.
+## Production hosting
+
+Option A — **Single container (recommended)**: The root `Dockerfile` builds `frontend/dist/` with same-origin API routes (`VITE_API_BASE_URL=""`), installs `requirements-api.txt`, and runs `uvicorn backend.app:app --host 0.0.0.0 --port ${PORT:-8000}` with `GET /health`. When `frontend/dist/index.html` is present, FastAPI serves both the compiled SPA and `/api/*` from the same origin.
+
+Option B — **Separate frontend & API**: Host the FastAPI backend (`uvicorn backend.app:app`) with `POLTERGEIST_CORS_ORIGINS=https://your-frontend-origin`, build the UI with `VITE_API_BASE_URL=https://your-api-host npm --prefix frontend run build`, and serve `frontend/dist/`. Do not deploy the historical root `dist/` archive. Original source-environment pins are retained in `legacy/requirements-science-verified.txt`; the integrated install uses the compatible API/validation stack above.

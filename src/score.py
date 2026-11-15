@@ -53,7 +53,7 @@ def load_products():
         for v in ["HH", "HV"]:
             prods[f"NISAR_{v}"] = n[v]
             meta[f"NISAR_{v}"] = {r.date_key: dict(pixel_m=max(r.pixel_m_x, r.pixel_m_y),
-                                                  acquisition_utc=r.begin_utc, product_id=r.granule)
+                                                  acquisition_utc=r.begin_utc, product_id=r.concept_id)
                                   for r in mn.itertuples()}
     return prods, meta
 

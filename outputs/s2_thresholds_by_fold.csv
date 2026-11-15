@@ -9,8 +9,8 @@ fold,threshold,train_min_coverage,train_mae_m,coverage_rule_met,product
 2,0.1,1.0,7.788958611102146,True,S2_MNDWI
 3,0.1,1.0,8.20656054683169,True,S2_MNDWI
 4,0.1,1.0,7.7374422455454415,True,S2_MNDWI
-0,-0.0,1.0,2.5839281556880582,True,EXP_tideaware_S2
-1,-0.05,1.0,3.0943599055076447,True,EXP_tideaware_S2
-2,-0.0,1.0,2.932374568371467,True,EXP_tideaware_S2
-3,-0.05,1.0,3.080808520779499,True,EXP_tideaware_S2
-4,-0.05,1.0,2.990838009875008,True,EXP_tideaware_S2
+0,-0.0,1.0,2.5839281556880613,True,EXP_tideaware_S2
+1,-0.05,1.0,3.0943599055076456,True,EXP_tideaware_S2
+2,-0.0,1.0,2.932374568371465,True,EXP_tideaware_S2
+3,-0.05,1.0,3.080808520779507,True,EXP_tideaware_S2
+4,-0.05,1.0,2.990838009875017,True,EXP_tideaware_S2

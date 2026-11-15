@@ -1,0 +1,16 @@
+product,lidar_boundary,shift_m,N,RMSE_m
+S2_NDWI,B1_wetdry,-10,150,13.115
+S2_NDWI,B1_wetdry,-5,150,8.703
+S2_NDWI,B1_wetdry,0,150,5.428
+S2_NDWI,B1_wetdry,5,150,5.762
+S2_NDWI,B1_wetdry,10,150,9.323
+S1_VV,B2_dunetoe,-10,42,13.296
+S1_VV,B2_dunetoe,-5,42,10.293
+S1_VV,B2_dunetoe,0,42,9.226
+S1_VV,B2_dunetoe,5,42,10.690
+S1_VV,B2_dunetoe,10,42,13.909
+NISAR_HH,B2_dunetoe,-10,42,22.301
+NISAR_HH,B2_dunetoe,-5,42,19.395
+NISAR_HH,B2_dunetoe,0,42,17.463
+NISAR_HH,B2_dunetoe,5,42,16.846
+NISAR_HH,B2_dunetoe,10,42,17.680

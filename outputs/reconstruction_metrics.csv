@@ -1,4 +1,0 @@
-method,N,bias_m,MAE_m,RMSE_m
-v1_inverse_variance_baseline_all_matched,42,1.302,4.479,7.078
-v1_baseline_on_bayesian_accepted_rows,41,1.365,4.556,7.161
-robust_generalized_bayesian_accepted_rows,41,1.359,4.539,7.188

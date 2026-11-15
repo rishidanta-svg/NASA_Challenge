@@ -1,164 +1,149 @@
-
-"""Process locally downloaded NISAR GCOV data for the FRF study area."""
-
+"""NISAR L2 GCOV (ASF, needs NASA Earthdata Login via ~/.netrc).
+Reads only the site window from the HDF5 over HTTPS (no full download),
+converts HH and HV backscatter to dB and samples along FRF rows."""
+import io
 import os
-import argparse
-from pyproj import Transformer
+from collections import OrderedDict
 import numpy as np
 import pandas as pd
 import xarray as xr
 import h5py
-from pathlib import Path
+import earthaccess
+from pyproj import Transformer
 
 from frf import sample_rows, ROWS10, PROC
 from s2 import utm_window, XGRID
 
-GRANULE = (
-    "NISAR_L2_PR_GCOV_024_069_D_070_4005_DHDH_A_"
-    "20260630T235334_20260630T235409_P05023_N_F_J_001"
-)
+# June/October: from the team's site-selection document (descending track 069, frame 070).
+# September: found by searching CMR (NISAR_L2_GCOV_PROVISIONAL_V1) for 2026-09-28..10-01 over the
+# site; it is an ASCENDING pass (track 162, frame 020), i.e. a different viewing geometry.
+GRANULES = {"2026-06": "G4250721321-ASF", "2026-09": "G4331248374-ASF", "2026-10": "G4376256706-ASF"}
 
-RAW = Path(os.getenv("NISAR_RAW_DIR", Path(__file__).resolve().parents[1] / "data" / "raw" / "nisar"))
+
+class HTTPRangeFile(io.RawIOBase):
+    """Read-only, seekable file over HTTP range requests (authenticated session),
+    so h5py fetches only the bytes it needs instead of the ~5 GB file.
+    (earthaccess.open fails here because its size probe does not follow ASF's redirect.)"""
+    BLOCK = 4 * 1024 * 1024
+
+    def __init__(self, session, url):
+        self.s, self.url, self.pos, self.cache = session, url, 0, OrderedDict()
+        r = self.s.get(url, headers={"Range": "bytes=0-0"}, timeout=120, stream=True)
+        if r.status_code != 206:
+            raise IOError(f"range request failed: HTTP {r.status_code}")
+        self.size = int(r.headers["Content-Range"].split("/")[1])
+        self.bytes_fetched = 0
+
+    def readable(self): return True
+    def seekable(self): return True
+    def tell(self): return self.pos
+
+    def seek(self, off, whence=0):
+        self.pos = off if whence == 0 else self.pos + off if whence == 1 else self.size + off
+        return self.pos
+
+    def _block(self, i):
+        if i in self.cache:
+            self.cache.move_to_end(i)
+            return self.cache[i]
+        a = i * self.BLOCK
+        b = min(a + self.BLOCK, self.size) - 1
+        for attempt in range(4):
+            try:
+                r = self.s.get(self.url, headers={"Range": f"bytes={a}-{b}"}, timeout=180)
+                if r.status_code == 206 and len(r.content) == b - a + 1:
+                    break
+            except Exception:
+                pass
+        else:
+            raise IOError(f"failed to fetch bytes {a}-{b}")
+        self.bytes_fetched += len(r.content)
+        self.cache[i] = r.content
+        if len(self.cache) > 64:
+            self.cache.popitem(last=False)
+        return r.content
+
+    def readinto(self, buf):
+        n = min(len(buf), self.size - self.pos)
+        if n <= 0:
+            return 0
+        out, p, end = memoryview(buf), self.pos, self.pos + n
+        k = 0
+        while p < end:
+            i = p // self.BLOCK
+            blk = self._block(i)
+            s0 = p - i * self.BLOCK
+            take = min(len(blk) - s0, end - p)
+            out[k:k + take] = blk[s0:s0 + take]
+            k += take; p += take
+        self.pos = end
+        return n
+
+
+def parse_ur(ur):
+    """NISAR_L2_PR_GCOV_<cycle>_<track>_<A|D>_<frame>_... -> track, direction, frame"""
+    p = ur.split("_")
+    return dict(track=int(p[5]), direction={"A": "ascending", "D": "descending"}[p[6]], frame=int(p[7]))
+
+
+def read_window(f, bounds_utm18):
+    grid = "science/LSAR/GCOV/grids/frequencyA"
+    g = f[grid]
+    xs, ys = g["xCoordinates"][:], g["yCoordinates"][:]
+    proj = g["projection"]
+    epsg = int(proj[()]) if proj.shape == () else int(proj.attrs.get("epsg_code", 0))
+    if not epsg:
+        raise ValueError("could not read the GCOV projection EPSG code")
+    # convert the UTM-18N site window into the file's own projection
+    t = Transformer.from_crs("EPSG:32618", f"EPSG:{epsg}", always_xy=True)
+    cx, cy = t.transform([bounds_utm18[0], bounds_utm18[2], bounds_utm18[0], bounds_utm18[2]],
+                         [bounds_utm18[1], bounds_utm18[1], bounds_utm18[3], bounds_utm18[3]])
+    bounds = (min(cx), min(cy), max(cx), max(cy))
+    ix = np.where((xs >= bounds[0]) & (xs <= bounds[2]))[0]
+    iy = np.where((ys >= bounds[1]) & (ys <= bounds[3]))[0]
+    if len(ix) < 3 or len(iy) < 3:
+        raise ValueError("site window is outside this GCOV frame")
+    sl = (slice(iy.min(), iy.max() + 1), slice(ix.min(), ix.max() + 1))
+    out = {}
+    for pol, ds in [("HH", "HHHH"), ("HV", "HVHV")]:
+        a = g[ds][sl].astype("float64")
+        a[a <= 0] = np.nan
+        out[pol] = xr.DataArray(10 * np.log10(a), coords={"y": ys[sl[0]], "x": xs[sl[1]]}, dims=("y", "x"))
+    spacing = float(abs(xs[1] - xs[0])), float(abs(ys[1] - ys[0]))
+    return out, spacing, epsg
 
 
 def main():
-    parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--input', default=os.getenv('NISAR_INPUT'), help='Path to the June30 GCOV HDF5 input')
-    parser.add_argument('--raw-dir', type=Path, default=RAW, help='Directory searched when --input is omitted')
-    parser.add_argument('--output-dir', type=Path, default=PROC, help='Destination for profiles and metadata')
-    args = parser.parse_args()
-    selected = args.input
-    granule = os.getenv("NISAR_GRANULE", GRANULE)
-    files = [Path(selected)] if selected else list(args.raw_dir.glob("*.h5"))
-
-    if not files:
-        raise FileNotFoundError(f"No NISAR HDF5 file found in {RAW}")
-
-    file = next((f for f in files if granule in f.name), None)
-
-    if file is None:
-        raise FileNotFoundError(f"Expected granule not found in {RAW}")
-
-    if granule != GRANULE:
-        raise ValueError("This single-epoch reader currently supports only the documented June30 granule; use the geospatial pipeline for June18/October16.")
-    print("Reading:", file.name)
-
+    auth = earthaccess.login(strategy="environment") if os.environ.get("EARTHDATA_TOKEN") or os.environ.get("EARTHDATA_USERNAME") \
+        else earthaccess.login(strategy="netrc")
+    if not auth or not auth.authenticated:
+        raise SystemExit("Earthdata login failed: run src/earthdata_login.py first")
     bounds = utm_window()
-    print("Study area UTM bounds:", bounds)
-
-    grid = "science/LSAR/GCOV/grids/frequencyA"
-
-    with h5py.File(file, "r") as f:
-
-        g = f[grid]
-
-        epsg = int(g["projection"][()])
-        if epsg != 32618:
-            bounds = Transformer.from_crs(32618, epsg, always_xy=True).transform_bounds(*bounds, densify_pts=21)
-        xs = g["xCoordinates"][:]
-        ys = g["yCoordinates"][:]
-
-        # Identify only the pixels covering our study area.
-        ix = np.where(
-            (xs >= bounds[0]) & (xs <= bounds[2])
-        )[0]
-
-        iy = np.where(
-            (ys >= bounds[1]) & (ys <= bounds[3])
-        )[0]
-
-        if len(ix) == 0 or len(iy) == 0:
-            raise ValueError("NISAR raster does not overlap the study area")
-
-        x_slice = slice(ix.min(), ix.max() + 1)
-        y_slice = slice(iy.min(), iy.max() + 1)
-
-        print("Extracted raster shape:",
-              len(iy), "x", len(ix))
-
-        profiles = {}
-
-        for pol, dataset in [
-            ("HH", "HHHH"),
-            ("HV", "HVHV")
-        ]:
-
-            print("Extracting", pol)
-
-            # Read only the site window, not the entire raster.
-            values = g[dataset][y_slice, x_slice].astype("float64")
-
-            values[~np.isfinite(values)] = np.nan
-            values[values <= 0] = np.nan
-
-            db = 10 * np.log10(values)
-
-            da = xr.DataArray(
-                db,
-                coords={
-                    "y": ys[y_slice],
-                    "x": xs[x_slice]
-                },
-                dims=("y", "x")
-            )
-
-            profiles[pol] = da
-
-            print(
-                pol,
-                "valid pixel fraction:",
-                round(float(np.isfinite(db).mean()), 4)
-            )
-
-        spacing = (
-            abs(float(xs[1] - xs[0])),
-            abs(float(ys[1] - ys[0]))
-        )
-
-        epsg = int(g["projection"][()])
-
-    print("Pixel spacing:", spacing)
-    print("Projection:", epsg)
-
-    print("Sampling FRF transects...")
-
-    result = xr.Dataset(
-        {
-            pol: (
-                ("y", "x"),
-                sample_rows(da, XGRID, epsg=epsg)
-            )
-            for pol, da in profiles.items()
-        },
-        coords={
-            "y": ROWS10,
-            "x": XGRID
-        }
-    )
-
-    args.output_dir.mkdir(parents=True, exist_ok=True)
-
-    output = args.output_dir / "nisar_profiles.nc"
-
-    result.expand_dims(date=["2026-06"]).to_netcdf(output)
-
-    metadata = pd.DataFrame([{
-    "date_key": "2026-06",
-    "granule": GRANULE,
-    "begin_utc": "2026-06-30T23:53:34Z",
-    "track": 69,
-    "direction": "descending",
-    "frame": 70,
-    "pixel_m_x": spacing[0],
-    "pixel_m_y": spacing[1],
-    "epsg": epsg
-    }])
-
-    metadata.to_csv(args.output_dir / "nisar_meta.csv", index=False)
-
-    print("\nSUCCESS")
-    print("Saved:", output)
-    print("Profile dimensions:", dict(result.sizes))
+    profs, meta = [], []
+    for key, cid in GRANULES.items():
+        res = earthaccess.search_data(concept_id=cid)
+        assert len(res) == 1, f"{cid}: {len(res)} results"
+        gr = res[0]
+        links = [u for u in gr.data_links(access="external")
+                 if u.startswith("https://") and u.endswith(".h5") and "QA_STATS" not in u and "PRIVATE" not in u]
+        assert len(links) == 1, f"{cid}: expected one science .h5 link, got {links}"
+        url = links[0]
+        fobj = HTTPRangeFile(earthaccess.get_requests_https_session(), url)
+        with h5py.File(fobj, "r") as f:
+            bands, spacing, epsg = read_window(f, bounds)
+        print(f"  {key} {cid}: EPSG {epsg}, pixel {spacing} m, window {bands['HH'].shape}, "
+              f"fetched {fobj.bytes_fetched / 1e6:.0f} MB of {fobj.size / 1e9:.2f} GB", flush=True)
+        profs.append(xr.Dataset({p: (("y", "x"), sample_rows(da, XGRID, epsg=epsg)) for p, da in bands.items()},
+                                coords={"y": ROWS10, "x": XGRID}).expand_dims(date=[key]))
+        t = gr["umm"]["TemporalExtent"]["RangeDateTime"]
+        meta.append({"date_key": key, "concept_id": cid, "granule_ur": gr["umm"]["GranuleUR"],
+                     **parse_ur(gr["umm"]["GranuleUR"]),
+                     "begin_utc": t["BeginningDateTime"], "end_utc": t["EndingDateTime"],
+                     "pixel_m_x": spacing[0], "pixel_m_y": spacing[1], "epsg": epsg, "url": url})
+    xr.concat(profs, dim="date").to_netcdf(PROC / "nisar_profiles.nc")
+    m = pd.DataFrame(meta)
+    m.to_csv(PROC / "nisar_meta.csv", index=False)
+    print(m.drop(columns="url").to_string())
 
 
 if __name__ == "__main__":

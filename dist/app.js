@@ -1,66 +1,230 @@
 'use strict';
-const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
-const layers=[{id:'elevation',name:'Elevation change',source:'LiDAR · DIFFERENCE',color:'#db9d82',on:true},{id:'nisar',name:'NISAR · L-band',source:'HH / HV · SCHEMATIC',color:'#65dfce',on:false},{id:'sentinel',name:'Sentinel-2 · Optical',source:'SURFACE ZONES · SCHEMATIC',color:'#c3cf9e',on:false},{id:'s1',name:'Sentinel-1 · C-band',source:'RADAR EDGE · SCHEMATIC',color:'#9ba9ef',on:false}];
-const state={date:'june',transect:1,opacity:.75,compare:false,swipe:.5,zoom:1,panX:0,panY:0,shift:0,imported:false,page:'explore'};
-let dataset={label:'Synthetic demonstration',profiles:Array.from({length:4},(_,i)=>({id:'T0'+(i+1),label:'Transect 0'+(i+1),june:Array.from({length:61},(_,j)=>{const x=j*2;return{x,z:height(x,i,false)}}),october:Array.from({length:61},(_,j)=>{const x=j*2;return{x,z:height(x,i,true)}}),boundaries:{radar:39+i*2,waterJune:92-i,waterOctober:85-i},source:'Synthetic illustration — not an FRF survey',verticalDatum:'Illustrative local datum',units:'m'}))};
-function height(x,i,oct){const dune=4.5*Math.exp(-(((x-27-i*2)/12)**2));const beach=2.4-x*.034+Math.sin(x*.09+i)*.12;return beach+dune-(oct?.45*Math.exp(-(((x-65)/25)**2)):0)}
-function toast(msg){$('#toast').textContent=msg;$('#toast').classList.add('show');clearTimeout(toast.timer);toast.timer=setTimeout(()=>$('#toast').classList.remove('show'),4500)}
-function escapeText(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
-function go(page){if(!['explore','analyze','events','evidence'].includes(page))page='explore';state.page=page;$$('.workspace').forEach(el=>el.classList.toggle('active',el.id===page));$$('nav button').forEach(b=>b.classList.toggle('active',b.dataset.page===page));history.replaceState(null,'','#'+page);requestAnimationFrame(()=>{drawMap();drawProfiles()})}
-$$('nav button').forEach(b=>b.onclick=()=>go(b.dataset.page));$('#openAnalyze').onclick=()=>go('analyze');$('#evidenceBtn').onclick=()=>go('evidence');window.addEventListener('hashchange',()=>go(location.hash.slice(1)));
-$('#layers').innerHTML=layers.map(l=>`<label class="layer ${l.on?'active':''}"><input type="checkbox" data-layer="${l.id}" ${l.on?'checked':''}><span><strong>${l.name}</strong><small>${l.source}</small></span><i class="swatch" style="background:${l.color}"></i></label>`).join('');
-$$('[data-layer]').forEach(b=>b.onchange=()=>{layers.find(l=>l.id===b.dataset.layer).on=b.checked;b.closest('label').classList.toggle('active',b.checked);$('#viewLabel').textContent=layers.filter(l=>l.on).map(l=>l.name).join(' + ')||'Coastal reference';$('.map-legend').hidden=!layers[0].on;drawMap()});
-function initTransects(){const current=dataset.profiles[state.transect];$('#transectList').innerHTML=dataset.profiles.map((p,i)=>`<button class="transect ${i===state.transect?'active':''}" data-transect="${i}">⌖ &nbsp; ${escapeText(p.label)}<span>${escapeText(p.id)}</span></button>`).join('');$('#analysisTransect').innerHTML=dataset.profiles.map((p,i)=>`<option value="${i}">${escapeText(p.label)}</option>`).join('');$('#analysisTransect').value=state.transect;$$('[data-transect]').forEach(b=>b.onclick=()=>selectTransect(+b.dataset.transect));$('#profileTitle').innerHTML=escapeText(current.label)+' <span>· Beach profile</span>';$('#inspectorTitle').textContent=current.label}
-function selectTransect(i){state.transect=i;initTransects();drawMap();drawProfiles()}
-$('#analysisTransect').onchange=e=>selectTransect(+e.target.value);
-$$('[data-date]').forEach(b=>b.onclick=()=>{state.date=b.dataset.date;$$('[data-date]').forEach(x=>x.classList.toggle('active',x===b));$('#mapDate').textContent=state.date==='june'?'JUN 2026':'OCT 2026';drawMap()});
-$('#opacity').oninput=e=>{state.opacity=+e.target.value/100;$('#opacityValue').textContent=e.target.value+'%';drawMap()};
-$('#compare').onchange=e=>{state.compare=e.target.checked;$('#swipe').hidden=!state.compare;drawMap()};
-$('#zoomIn').onclick=()=>{state.zoom=Math.min(2.5,state.zoom+.25);drawMap()};$('#zoomOut').onclick=()=>{state.zoom=Math.max(.75,state.zoom-.25);drawMap()};
-function resetView(){state.zoom=1;state.panX=state.panY=0;drawMap()};$('#fit').onclick=resetView;$('#reset').onclick=()=>{resetView();state.shift=0;$('#shift').value=0;$('#shiftValue').textContent='0 m';selectTransect(Math.min(1,dataset.profiles.length-1));toast('View and alignment reset')};
-$('#shift').oninput=e=>{state.shift=+e.target.value;$('#shiftValue').textContent=(state.shift>0?'+':'')+state.shift+' m';drawProfiles()};$('#resetShift').onclick=()=>{$('#shift').value=0;state.shift=0;$('#shiftValue').textContent='0 m';drawProfiles()};
-['radarGuide','waterGuide','analysisGuides'].forEach(id=>$('#'+id).onchange=()=>{drawMap();drawProfiles()});
-let seed=9;function rand(){seed=(seed*1664525+1013904223)>>>0;return seed/4294967296}const features=Array.from({length:550},()=>({x:rand()*1000,y:rand()*750,r:rand()*5+2,v:rand()}));
-const coast=y=>510+y*.19+Math.sin(y*.013)*14;
-const dune=y=>coast(y)-85-Math.sin(y*.023)*9;
-const canvas=$('#map'),ctx=canvas.getContext('2d');let mapW=1,mapH=1,baseScale=1,offsetX=0,offsetY=0;
-function regionPath(fn,land=true){ctx.beginPath();ctx.moveTo(land?-100:1100,-100);for(let y=-100;y<=850;y+=5)ctx.lineTo(fn(y),y);ctx.lineTo(land?-100:1100,850);ctx.closePath()}
-function curve(fn,color,width=1,dash=[]){ctx.beginPath();for(let y=-50;y<=800;y+=5){if(y===-50)ctx.moveTo(fn(y),y);else ctx.lineTo(fn(y),y)}ctx.strokeStyle=color;ctx.lineWidth=width;ctx.setLineDash(dash);ctx.stroke();ctx.setLineDash([])}
-function paintScene(oct){ctx.fillStyle='#163b4c';ctx.fillRect(-150,-150,1400,1100);regionPath(y=>coast(y)-40);ctx.fillStyle='#283c38';ctx.fill();
-regionPath(y=>coast(y));ctx.fillStyle='#bdbea0';ctx.fill();regionPath(y=>coast(y)-65);ctx.fillStyle='#89947c';ctx.fill();regionPath(y=>coast(y)-130);ctx.fillStyle='#324a40';ctx.fill();
-// Inland parcels, scrub and structures: illustrative shapes, never imagery.
-features.forEach(f=>{const x=f.x,y=f.y;if(x<dune(y)-65){ctx.fillStyle=f.v>.5?'#61745a55':'#203b3277';ctx.beginPath();ctx.ellipse(x,y,f.r*2.5,f.r*1.5,-.2,0,7);ctx.fill();if(f.v>.92&&x>230&&x<360){ctx.save();ctx.translate(x,y);ctx.rotate(-.17);ctx.fillStyle='#a5aaa07a';ctx.fillRect(-4,-7,9,13);ctx.restore()}}});
-for(let i=0;i<12;i++)curve(y=>dune(y)-50+i*7+Math.sin(y*.03+i)*3,'#d9d0a42b',.7);
-curve(y=>coast(y)-200,'#aab1a26b',5);curve(y=>coast(y)-200,'#263f3c',2.5);
-for(let i=1;i<20;i++)curve(y=>coast(y)+i*19+Math.sin(y*.017+i)*2,`rgba(112,166,178,${Math.max(.015,.12-i*.006)})`,.8);
-curve(y=>coast(y)+5,'#e0e3ce8f',3);curve(y=>coast(y)+12,'#a9cbca55',1);
-if(layers[0].on){ctx.save();ctx.globalAlpha=state.opacity;features.forEach(f=>{if(f.x>dune(f.y)-12&&f.x<coast(f.y)-4){ctx.fillStyle=f.v>.76?'#72bfc07a':oct?'#dc9b7d90':'#bca48772';ctx.fillRect(f.x,f.y,7+f.r*2,9+f.r*2)}});ctx.restore()}
-if(layers[1].on){ctx.save();ctx.globalAlpha=state.opacity*.5;features.forEach(f=>{if(f.x<coast(f.y)){ctx.fillStyle=f.v>.6?'#62e1c3':'#112b3f';ctx.fillRect(f.x,f.y,7,5)}});ctx.restore();curve(y=>dune(y),'#65dfce',2.3,[4,2])}
-if(layers[2].on){regionPath(y=>coast(y)-140);ctx.fillStyle='#83a66b33';ctx.fill();curve(y=>coast(y)-(oct?16:4),'#b9dbaf',2)}
-if(layers[3].on)curve(y=>dune(y)+4,'#a8adf5',2,[8,4]);
-// Pier-like landmark in schematic. Not surveyed infrastructure.
-ctx.save();ctx.translate(coast(360)-20,360);ctx.rotate(-.18);ctx.fillStyle='#9aab9e';ctx.fillRect(0,-3,170,6);ctx.fillStyle='#bed0c2';ctx.fillRect(165,-9,15,18);ctx.restore();
-ctx.font='10px IBM Plex Mono, monospace';ctx.fillStyle='#a9c2c380';ctx.save();ctx.translate(850,390);ctx.rotate(-Math.PI/2);ctx.fillText('A T L A N T I C   O C E A N',-110,0);ctx.restore();
-ctx.fillStyle='#e0e5cd99';ctx.fillText('DUNE / VEGETATION',dune(100)-140,95);ctx.fillStyle='#b3c3b79c';ctx.fillText('SCHEMATIC FIELD SITE',200,350);
+// Littoral: every number shown comes from window.LITTORAL_DATA (dist/data.js),
+// which src/export_app_data.py generates from the validation pipeline's outputs.
+const D = window.LITTORAL_DATA;
+const $ = s => document.querySelector(s), $$ = s => [...document.querySelectorAll(s)];
+const esc = s => String(s).replace(/[&<>"']/g, c => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'}[c]));
+
+if (!D) {
+  document.body.innerHTML = '<p style="padding:40px">dist/data.js is missing. Run <code>python run_validation.py</code> (or <code>python src/export_app_data.py</code>) first.</p>';
+  throw new Error('no data');
 }
-function mapTransform(){baseScale=Math.max(mapW/1000,mapH/750);offsetX=(mapW-1000*baseScale)/2;offsetY=(mapH-750*baseScale)/2;ctx.translate(mapW/2+state.panX,mapH/2+state.panY);ctx.scale(state.zoom,state.zoom);ctx.translate(-mapW/2,-mapH/2);ctx.translate(offsetX,offsetY);ctx.scale(baseScale,baseScale)}
-function drawMap(){if(state.page!=='explore')return;const rect=$('#mapArea').getBoundingClientRect();if(!rect.width)return;mapW=rect.width;mapH=rect.height;const dpr=Math.min(devicePixelRatio||1,2);canvas.width=mapW*dpr;canvas.height=mapH*dpr;ctx.setTransform(dpr,0,0,dpr,0,0);ctx.clearRect(0,0,mapW,mapH);ctx.save();mapTransform();paintScene(state.date==='october');ctx.restore();
-if(state.compare){ctx.save();ctx.beginPath();ctx.rect(mapW*state.swipe,0,mapW,mapH);ctx.clip();mapTransform();paintScene(true);ctx.restore();ctx.save();ctx.beginPath();ctx.rect(0,0,mapW*state.swipe,mapH);ctx.clip();mapTransform();paintScene(false);ctx.restore()}
-ctx.save();mapTransform();const count=Math.min(dataset.profiles.length,12);for(let i=0;i<count;i++){const y=150+i*(440/Math.max(count-1,1));const selected=i===state.transect;ctx.beginPath();ctx.moveTo(coast(y)-180,y+27);ctx.lineTo(coast(y)+160,y-27);ctx.strokeStyle=selected?'#7ff5de':'#c9e0d28c';ctx.lineWidth=selected?2:1;ctx.setLineDash(selected?[]:[5,5]);ctx.stroke();ctx.setLineDash([]);ctx.fillStyle=selected?'#7ff5de':'#bacfc3';ctx.beginPath();ctx.arc(coast(y)-180,y+27,selected?4:3,0,7);ctx.fill();ctx.fillStyle=selected?'#142d30':'#102b31';ctx.fillRect(coast(y)-232,y+16,43,20);ctx.strokeStyle=selected?'#7ff5de':'#78948b';ctx.strokeRect(coast(y)-232,y+16,43,20);ctx.font='10px IBM Plex Mono,monospace';ctx.fillStyle=selected?'#7ff5de':'#b7d1c9';ctx.fillText(String(dataset.profiles[i].id).slice(0,5),coast(y)-227,y+30)}ctx.restore();$('#swipe').style.left=state.swipe*100+'%'}
-let drag=null;canvas.onpointerdown=e=>{drag={x:e.clientX,y:e.clientY,px:state.panX,py:state.panY};canvas.setPointerCapture(e.pointerId);canvas.style.cursor='grabbing'};canvas.onpointermove=e=>{if(drag){state.panX=drag.px+e.clientX-drag.x;state.panY=drag.py+e.clientY-drag.y;drawMap()}};canvas.onpointerup=e=>{if(drag&&Math.hypot(e.clientX-drag.x,e.clientY-drag.y)<5){const rect=canvas.getBoundingClientRect();const y=(((e.clientY-rect.top-mapH/2-state.panY)/state.zoom+mapH/2)-offsetY)/baseScale;const count=Math.min(dataset.profiles.length,12);const i=Math.round((y-150)/(440/Math.max(count-1,1)));if(i>=0&&i<count)selectTransect(i)}drag=null;canvas.style.cursor='grab'};canvas.onpointercancel=()=>{drag=null};
-$('#swipe').onpointerdown=e=>{e.preventDefault();$('#swipe').setPointerCapture(e.pointerId);$('#swipe').dataset.drag='1'};$('#swipe').onpointermove=e=>{if($('#swipe').dataset.drag){const r=$('#mapArea').getBoundingClientRect();state.swipe=Math.min(.95,Math.max(.05,(e.clientX-r.left)/r.width));drawMap()}};$('#swipe').onpointerup=()=>delete $('#swipe').dataset.drag;$('#swipe').onpointercancel=()=>delete $('#swipe').dataset.drag;
-function chart(el,large=false){const p=dataset.profiles[state.transect],w=Math.max(el.clientWidth,300),h=large?380:152,left=42,right=18,top=22,bottom=27;const shift=large?state.shift:0;const all=[...p.june,...p.october],xMin=Math.min(...all.map(v=>v.x))-15,xMax=Math.max(...all.map(v=>v.x))+15;let zMin=Math.floor(Math.min(...all.map(v=>v.z)))-1,zMax=Math.ceil(Math.max(...all.map(v=>v.z)))+1;const sx=x=>left+(x-xMin)/(xMax-xMin)*(w-left-right),sy=z=>top+(zMax-z)/(zMax-zMin)*(h-top-bottom);const path=(a,offset=0)=>a.map((v,i)=>(i?'L':'M')+sx(v.x+offset).toFixed(2)+','+sy(v.z).toFixed(2)).join(' ');let s='';for(let i=0;i<=4;i++){let z=zMin+(zMax-zMin)*i/4;s+=`<line x1="${left}" y1="${sy(z)}" x2="${w-right}" y2="${sy(z)}" stroke="#263746" stroke-dasharray="2 4"/><text x="${left-8}" y="${sy(z)+3}" text-anchor="end" fill="#7f96a8" font-size="8">${z.toFixed(1)}</text>`}for(let i=0;i<=6;i++){let x=xMin+(xMax-xMin)*i/6;s+=`<text x="${sx(x)}" y="${h-9}" text-anchor="middle" fill="#7f96a8" font-size="8">${Math.round(x)}</text>`}s+=`<text x="8" y="12" fill="#7f96a8" font-size="8">z (m)</text><text x="${w-15}" y="${h-9}" fill="#7f96a8" font-size="8">m</text>`;
-const guides=(!large||$('#analysisGuides').checked)&&p.boundaries;if(guides){const marks=[];if($('#radarGuide').checked&&Number.isFinite(p.boundaries.radar))marks.push([p.boundaries.radar,'RADAR','#65dfce']);if($('#waterGuide').checked){if(Number.isFinite(p.boundaries.waterJune))marks.push([p.boundaries.waterJune,'JUN WATER','#edbf7c']);if(Number.isFinite(p.boundaries.waterOctober))marks.push([p.boundaries.waterOctober,'OCT WATER','#edbf7c'])}marks.forEach(([x,label,c],i)=>{s+=`<line x1="${sx(x)}" y1="${top}" x2="${sx(x)}" y2="${h-bottom}" stroke="${c}" stroke-opacity=".4" stroke-dasharray="3 4"/><text x="${sx(x)+4}" y="${14+(i%2)*12}" fill="${c}" font-size="6.5">${label}</text>`})}
-s+=`<path d="${path(p.june)}" fill="none" stroke="#65dfce" stroke-width="2"/><path d="${path(p.october,shift)}" fill="none" stroke="#edbf7c" stroke-width="2"/><line class="cursor" x1="0" y1="${top}" x2="0" y2="${h-bottom}" stroke="#d4e0e8" opacity="0"/><circle class="point" cx="0" cy="0" r="3.5" fill="#65dfce" opacity="0"/>`;el.innerHTML=`<svg viewBox="0 0 ${w} ${h}" role="img" aria-label="${escapeText(p.label)} paired elevation profiles. ${state.imported?'Imported data':'Synthetic demonstration data'}">${s}</svg>`;el.onpointermove=e=>{const rect=el.getBoundingClientRect();const px=(e.clientX-rect.left)/rect.width*w;const x=xMin+(px-left)/(w-left-right)*(xMax-xMin);const nearest=(arr,target)=>arr.reduce((a,b)=>Math.abs(a.x-target)<Math.abs(b.x-target)?a:b);const a=nearest(p.june,x),b=nearest(p.october,x-shift);const cursor=el.querySelector('.cursor'),point=el.querySelector('.point');cursor.setAttribute('x1',sx(x));cursor.setAttribute('x2',sx(x));cursor.setAttribute('opacity','.6');point.setAttribute('cx',sx(a.x));point.setAttribute('cy',sy(a.z));point.setAttribute('opacity','1');$('#chartReadout').textContent=`x ≈ ${x.toFixed(1)} m · June ${a.z.toFixed(2)} m · October ${b.z.toFixed(2)} m (nearest samples)`};el.onpointerleave=()=>{el.querySelector('.cursor').setAttribute('opacity','0');el.querySelector('.point').setAttribute('opacity','0')}}
-function drawProfiles(){if(state.page==='explore')chart($('#profile'));if(state.page==='analyze')chart($('#largeProfile'),true)}
-const events=[{date:'JUN 2026',type:'radar',title:'Early-season satellite observations',text:'NISAR and Sentinel acquisitions will be linked to their exact observation windows.'},{date:'JUN 2026',type:'survey',title:'Reference terrain survey',text:'Independent LiDAR profile and elevation data, pending source files and reference metadata.'},{date:'SEP 2026',type:'environment',title:'Storm-response investigation',text:'The project brief identifies a September nor’easter. Wave and swash records remain to be ingested.'},{date:'OCT 2026',type:'radar',title:'Later-season satellite observations',text:'Compare radar and optical transitions with early-season observations.'},{date:'OCT 2026',type:'survey',title:'Repeat terrain survey',text:'Evaluate change on common coverage after reference-frame and uncertainty checks.'}];
-function showEvents(filter){$('#timelineCards').innerHTML=events.filter(e=>filter==='all'||e.type===filter).map(e=>`<article class="event-row"><span class="event-date">${e.date}</span><div class="event-mark"></div><div class="card"><small>PLANNED RECORD · ${e.type.toUpperCase()}</small><h2>${e.title}</h2><p>${e.text}</p></div></article>`).join('')};$$('[data-event-filter]').forEach(b=>b.onclick=()=>{$$('[data-event-filter]').forEach(x=>x.classList.toggle('selected',x===b));showEvents(b.dataset.eventFilter)});
-function download(name,data){const url=URL.createObjectURL(new Blob([JSON.stringify(data,null,2)],{type:'application/json'}));const a=document.createElement('a');a.href=url;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000)}
-$('#export').onclick=()=>{download('littoral-session.json',{format:'littoral-session-v1',createdAt:new Date().toISOString(),dataState:state.imported?'user-imported-unverified':'synthetic-demonstration',view:{...state},layers:layers.map(l=>({id:l.id,on:l.on})),dataset});toast('Session exported with data-state labels')};
-const template={label:'REPLACE WITH YOUR SURVEY SOURCE',profiles:[{id:'T01',label:'Transect 01',source:'REPLACE: source product IDs',verticalDatum:'REPLACE: common vertical datum',units:'m',june:[{x:0,z:3},{x:20,z:2},{x:40,z:1},{x:60,z:0}],october:[{x:0,z:3},{x:20,z:1.8},{x:40,z:.7},{x:60,z:-.2}]}],notes:'SCHEMA EXAMPLE ONLY. Replace every value with real measurements; x is distance in a common local cross-shore frame. june/october are UI slots; record actual dates in source metadata.'};
-$('#downloadSchema').onclick=()=>download('littoral-profile-template.json',template);
-$('#importBtn').onclick=$('#importBtn2').onclick=()=>$('#fileInput').click();
-function validateDataset(d){if(!d||typeof d.label!=='string'||d.label.length>160||!Array.isArray(d.profiles)||d.profiles.length<1||d.profiles.length>100)throw Error('Expected a label and 1–100 profiles. Download the template in Evidence.');const ids=new Set();d.profiles.forEach(p=>{if(typeof p.id!=='string'||!p.id||p.id.length>40||ids.has(p.id)||typeof p.label!=='string'||p.label.length>100)throw Error('Each profile needs a unique ID and a short label.');ids.add(p.id);if(p.units!=='m'||typeof p.source!=='string'||!p.source.trim()||typeof p.verticalDatum!=='string'||!p.verticalDatum.trim())throw Error('Declare units: m, source, and a common verticalDatum for each profile.');for(const field of ['june','october']){if(!Array.isArray(p[field])||p[field].length<2||p[field].length>5000)throw Error('Each seasonal profile needs 2–5000 points.');p[field].forEach((v,i)=>{if(typeof v.x!=='number'||typeof v.z!=='number'||!Number.isFinite(v.x)||!Number.isFinite(v.z)||Math.abs(v.x)>1e7||Math.abs(v.z)>1e5||(i&&v.x<=p[field][i-1].x))throw Error('Points need finite numeric x/z values and strictly increasing x.');});}if(p.boundaries)Object.values(p.boundaries).forEach(v=>{if(typeof v!=='number'||!Number.isFinite(v))throw Error('Boundary positions must be finite numbers.')})});return d}
-$('#fileInput').onchange=async e=>{const f=e.target.files[0];if(!f)return;try{if(f.size>3e6)throw Error('Keep profile JSON below 3 MB.');let d=JSON.parse(await f.text());if(d.format==='littoral-session-v1')d=d.dataset;dataset=validateDataset(d);state.imported=true;state.transect=0;state.shift=0;$('#shift').value=0;$('#shiftValue').textContent='0 m';$('#dataState').textContent='User imported';$('#dataState').className='import-label';$('#profileStatus').textContent='IMPORTED · UNVERIFIED';$('#footerState').textContent='User-imported profiles · Schematic map';$('#evidenceState').textContent='User-imported profiles';$('#evidenceDescription').textContent=dataset.label+' — rendered as supplied; not independently verified. Map imagery and event records remain demonstration content.';$('#lidarStatus').textContent='Profiles imported · unverified';$('#demoMessage').textContent='User-imported profiles · Map remains a synthetic schematic. Profile data has not been independently verified.';$('.demo-badge').textContent='IMPORTED PROFILES / DEMO MAP';$('#chartReadout').textContent='Imported profile dataset loaded';initTransects();drawMap();drawProfiles();toast('Profiles loaded. Map remains schematic.')}catch(err){toast('Import rejected: '+err.message)}finally{e.target.value=''}};
-$('#help').onclick=()=>$('#helpDialog').showModal();$('#closeHelp').onclick=()=>$('#helpDialog').close();$('#helpDialog').onclick=e=>{if(e.target===$('#helpDialog')){const r=e.target.getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)e.target.close()}};
-new ResizeObserver(()=>{drawMap();drawProfiles()}).observe($('.central'));window.addEventListener('resize',()=>{drawMap();drawProfiles()});initTransects();showEvents('all');go(location.hash.slice(1)||'explore');
+
+const SENSORS = [  // [product key, short label, colour, default on]
+  ['S2_NDWI', 'Sentinel-2 NDWI', '#38bdf8', true],
+  ['S1_VV', 'Sentinel-1 VV', '#f59e0b', true],
+  ['NISAR_HH', 'NISAR HH', '#c084fc', true],
+  ['S2_MNDWI', 'Sentinel-2 MNDWI', '#7dd3fc', false],
+  ['S1_VH', 'Sentinel-1 VH', '#fcd34d', false],
+  ['NISAR_HV', 'NISAR HV', '#e9d5ff', false],
+].filter(s => D.products[s[0]] && D.profiles[0].sensors[s[0]]);
+const LIDAR = [['B2_dunetoe', 'Dune toe', '#f8fafc', true], ['B1_wetdry', 'Wet/dry edge', '#94a3b8', true],
+  ['B3_contour', `${D.contour_z.toFixed(1)} m contour`, '#64748b', false]];
+const DATE_LABEL = {'2026-06': 'June', '2026-09': 'September', '2026-10': 'October'};
+// start on the row nearest y = 950 m where the lidar dune toe exists on both June and October
+const startRow = (() => { let best = -1; D.profiles.forEach((p, i) => {
+  if (p.lidar['2026-06'].B2_dunetoe !== null && p.lidar['2026-10'].B2_dunetoe !== null
+      && (best < 0 || Math.abs(p.y - 950) < Math.abs(D.profiles[best].y - 950))) best = i; }); return Math.max(best, 0); })();
+const state = {date: '2026-06', row: startRow, page: 'explore',
+  on: Object.fromEntries([...SENSORS, ...LIDAR].map(s => [s[0], s[3]])), sep: false};
+
+// ---------------------------------------------------------------- header text
+$('#yRange').textContent = `${D.site.y_range[0]}–${D.site.y_range[1]}`;
+$('#latlon').textContent = `${D.site.lat[0].toFixed(3)}° N · ${Math.abs(D.site.lon[0]).toFixed(3)}° W`;
+$('#headline').textContent = `Lidar measured a median beach lowering of ${D.lowering.median_dz_m.toFixed(3)} m between June and October `
+  + `(${D.lowering.area_m2.toLocaleString()} m² lowered by more than ${D.lowering.threshold_m} m). `
+  + `Satellites are compared with it below: each one marks a different feature.`;
+$('#thr').textContent = D.lowering.threshold_m;
+$('#footerState').textContent = `Data generated ${D.generated_utc} UTC from the validation pipeline`;
+$('#frame').textContent = D.site.frame + '.';
+
+// ---------------------------------------------------------------- navigation
+function go(page) {
+  if (!['explore', 'sensors', 'events', 'evidence'].includes(page)) page = 'explore';
+  state.page = page;
+  $$('.workspace').forEach(el => el.classList.toggle('active', el.id === page));
+  $$('nav button').forEach(b => b.classList.toggle('active', b.dataset.page === page));
+  history.replaceState(null, '', '#' + page);
+  redraw();
+}
+$$('nav button').forEach(b => b.onclick = () => go(b.dataset.page));
+window.addEventListener('hashchange', () => go(location.hash.slice(1)));
+
+// ---------------------------------------------------------------- controls
+function toggles(el, list) {
+  el.innerHTML = list.map(([k, label, color]) => `<label class="switch-row"><span><i class="key" style="background:${color}"></i>${esc(label)}`
+    + `${D.products[k] && D.products[k].experimental ? ' <em>(experimental)</em>' : ''}</span>`
+    + `<input type="checkbox" data-toggle="${k}" ${state.on[k] ? 'checked' : ''}></label>`).join('');
+}
+toggles($('#sensorToggles'), SENSORS);
+toggles($('#lidarToggles'), LIDAR);
+$$('[data-toggle]').forEach(b => b.onchange = () => { state.on[b.dataset.toggle] = b.checked; redraw(); });
+$$('[data-date]').forEach(b => b.onclick = () => {
+  state.date = b.dataset.date;
+  $$('[data-date]').forEach(x => x.classList.toggle('active', x === b));
+  redraw();
+});
+$('#showSep').onchange = e => { state.sep = e.target.checked; redraw(); };
+
+// ---------------------------------------------------------------- colour scale for elevation change
+const G = D.grid, vals = G.dz_cm.filter(v => v !== null).map(v => v / 100).sort((a, b) => a - b);
+const q = p => vals[Math.min(vals.length - 1, Math.floor(p * vals.length))];
+const LO = q(0.02), HI = Math.max(q(0.98), D.lowering.threshold_m * 2);
+function dzColor(v) {
+  if (Math.abs(v) <= D.lowering.threshold_m) return [120, 128, 136];
+  if (v < 0) { const t = Math.min(1, v / LO); return [Math.round(150 + 105 * t), Math.round(120 - 60 * t), Math.round(90 - 60 * t)]; }
+  const t = Math.min(1, v / HI); return [Math.round(90 - 50 * t), Math.round(140 + 40 * t), Math.round(170 + 80 * t)];
+}
+$('#legendBar').style.background = `linear-gradient(90deg, rgb(${dzColor(LO)}), rgb(${dzColor(-D.lowering.threshold_m * 1.01)}), rgb(120,128,136), rgb(${dzColor(D.lowering.threshold_m * 1.01)}), rgb(${dzColor(HI)}))`;
+$('#legendValues').innerHTML = `<span>${LO.toFixed(2)}</span><span>0</span><span>+${HI.toFixed(2)}</span>`;
+
+// ---------------------------------------------------------------- map (FRF frame: y alongshore → right, x cross-shore ↓ toward ocean)
+const canvas = $('#map'), ctx = canvas.getContext('2d');
+const XMIN = 40, XMAX = 130, YMIN = G.y0, YMAX = G.y0 + G.dy * G.ny;
+let M = null;
+function drawMap() {
+  if (state.page !== 'explore') return;
+  const r = $('#mapArea').getBoundingClientRect();
+  if (!r.width) return;
+  const dpr = Math.min(devicePixelRatio || 1, 2), W = r.width, H = r.height, pad = {l: 50, r: 16, t: 26, b: 36};
+  canvas.width = W * dpr; canvas.height = H * dpr; canvas.style.width = W + 'px'; canvas.style.height = H + 'px';
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  ctx.fillStyle = '#0f1c26'; ctx.fillRect(0, 0, W, H);
+  const sy = (W - pad.l - pad.r) / (YMAX - YMIN), sx = (H - pad.t - pad.b) / (XMAX - XMIN);
+  M = {px: y => pad.l + (y - YMIN) * sy, py: x => pad.t + (x - XMIN) * sx, pad, W, H, sy, sx};
+  // elevation-change cells
+  for (let j = 0; j < G.ny; j++) for (let i = 0; i < G.nx; i++) {
+    const v = G.dz_cm[j * G.nx + i]; if (v === null) continue;
+    const x = G.x0 + i * G.dx, y = G.y0 + j * G.dy; if (x < XMIN || x > XMAX) continue;
+    ctx.fillStyle = `rgb(${dzColor(v / 100)})`;
+    ctx.fillRect(M.px(y - G.dy / 2), M.py(x - G.dx / 2), G.dy * sy + 0.6, G.dx * sx + 0.6);
+  }
+  // edge lines along the beach for the chosen date
+  const line = (key, color, dash, getter) => {
+    ctx.beginPath(); let open = false;
+    D.profiles.forEach(p => { const x = getter(p); if (x === null || x === undefined) { open = false; return; }
+      if (!open) { ctx.moveTo(M.px(p.y), M.py(x)); open = true; } else ctx.lineTo(M.px(p.y), M.py(x)); });
+    ctx.strokeStyle = color; ctx.lineWidth = 2.2; ctx.setLineDash(dash); ctx.stroke(); ctx.setLineDash([]);
+  };
+  ctx.save(); ctx.beginPath(); ctx.rect(pad.l, pad.t, W - pad.l - pad.r, H - pad.t - pad.b); ctx.clip();
+  LIDAR.forEach(([k, , c]) => state.on[k] && line(k, c, [6, 4], p => p.lidar[state.date][k]));
+  SENSORS.forEach(([k, , c]) => state.on[k] && line(k, c, [], p => p.sensors[k][state.date]));
+  ctx.restore();
+  // selected row
+  const sel = D.profiles[state.row];
+  ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 1.5; ctx.setLineDash([2, 3]);
+  ctx.beginPath(); ctx.moveTo(M.px(sel.y), pad.t); ctx.lineTo(M.px(sel.y), H - pad.b); ctx.stroke(); ctx.setLineDash([]);
+  // axes
+  ctx.fillStyle = '#9fb3c3'; ctx.font = '11px Inter, system-ui, sans-serif'; ctx.textAlign = 'center';
+  for (let y = 700; y <= 1200; y += 100) ctx.fillText(y, M.px(y), H - pad.b + 16);
+  ctx.fillText('alongshore y (m) →', W / 2, H - 4);
+  ctx.textAlign = 'right';
+  for (let x = XMIN; x <= XMAX; x += 30) ctx.fillText(x, pad.l - 6, M.py(x) + 4);
+  ctx.save(); ctx.translate(12, H / 2); ctx.rotate(-Math.PI / 2); ctx.textAlign = 'center'; ctx.fillText('x (m) → ocean', 0, 0); ctx.restore();
+  ctx.textAlign = 'left';
+  $('#mapCredit').textContent = `Lines: ${DATE_LABEL[state.date]} edges. USACE FRF tower lidar (QC flag 1), 2 m cells. `
+    + `Ocean at the bottom; ` + (Math.abs(sx / sy - 1) < 0.05 ? 'equal scale in both directions.'
+      : `cross-shore distances drawn at ${(sx / sy).toFixed(1)}× the alongshore scale.`);
+}
+canvas.onclick = e => {
+  if (!M) return;
+  const r = canvas.getBoundingClientRect(), y = YMIN + (e.clientX - r.left - M.pad.l) / M.sy;
+  let best = 0; D.profiles.forEach((p, i) => { if (Math.abs(p.y - y) < Math.abs(D.profiles[best].y - y)) best = i; });
+  state.row = best; redraw();
+};
+
+// ---------------------------------------------------------------- cross-section
+function series(p, d) {  // [[x,z],...] with null breaks across gaps
+  return p.z[d].map((z, i) => [p.x0 + i * p.dx, z]);
+}
+function pathOf(pts, sx, sy) {
+  let s = '', open = false;
+  pts.forEach(([x, z]) => { if (z === null) { open = false; return; } s += (open ? 'L' : 'M') + sx(x).toFixed(1) + ',' + sy(z).toFixed(1); open = true; });
+  return s;
+}
+function drawProfile() {
+  if (state.page !== 'explore') return;
+  const el = $('#profile'), p = D.profiles[state.row];
+  const w = Math.max(el.clientWidth, 320), h = Math.max(el.clientHeight, 160), L = 44, R = 14, T = 8, B = 24;
+  const J = series(p, '2026-06'), O = series(p, '2026-10'), S = series(p, '2026-09');
+  const zs = [...J, ...O, ...(state.sep ? S : [])].map(v => v[1]).filter(v => v !== null);
+  const zMin = Math.floor(Math.min(...zs, 0)), zMax = Math.ceil(Math.max(...zs));
+  const sx = x => L + (x - XMIN) / (XMAX - XMIN) * (w - L - R), sy = z => T + (zMax - z) / (zMax - zMin) * (h - T - B);
+  let s = '';
+  for (let z = zMin; z <= zMax; z += Math.max(1, Math.round((zMax - zMin) / 4))) s += `<line x1="${L}" x2="${w - R}" y1="${sy(z)}" y2="${sy(z)}" stroke="#263746" stroke-dasharray="2 4"/><text x="${L - 6}" y="${sy(z) + 4}" text-anchor="end" fill="#8fa3b5" font-size="10">${z}</text>`;
+  for (let x = XMIN; x <= XMAX; x += 10) s += `<text x="${sx(x)}" y="${h - 6}" text-anchor="middle" fill="#8fa3b5" font-size="10">${x}</text>`;
+  // lowered / raised area between June and October (only where both exist)
+  J.forEach(([x, zj], i) => { const zo = O[i][1]; if (zj === null || zo === null || i + 1 >= J.length) return;
+    const zj2 = J[i + 1][1], zo2 = O[i + 1][1]; if (zj2 === null || zo2 === null) return;
+    const fill = zo < zj ? 'rgba(239,68,68,.28)' : 'rgba(56,189,248,.22)';
+    s += `<path d="M${sx(x)},${sy(zj)}L${sx(x + p.dx)},${sy(zj2)}L${sx(x + p.dx)},${sy(zo2)}L${sx(x)},${sy(zo)}Z" fill="${fill}"/>`; });
+  // edges: June dotted, October solid
+  const vline = (x, color, dash, text) => { if (x === null || x === undefined || x < XMIN || x > XMAX) return;
+    s += `<line x1="${sx(x)}" x2="${sx(x)}" y1="${T}" y2="${h - B}" stroke="${color}" stroke-width="2" ${dash ? 'stroke-dasharray="3 3"' : ''}><title>${esc(text)}: x = ${x} m</title></line>`; };
+  $('#sensorKey').innerHTML = SENSORS.filter(([k]) => state.on[k]).map(([, label, c]) => `<span class="sk"><i style="background:${c}"></i>${esc(label)}</span>`).join('');
+  SENSORS.forEach(([k, label, c]) => { if (!state.on[k]) return; vline(p.sensors[k]['2026-06'], c, true, label + ' Jun'); vline(p.sensors[k]['2026-10'], c, false, label + ' Oct'); });
+  if (state.sep) SENSORS.forEach(([k, label, c]) => state.on[k] && vline(p.sensors[k]['2026-09'], c, true, label + ' Sep'));
+  s += `<path d="${pathOf(J, sx, sy)}" fill="none" stroke="#60a5fa" stroke-width="2.4"/>`;
+  s += `<path d="${pathOf(O, sx, sy)}" fill="none" stroke="#f87171" stroke-width="2.4"/>`;
+  if (state.sep) s += `<path d="${pathOf(S, sx, sy)}" fill="none" stroke="#9ca3af" stroke-width="1.6" stroke-dasharray="4 3"/>`;
+  // lidar boundary markers
+  const zAt = (pts, x) => { let b = null; pts.forEach(([px, pz]) => { if (pz !== null && (b === null || Math.abs(px - x) < Math.abs(b[0] - x))) b = [px, pz]; }); return b; };
+  LIDAR.forEach(([k, label, c]) => { if (!state.on[k]) return;
+    [['2026-06', J], ['2026-10', O]].forEach(([d, pts]) => { const x = p.lidar[d][k]; if (x === null) return; const b = zAt(pts, x); if (!b) return;
+      s += `<circle cx="${sx(x)}" cy="${sy(b[1])}" r="5" fill="${c}" stroke="#0b1118" stroke-width="1.5"><title>${esc(label)} (${DATE_LABEL[d]}): x = ${x} m</title></circle>`; }); });
+  s += `<line class="cursor" x1="0" x2="0" y1="${T}" y2="${h - B}" stroke="#e2e8f0" opacity="0"/>`;
+  el.innerHTML = `<svg viewBox="0 0 ${w} ${h}" role="img" aria-label="Lidar cross-section at y = ${p.y} m with sensor edges">${s}</svg>`;
+  el.onpointermove = e => { const r = el.getBoundingClientRect(), x = XMIN + ((e.clientX - r.left) / r.width * w - L) / (w - L - R) * (XMAX - XMIN);
+    const i = Math.round((x - p.x0) / p.dx); if (i < 0 || i >= J.length) return;
+    const c = el.querySelector('.cursor'); c.setAttribute('x1', sx(x)); c.setAttribute('x2', sx(x)); c.setAttribute('opacity', '.5');
+    const f = v => v === null ? 'no data' : v.toFixed(2) + ' m';
+    const dz = J[i][1] !== null && O[i][1] !== null ? ` · change ${(O[i][1] - J[i][1]).toFixed(2)} m` : '';
+    $('#chartReadout').textContent = `x = ${J[i][0]} m · June ${f(J[i][1])} · October ${f(O[i][1])}${dz}`; };
+  $('#profileTitle').innerHTML = `Row y = ${p.y} m <span>· 10 m wide, median of 10 lidar lines</span>`;
+}
+
+function drawInspector() {
+  const p = D.profiles[state.row];
+  $('#inspectorTitle').textContent = `y = ${p.y} m`;
+  $('#mapTitle').textContent = `Selected row y = ${p.y} m`;
+  const f = v => v === null || v === undefined ? '—' : v.toFixed(1);
+  const sh = (a, b) => a === null || b === null || a === undefined || b === undefined ? '—' : ((b - a > 0 ? '+' : '') + (b - a).toFixed(1));
+  let rows = '<tr><th></th><th>Jun</th><th>Oct</th><th>shift</th></tr>';
+  LIDAR.forEach(([k, label]) => { const j = p.lidar['2026-06'][k], o = p.lidar['2026-10'][k]; rows += `<tr><td>Lidar ${esc(label.toLowerCase())}</td><td>${f(j)}</td><td>${f(o)}</td><td>${sh(j, o)}</td></tr>`; });
+  SENSORS.forEach(([k, label]) => { const j = p.sensors[k]['2026-06'], o = p.sensors[k]['2026-10']; rows += `<tr><td>${esc(label)}</td><td>${f(j)}</td><td>${f(o)}</td><td>${sh(j, o)}</td></tr>`; });
+  $('#rowTable').innerHTML = rows;
+}
+
+// ---------------------------------------------------------------- sensors & trust
+const tagClass = t => t.startsWith('SUPPORTED') ? 'tag-sup' : t.startsWith('PLAUSIBLE') ? 'tag-pla' : t.startsWith('NOT DEM') ? 'tag-not' : t === 'EXPERIMENTAL' ? 'tag-exp' : 'tag-note';
+$('#sensorTable').innerHTML = '<thead><tr><th>Sensor</th><th>Compared with</th><th>Rows</th><th>Bias (m)</th><th>RMSE (m) [95%]</th><th>RMSE by date (Jun / Sep / Oct)</th><th>Within 1 pixel</th><th>Evidence</th></tr></thead><tbody>'
+  + D.table.map(r => `<tr><td><b>${esc(r.label)}</b>${r.experimental ? '<small>experimental, uses lidar beach slope</small>' : ''}</td><td>${esc(r.compared_with)}</td><td>${r.N}</td>`
+    + `<td>${r.bias_m > 0 ? '+' : ''}${r.bias_m.toFixed(1)}</td><td>${r.rmse_m.toFixed(1)} [${r.rmse_lo.toFixed(1)}–${r.rmse_hi.toFixed(1)}]</td>`
+    + `<td>${D.dates.map(d => r.rmse_by_date[d] === null ? '—' : r.rmse_by_date[d].toFixed(1)).join(' / ')}</td><td>${r.pct_within_pixel}% of ${r.pixel_m} m</td>`
+    + `<td><span class="tag ${tagClass(r.tag)}">${esc(r.tag)}</span>${r.detail ? `<small>${esc(r.detail)}</small>` : ''}</td></tr>`).join('') + '</tbody>';
+const cap = s => s.charAt(0).toUpperCase() + s.slice(1);
+const claimCard = c => `<article class="claim card"><span class="tag ${tagClass(c.tag)}">${esc(c.tag)}</span><h3>${esc(cap(c.headline))}</h3><p>${esc(c.detail)}</p></article>`;
+$('#claims').innerHTML = D.claims.filter(c => c.section !== 'independent').map(claimCard).join('');
+$('#strictClaims').innerHTML = D.claims.filter(c => c.section === 'independent').map(claimCard).join('');
+$('#strictTable').innerHTML = D.strict.length
+  ? '<thead><tr><th>Group</th><th>Method</th><th>Rows</th><th>RMSE (m) [95%]</th><th>RMSE by date (Jun / Sep / Oct)</th></tr></thead><tbody>'
+    + D.strict.map(r => `<tr${r.is_baseline ? ' class="baseline"' : ''}><td>${esc(r.group)}</td><td><b>${esc(r.method)}</b>${r.is_baseline ? '<small>simple baseline</small>' : ''}</td><td>${r.N}</td>`
+      + `<td>${r.rmse_m.toFixed(1)} [${r.rmse_lo.toFixed(1)}–${r.rmse_hi.toFixed(1)}]</td>`
+      + `<td>${D.dates.map(d => r.rmse_by_date[d] === null ? '—' : r.rmse_by_date[d].toFixed(1)).join(' / ')}</td></tr>`).join('') + '</tbody>'
+  : '<tbody><tr><td>Independent test not run yet.</td></tr></tbody>';
+$('#rules').innerHTML = D.rules.map(r => `<li>${esc(r)}</li>`).join('');
+
+// ---------------------------------------------------------------- timeline & sources
+$('#timeline').innerHTML = '<thead><tr><th>UTC</th><th>Sensor</th><th>Campaign</th><th>Hours from lidar</th><th>Water level (m)</th><th>Product</th><th>Note</th></tr></thead><tbody>'
+  + D.acquisitions.map(a => `<tr><td class="mono">${esc(a.utc)}</td><td><b>${esc(a.sensor)}</b></td><td>${DATE_LABEL[a.date_key]}</td>`
+    + `<td>${a.hours_from_lidar > 0 ? '+' : ''}${a.hours_from_lidar}</td><td>${a.water_level_navd88_m ?? 'not fetched'}</td>`
+    + `<td class="mono small">${esc(a.product_id)}</td><td>${esc(a.note)}</td></tr>`).join('') + '</tbody>';
+$('#sources').innerHTML = $('#timeline').innerHTML;
+$('#caveats').innerHTML = D.caveats.map(c => `<li>${esc(c)}</li>`).join('');
+
+// ---------------------------------------------------------------- misc
+function redraw() { drawMap(); drawProfile(); drawInspector(); }
+$('#help').onclick = () => $('#helpDialog').showModal();
+$('#closeHelp').onclick = () => $('#helpDialog').close();
+new ResizeObserver(() => { drawMap(); drawProfile(); }).observe($('.central'));
+go(location.hash.slice(1) || 'explore');

@@ -69,7 +69,9 @@ def fetch_lidar():
 
 def fetch_tide():
     frames = []
-    for begin, end in [("20260618", "20260619"), ("20260928", "20260929"),
+    # lidar/NISAR/S2 dates, plus the Sentinel-1 scene dates (Jun 23, Oct 4) for the app timeline
+    for begin, end in [("20260618", "20260619"), ("20260623", "20260623"), ("20260928", "20260929"),
+                       ("20261004", "20261004"),
                        ("20261016", "20261017")]:
         r = requests.get(
             "https://api.tidesandcurrents.noaa.gov/api/prod/datagetter",

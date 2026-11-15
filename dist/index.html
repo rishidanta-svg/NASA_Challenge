@@ -1,11 +1,122 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#0b1118"><title>Littoral — Coastal Analysis Workstation</title><link rel="stylesheet" href="styles.css"></head><body>
-<header><a class="brand" href="#explore" aria-label="Littoral home"><svg width="32" height="32" viewBox="0 0 32 32"><path d="M3 8h11l-5 8h13l-5 8h12M3 16h3M3 24h11" fill="none" stroke="currentColor" stroke-width="2"/></svg><span>LITTORAL<small>COASTAL OBSERVATION SYSTEM</small></span></a><nav aria-label="Workspaces"><button data-page="explore" class="active">◈ <span>Explore</span></button><button data-page="analyze">⌁ <span>Analyze</span></button><button data-page="events">◷ <span>Timeline</span></button><button data-page="evidence">▤ <span>Evidence</span></button></nav><div class="header-right"><span class="prototype"><i></i> UI PROTOTYPE</span><button id="export" class="quiet">↓ Export session</button><button id="help" class="icon" aria-label="Help">?</button></div></header>
-<div class="context"><div><span class="eyebrow">STUDY AREA</span><strong>Duck, North Carolina</strong><span class="muted">USACE Field Research Facility</span></div><div class="context-right"><span class="mono">36.18° N · 75.75° W</span><span class="divider"></span><span class="demo-badge">DEMONSTRATION DATA</span></div></div>
-<div class="demo-note"><span>◉</span> <span id="demoMessage">Interface preview · Map and profiles are synthetic illustrations. No scientific observations are loaded.</span><button id="importBtn">Load profile dataset ↗</button><input hidden id="fileInput" type="file" accept="application/json,.json"></div>
-<main id="explore" class="workspace active"><aside class="sidebar"><div class="panel-heading"><span>Observation layers</span><span class="mono">04</span></div><div class="sidebar-section"><div class="eyebrow">ACTIVE ACQUISITION</div><div class="segmented date-buttons"><button data-date="june" class="active">June 2026</button><button data-date="october">October 2026</button></div><p class="hint">Illustrative seasonal snapshots</p></div><div id="layers"></div><div class="sidebar-section"><div class="panel-heading"><span>Display</span></div><label class="range-label">Layer opacity <output id="opacityValue">75%</output></label><input id="opacity" type="range" min="10" max="100" value="75" aria-label="Layer opacity"><label class="switch-row"><span>Compare acquisitions</span><input id="compare" type="checkbox" role="switch"></label><p class="hint">Drag the divider across the map.</p></div><div class="sidebar-section"><div class="eyebrow">SURVEY TRANSECTS</div><div id="transectList"></div></div><div class="sidebar-bottom"><i class="status-dot"></i><div>Local demonstration mode<small>No live data connection</small></div><button id="reset" class="quiet" title="Reset workspace">↺</button></div></aside>
-<section class="central"><div class="map-toolbar"><div><span class="eyebrow">COASTAL EXPLORER</span><strong id="viewLabel">Elevation change</strong></div><div class="toolbar-actions"><button id="panTool" class="selected" title="Drag map to pan">✥ Pan</button><button id="fit">⛶ Reset view</button></div></div><div id="mapArea"><canvas id="map" aria-label="Synthetic coastal map. Select transects using the sidebar." role="img"></canvas><div class="map-top-left"><span class="map-tag">DUCK / FRF</span><span id="mapDate" class="map-tag dark">JUN 2026</span></div><div class="map-top-right"><button id="zoomIn" aria-label="Zoom in">+</button><button id="zoomOut" aria-label="Zoom out">−</button></div><div class="north">N<span>↑</span></div><div id="swipe" hidden><div class="swipe-label">JUNE <span>↔</span> OCTOBER</div></div><div class="map-bottom-left"><span id="scale">LOCAL SCHEMATIC · NOT GEOREFERENCED</span><div class="scale-bar"></div></div><div class="map-legend"><span>ILLUSTRATIVE Δ ELEVATION</span><div class="gradient"></div><div class="legend-values"><span>Lowering</span><span>Stable</span><span>Gain</span></div></div><div class="map-credit">Synthetic terrain · pending survey layers</div></div><section class="profile-panel"><div class="profile-heading"><div><span class="eyebrow">LINKED CROSS-SECTION</span><h2 id="profileTitle">Transect 02 <span>· Beach profile</span></h2></div><div class="profile-legend"><span><i class="june"></i>June</span><span><i class="october"></i>October</span><button id="openAnalyze" class="quiet">Expand ↗</button></div></div><div id="profile" class="chart"></div><div class="profile-footer"><span id="chartReadout">Move across the profile to inspect elevation</span><span id="profileStatus">SYNTHETIC PROFILE</span></div></section></section>
-<aside class="inspector"><div class="panel-heading">Transect inspector <span class="live-dot"></span></div><div class="inspector-body"><span class="eyebrow">SELECTED FEATURE</span><h2 id="inspectorTitle">Transect 02</h2><p class="muted">Cross-shore observation profile</p><div class="detail-grid"><div><small>Reference frame</small><strong>Local cross-shore</strong></div><div><small>Data state</small><strong id="dataState" class="amber">Illustrative</strong></div></div><div class="insight"><span class="eyebrow">READING THIS VIEW</span><p>Different sensors observe different coastal features.</p><small>A radar transition, vegetation edge and instantaneous waterline are not interchangeable.</small></div><div class="panel-heading">Boundary guides</div><label class="switch-row"><span><i class="key cyan"></i>Radar transition</span><input type="checkbox" id="radarGuide" checked></label><label class="switch-row"><span><i class="key gold"></i>Optical waterline</span><input type="checkbox" id="waterGuide" checked></label><p class="hint">Illustrative positions only. Guides disappear when imported profiles have no boundary measurements.</p><div class="panel-heading separated">Environmental context</div><div class="empty-context"><span>◷</span><strong>Awaiting matched records</strong><small>Tide, waves and weather will appear alongside the exact acquisition time.</small></div><button class="full-button" id="evidenceBtn">Inspect data provenance →</button></div></aside></main>
-<main id="analyze" class="page workspace"><div class="page-intro"><span class="eyebrow">CROSS-SECTION LAB</span><h1>Separate the signals.</h1><p>Compare terrain profiles on a common cross-shore reference. Inspect sensitivity without treating every boundary as the shoreline.</p></div><div class="analysis-layout"><section class="card"><div class="card-title"><h2>Terrain comparison</h2><select id="analysisTransect" aria-label="Analysis transect"></select></div><div id="largeProfile" class="chart large"></div><div class="analysis-legend"><span class="cyan">— June profile</span><span class="gold">— October profile</span><span>Distance along local cross-shore axis (m)</span></div></section><aside class="card"><span class="eyebrow">SENSITIVITY CONTROLS</span><h2>Alignment experiment</h2><p class="muted">Shift the October profile horizontally to inspect alignment sensitivity. This is not a geolocation correction.</p><label class="range-label">Cross-shore offset <output id="shiftValue">0 m</output></label><input id="shift" type="range" min="-15" max="15" value="0" step="1" aria-label="October cross-shore offset"><label class="switch-row"><span>Show boundary guides</span><input id="analysisGuides" type="checkbox" checked></label><button id="resetShift" class="full-button">Reset alignment</button><div class="insight"><span class="eyebrow">INTERPRETATION</span><p>Profile differences describe terrain change only when spatial and vertical references are compatible.</p></div></aside></div></main>
-<main id="events" class="page workspace"><div class="page-intro"><span class="eyebrow">OBSERVATION CHRONOLOGY</span><h1>Every observation has a context.</h1><p>Organise acquisitions, survey windows and environmental events before drawing conclusions.</p></div><div class="timeline-controls"><button class="selected" data-event-filter="all">All records</button><button data-event-filter="radar">Radar</button><button data-event-filter="survey">Field surveys</button><button data-event-filter="environment">Environment</button></div><section id="timelineCards"></section><p class="hint">These are planned observation categories from the project brief. Exact acquisition times and event records have not been imported.</p></main>
-<main id="evidence" class="page workspace"><div class="page-intro"><span class="eyebrow">DATA & PROVENANCE</span><h1>Evidence before interpretation.</h1><p>Keep the observation, its processing history and its limits together.</p></div><div class="evidence-banner"><span>◉</span><div><strong id="evidenceState">Demonstration workspace</strong><p id="evidenceDescription">All rendered map features and profiles are synthetic. Numerical findings from the project brief have not been ingested as verified observations.</p></div></div><section class="card"><div class="card-title"><h2>Dataset register</h2><button id="downloadSchema" class="quiet">↓ Profile template</button></div><div class="table-scroll"><table><thead><tr><th>Source</th><th>Physical observation</th><th>Integration status</th><th>Required metadata</th></tr></thead><tbody><tr><td><b>NISAR · L-band</b><small>NASA–ISRO</small></td><td>Radar scattering and transitions</td><td><span class="pending">Awaiting data</span></td><td>Product ID, time, polarisation, geometry, QA</td></tr><tr><td><b>Sentinel-1 · C-band</b><small>ESA / Copernicus</small></td><td>Complementary radar response</td><td><span class="pending">Awaiting data</span></td><td>Orbit, time, calibration, co-registration</td></tr><tr><td><b>Sentinel-2 · Optical</b><small>ESA / Copernicus</small></td><td>Surface reflectance and apparent boundaries</td><td><span class="pending">Awaiting data</span></td><td>Scene ID, time, cloud mask, index method</td></tr><tr><td><b>FRF · LiDAR</b><small>USACE</small></td><td>Independent terrain elevation</td><td><span class="pending" id="lidarStatus">Awaiting data</span></td><td>Survey window, CRS, vertical datum, uncertainty</td></tr></tbody></table></div></section><div class="evidence-grid"><section class="card"><span class="eyebrow">PROFILE INGESTION</span><h2>Ready for your observations.</h2><p>Import paired profiles as JSON to replace the demonstration curves. Map layers remain schematic until geospatial data is connected.</p><button id="importBtn2" class="primary">Load profile dataset ↗</button><p class="hint">Validated in your browser. Nothing is uploaded to a server. Imported data is not persisted after reload; export a session to retain it.</p></section><section class="card"><span class="eyebrow">PROJECT IDENTITY</span><h2>An independent research tool.</h2><p>Littoral is a NASA Space Apps project interface, not an official NASA or USACE operational service. No hazard predictions or validated fusion results are provided.</p><a href="https://science.nasa.gov/mission/nisar/" target="_blank" rel="noopener">About the NISAR mission ↗</a></section></div></main>
-<footer><span><i class="status-dot"></i> LITTORAL / RESEARCH WORKSPACE</span><span id="footerState">Demo session · No observations loaded</span><span>v0.1 <span class="muted">/</span> Duck, NC</span></footer><div id="toast" role="status" aria-live="polite"></div><dialog id="helpDialog"><button id="closeHelp" class="dialog-close" aria-label="Close help">×</button><span class="eyebrow">WORKSPACE GUIDE</span><h2>Explore the coast, inspect the evidence.</h2><p>Select a layer or acquisition in the left panel. Click a transect on the map to update its profile. Drag to pan and use + / − to zoom.</p><p>Enable comparison to swipe between illustrative June and October views. The Analyze workspace lets you test a cross-shore offset.</p><p>Use Evidence to download the profile template and import your own profiles. Synthetic map features are never replaced by an imported profile alone.</p><strong>All initial visualisations use demonstration data.</strong></dialog><script src="app.js"></script></body></html>
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#0b1118">
+<title>Littoral — Which coastline does each satellite see?</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<header>
+  <a class="brand" href="#explore" aria-label="Littoral home"><svg width="32" height="32" viewBox="0 0 32 32" aria-hidden="true"><path d="M3 8h11l-5 8h13l-5 8h12M3 16h3M3 24h11" fill="none" stroke="currentColor" stroke-width="2"/></svg><span>LITTORAL<small>WHICH COASTLINE DOES EACH SATELLITE SEE?</small></span></a>
+  <nav aria-label="Workspaces">
+    <button data-page="explore" class="active">◈ <span>Explore</span></button>
+    <button data-page="sensors">▦ <span>Sensors &amp; trust</span></button>
+    <button data-page="events">◷ <span>Timeline</span></button>
+    <button data-page="evidence">▤ <span>Sources &amp; limits</span></button>
+  </nav>
+  <div class="header-right"><button id="help" class="icon" aria-label="How to read this app">?</button></div>
+</header>
+
+<div class="context">
+  <div><span class="eyebrow">STUDY AREA</span><strong>Duck, North Carolina</strong><span class="muted">USACE Field Research Facility · alongshore y = <span id="yRange"></span> m</span></div>
+  <div class="context-right"><span class="mono" id="latlon"></span><span class="divider"></span><span class="real-badge">REAL DATA · JUN / SEP / OCT 2026</span></div>
+</div>
+<div class="demo-note"><span>◉</span><span id="headline"></span></div>
+
+<main id="explore" class="workspace active">
+  <aside class="sidebar">
+    <div class="panel-heading"><span>What to show</span></div>
+    <div class="sidebar-section">
+      <div class="eyebrow">SATELLITE EDGES FROM</div>
+      <div class="segmented date-buttons">
+        <button data-date="2026-06" class="active">Jun</button><button data-date="2026-09">Sep</button><button data-date="2026-10">Oct</button>
+      </div>
+      <p class="hint">The map shows edges for this date. The cross-section always compares June (dotted) with October (solid).</p>
+    </div>
+    <div class="sidebar-section"><div class="eyebrow">SENSOR EDGES</div><div id="sensorToggles"></div></div>
+    <div class="sidebar-section"><div class="eyebrow">LIDAR GROUND TRUTH</div><div id="lidarToggles"></div>
+      <label class="switch-row"><span>Show September profile</span><input id="showSep" type="checkbox"></label></div>
+  </aside>
+
+  <section class="central">
+    <div class="map-toolbar"><div><span class="eyebrow">LIDAR ELEVATION CHANGE, JUNE 19 → OCTOBER 16 · CLICK TO PICK A ROW</span><strong id="mapTitle"></strong><small id="mapCredit" class="hint"></small></div>
+      <div class="map-legend"><span>ELEVATION CHANGE (m)</span><div id="legendBar" class="gradient"></div><div class="legend-values" id="legendValues"></div><small>Grey: within ±<span id="thr"></span> m (lidar accuracy)</small></div></div>
+    <div id="mapArea">
+      <canvas id="map" role="img" aria-label="Map of lidar elevation change with satellite edge lines. Click to select a cross-section row."></canvas>
+    </div>
+    <section class="profile-panel">
+      <div class="profile-heading"><div><span class="eyebrow">CROSS-SECTION</span><h2 id="profileTitle">Row</h2></div>
+        <div class="profile-legend"><span><i class="june"></i>Lidar June</span><span><i class="october"></i>Lidar October</span><span><i class="lowered"></i>Lowered</span><span>Sensor edges: <b>┆</b> June · <b>│</b> October</span><span id="sensorKey"></span></div></div>
+      <div id="profile" class="chart"></div>
+      <div class="profile-footer"><span id="chartReadout">Move across the profile to read elevations</span><span>x = FRF cross-shore distance (m), ocean to the right · z = elevation (m, NAVD88)</span></div>
+    </section>
+  </section>
+
+  <aside class="inspector">
+    <div class="panel-heading">Selected row</div>
+    <div class="inspector-body">
+      <h2 id="inspectorTitle"></h2>
+      <p class="muted">Edge positions on this row (x in m). Different sensors mark different features, so their lines are not supposed to agree.</p>
+      <table class="mini" id="rowTable"></table>
+      <div class="insight"><span class="eyebrow">READING THIS VIEW</span>
+        <p>Radar edges sit near the foot of the dune. Optical water edges sit near the wet/dry edge. Neither is "the coastline" on its own.</p>
+        <small>A sensor shift smaller than one pixel (10 m here) is not resolvable.</small></div>
+    </div>
+  </aside>
+</main>
+
+<main id="sensors" class="page workspace">
+  <div class="page-intro"><span class="eyebrow">WHAT EACH SENSOR ACTUALLY SEES</span><h1>Accuracy against the lidar line each sensor should match.</h1>
+    <p>Error is sensor minus lidar position along the beach, pooled over all dates (+ means the sensor puts the line further seaward). RMSE is the typical size of the miss. Brackets are 95% intervals from resampling 50 m stretches of beach.</p></div>
+  <section class="card"><div class="table-scroll"><table id="sensorTable"></table></div></section>
+  <div class="page-intro" style="margin-top:36px"><span class="eyebrow">CAN WE TRUST THIS?</span><h1>Every claim, with its evidence level.</h1>
+    <p>Tags are assigned by fixed rules from the numbers, not by hand. The rules are listed below the claims.</p></div>
+  <section id="claims"></section>
+  <div class="page-intro" style="margin-top:36px"><span class="eyebrow">INDEPENDENT TEST</span><h1>Do the satellites beat a simple guess?</h1>
+    <p>Here each test holds out a whole date and a 100 m stretch of beach; everything tuned or calibrated is learned only from other dates and places, and no evaluation lidar is used inside any method. Every method in a group is scored on the same rows. "Typical position" just predicts where that lidar line usually is.</p></div>
+  <section class="card"><div class="table-scroll"><table id="strictTable"></table></div></section>
+  <section id="strictClaims" style="margin-top:14px"></section>
+  <section class="card" style="margin-top:20px"><span class="eyebrow">HOW CLAIMS ARE TAGGED</span><ul id="rules" class="plain-list"></ul></section>
+</main>
+
+<main id="events" class="page workspace">
+  <div class="page-intro"><span class="eyebrow">OBSERVATION TIMELINE</span><h1>When each image was taken, and how high the water was.</h1>
+    <p>Times are UTC. Water level is from NOAA gauge 8651370 at Duck (m, NAVD88), interpolated to the image time. A different water level moves the visible waterline, which is why timing matters.</p></div>
+  <section class="card"><div class="table-scroll"><table id="timeline"></table></div></section>
+  <p class="hint">The September nor'easter is not part of this package: wave records were not ingested, so the app makes no storm claim.</p>
+</main>
+
+<main id="evidence" class="page workspace">
+  <div class="page-intro"><span class="eyebrow">SOURCES &amp; LIMITS</span><h1>Evidence before interpretation.</h1>
+    <p>Full citations with URLs and access dates are in CITATIONS.md in the repository. Everything in this app is generated from the repository's pipeline by src/export_app_data.py.</p></div>
+  <div class="evidence-grid">
+    <section class="card"><span class="eyebrow">WHAT x AND z MEAN</span><h2>Coordinates</h2><p id="frame"></p>
+      <svg viewBox="0 0 360 120" class="frame-diagram" role="img" aria-label="Diagram: x increases from the dune toward the ocean">
+        <path d="M10 30 Q60 20 80 40 L120 80 L340 95" fill="none" stroke="#d6c7a1" stroke-width="2"/>
+        <rect x="250" y="88" width="105" height="30" fill="#163b4c"/><text x="300" y="108" text-anchor="middle" fill="#9fd" font-size="11">ocean</text>
+        <text x="40" y="18" fill="#cfc" font-size="11">dune</text>
+        <line x1="20" y1="112" x2="230" y2="112" stroke="#65dfce" stroke-width="2" marker-end="url(#a)"/><text x="125" y="106" fill="#65dfce" font-size="11" text-anchor="middle">x increases toward the ocean</text>
+        <defs><marker id="a" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto"><path d="M0 0 L8 4 L0 8z" fill="#65dfce"/></marker></defs>
+      </svg></section>
+    <section class="card"><span class="eyebrow">WHERE THIS COULD BE WRONG</span><h2>Limits</h2><ul id="caveats" class="plain-list"></ul></section>
+  </div>
+  <section class="card" style="margin-top:20px"><span class="eyebrow">DATA USED</span><h2>Products</h2><div class="table-scroll"><table id="sources"></table></div></section>
+  <section class="card" style="margin-top:20px"><span class="eyebrow">PROJECT</span><h2>An independent NASA Space Apps project.</h2>
+    <p>Not an official NASA, ISRO or USACE product. Beach lowering is measured by lidar; satellites are compared with it, and no satellite here is shown to measure the lowering on its own. Fusion of sensors is future work. AI assistants (Claude, Gemini) helped write the code and text; the team reviewed the results.</p>
+    <a href="https://science.nasa.gov/mission/nisar/" target="_blank" rel="noopener">About the NISAR mission ↗</a></section>
+</main>
+
+<footer><span><i class="status-dot"></i> LITTORAL / NASA SPACE APPS 2026 · CHALLENGE #5</span><span id="footerState"></span><span>Duck, NC</span></footer>
+<div id="toast" role="status" aria-live="polite"></div>
+<dialog id="helpDialog"><button id="closeHelp" class="dialog-close" aria-label="Close help">×</button>
+  <span class="eyebrow">HOW TO READ THIS APP</span><h2>Which coastline does each satellite see?</h2>
+  <p>The coloured map is real tower-lidar elevation change between June 19 and October 16, 2026. The lines on it are where each satellite puts a boundary on every 10 m row of beach.</p>
+  <p>Click the map to open that row's cross-section: the June and October beach profiles, the area that lowered, and every sensor's edge.</p>
+  <p>Sensors &amp; trust lists each sensor's accuracy and every claim with its evidence level.</p>
+  <strong>Radar and optical satellites mark different features. Lines that disagree are not necessarily wrong.</strong></dialog>
+<script src="data.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

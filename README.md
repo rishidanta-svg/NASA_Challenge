@@ -6,6 +6,12 @@ POLTERGEIST integrates airborne **USACE LiDAR** elevation truth, **Sentinel-2** 
 
 > **Research observatory notice:** Observed quantities, conditional tide-adjusted estimates, exploratory SAR signals, and withheld models are strictly distinguished throughout the API and UI.
 
+## Live demo
+
+[Open POLTERGEIST](https://col-netscape-diagnosis-uploaded.trycloudflare.com) · [API documentation](https://col-netscape-diagnosis-uploaded.trycloudflare.com/docs)
+
+This temporary demo is available while the hosting Mac is online.
+
 ## AI/SI generation acknowledgment
 
 Portions of Poltergeist's code and descriptive text were generated with AI/SI assistance using OpenAI ChatGPT/Codex. Derived maps, profiles, statistics and model outputs are computed from attributed scientific inputs using processing code developed with AI/SI assistance; they are not fabricated measurements.

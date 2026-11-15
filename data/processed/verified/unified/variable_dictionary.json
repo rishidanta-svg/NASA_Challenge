@@ -1,0 +1,238 @@
+{
+  "s2_scl": {
+    "units": "1",
+    "long_name": "Scene classification class",
+    "source_posting_m": 20
+  },
+  "s2_cloud": {
+    "units": "1",
+    "long_name": "Cloud including cirrus",
+    "source_posting_m": 20
+  },
+  "s2_shadow": {
+    "units": "1",
+    "long_name": "Cloud shadow",
+    "source_posting_m": 20
+  },
+  "s2_water": {
+    "units": "1",
+    "long_name": "Sen2Cor water classification",
+    "source_posting_m": 20
+  },
+  "s2_invalid_scl": {
+    "units": "1",
+    "long_name": "No-data, defective, dark/topographic shadow, unclassified, or snow/ice",
+    "source_posting_m": 20
+  },
+  "s2_clear": {
+    "units": "1",
+    "long_name": "Clear vegetation, bare surface or water",
+    "source_posting_m": 20
+  },
+  "s2_B02_reflectance": {
+    "units": "1",
+    "long_name": "Cloud-screened BOA surface reflectance B02",
+    "source_posting_m": 10
+  },
+  "s2_B03_reflectance": {
+    "units": "1",
+    "long_name": "Cloud-screened BOA surface reflectance B03",
+    "source_posting_m": 10
+  },
+  "s2_B04_reflectance": {
+    "units": "1",
+    "long_name": "Cloud-screened BOA surface reflectance B04",
+    "source_posting_m": 10
+  },
+  "s2_B08_reflectance": {
+    "units": "1",
+    "long_name": "Cloud-screened BOA surface reflectance B08",
+    "source_posting_m": 10
+  },
+  "s2_B11_reflectance": {
+    "units": "1",
+    "long_name": "Cloud-screened BOA surface reflectance B11",
+    "source_posting_m": 20
+  },
+  "s2_B12_reflectance": {
+    "units": "1",
+    "long_name": "Cloud-screened BOA surface reflectance B12",
+    "source_posting_m": 20
+  },
+  "s2_ndvi": {
+    "units": "1",
+    "long_name": "NDVI",
+    "source_posting_m": 10
+  },
+  "s2_ndwi": {
+    "units": "1",
+    "long_name": "NDWI",
+    "source_posting_m": 10
+  },
+  "s2_mndwi": {
+    "units": "1",
+    "long_name": "MNDWI computed on the native 20 m SWIR grid",
+    "source_posting_m": 20
+  },
+  "s2_B02_reflectance_valid": {
+    "units": "1",
+    "long_name": "Valid data for s2_B02_reflectance",
+    "source_posting_m": 10
+  },
+  "s2_B03_reflectance_valid": {
+    "units": "1",
+    "long_name": "Valid data for s2_B03_reflectance",
+    "source_posting_m": 10
+  },
+  "s2_B04_reflectance_valid": {
+    "units": "1",
+    "long_name": "Valid data for s2_B04_reflectance",
+    "source_posting_m": 10
+  },
+  "s2_B08_reflectance_valid": {
+    "units": "1",
+    "long_name": "Valid data for s2_B08_reflectance",
+    "source_posting_m": 10
+  },
+  "s2_B11_reflectance_valid": {
+    "units": "1",
+    "long_name": "Valid data for s2_B11_reflectance",
+    "source_posting_m": 20
+  },
+  "s2_B12_reflectance_valid": {
+    "units": "1",
+    "long_name": "Valid data for s2_B12_reflectance",
+    "source_posting_m": 20
+  },
+  "s2_ndvi_valid": {
+    "units": "1",
+    "long_name": "Valid data for s2_ndvi",
+    "source_posting_m": 10
+  },
+  "s2_ndwi_valid": {
+    "units": "1",
+    "long_name": "Valid data for s2_ndwi",
+    "source_posting_m": 10
+  },
+  "s2_mndwi_valid": {
+    "units": "1",
+    "long_name": "Valid data for s2_mndwi",
+    "source_posting_m": 20
+  },
+  "s1_VV_gamma0": {
+    "units": "1",
+    "long_name": "VV linear RTC gamma0 power",
+    "source_posting_m": 10
+  },
+  "s1_VV_gamma0_db": {
+    "units": "dB",
+    "long_name": "VV RTC gamma0, 10 log10(power)",
+    "source_posting_m": 10
+  },
+  "s1_VV_gamma0_valid": {
+    "units": "1",
+    "long_name": "VV finite, nonnegative source-supported power mask",
+    "source_posting_m": 10
+  },
+  "s1_VV_gamma0_db_valid": {
+    "units": "1",
+    "long_name": "VV strictly positive power mask",
+    "source_posting_m": 10
+  },
+  "s1_VH_gamma0": {
+    "units": "1",
+    "long_name": "VH linear RTC gamma0 power",
+    "source_posting_m": 10
+  },
+  "s1_VH_gamma0_db": {
+    "units": "dB",
+    "long_name": "VH RTC gamma0, 10 log10(power)",
+    "source_posting_m": 10
+  },
+  "s1_VH_gamma0_valid": {
+    "units": "1",
+    "long_name": "VH finite, nonnegative source-supported power mask",
+    "source_posting_m": 10
+  },
+  "s1_VH_gamma0_db_valid": {
+    "units": "1",
+    "long_name": "VH strictly positive power mask",
+    "source_posting_m": 10
+  },
+  "nisar_HHHH": {
+    "units": "1",
+    "long_name": "HH linear frequency A gamma0 power",
+    "source_posting_m": 10
+  },
+  "nisar_HHHH_db": {
+    "units": "dB",
+    "long_name": "HH frequency A gamma0",
+    "source_posting_m": 10
+  },
+  "nisar_HHHH_valid": {
+    "units": "1",
+    "long_name": "HH valid power mask",
+    "source_posting_m": 10
+  },
+  "nisar_HVHV": {
+    "units": "1",
+    "long_name": "HV linear frequency A gamma0 power",
+    "source_posting_m": 10
+  },
+  "nisar_HVHV_db": {
+    "units": "dB",
+    "long_name": "HV frequency A gamma0",
+    "source_posting_m": 10
+  },
+  "nisar_HVHV_valid": {
+    "units": "1",
+    "long_name": "HV valid power mask",
+    "source_posting_m": 10
+  },
+  "nisar_mask": {
+    "units": "1",
+    "long_name": "Original subswath support code",
+    "source_posting_m": 10
+  },
+  "nisar_numberOfLooks": {
+    "units": "1",
+    "long_name": "Number of looks",
+    "source_posting_m": 10
+  },
+  "nisar_inputDataExceptionMask": {
+    "units": "1",
+    "long_name": "Original input data exception code",
+    "source_posting_m": 10
+  },
+  "nisar_rtcGammaToSigmaFactor": {
+    "units": "1",
+    "long_name": "RTC gamma-to-sigma factor",
+    "source_posting_m": 10
+  },
+  "lidar_m": {
+    "units": "m",
+    "long_name": "LiDAR measured elevation",
+    "source_posting_m": 1,
+    "vertical_datum": "NAVD88 (geoid12b)"
+  },
+  "lidar_std_m": {
+    "units": "m",
+    "long_name": "Area-weighted within-cell elevation dispersion",
+    "source_posting_m": 1
+  },
+  "lidar_sample_count": {
+    "units": "1",
+    "long_name": "Contributing native terrain samples",
+    "source_posting_m": 1
+  },
+  "lidar_coverage": {
+    "units": "1",
+    "long_name": "Valid observed area divided by full pixel area",
+    "source_posting_m": 1
+  },
+  "lidar_valid": {
+    "units": "1",
+    "long_name": "Coverage at least 50%",
+    "source_posting_m": 1
+  }
+}

@@ -1,5 +1,7 @@
 # POLTERGEIST Duck FRF data foundation
 
+For the GitHub data branch and portable loading instructions, see the [unified dataset handoff](HANDOFF.md). The paths below describe the extracted source archive.
+
 The data collection covers the June and October 2026 Duck events and nearby Sentinel acquisitions. The unit of temporal indexing is an **individual acquisition**. The June and October group labels identify observation groups whose acquisitions can be hours or days apart. Each acquisition has its own UTC, reference acquisition and signed offset from the reference.
 
 ## Open the data

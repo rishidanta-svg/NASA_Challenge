@@ -1,0 +1,56 @@
+{
+  "NISAR": {
+    "status": "paired",
+    "june_id": "NISAR_L2_PR_GCOV_023_069_D_070_4005_DHDH_A_20260618T235335_20260618T235409_P05023_N_F_J_001",
+    "october_id": "NISAR_L2_PR_GCOV_033_069_D_070_4005_DHDH_A_20261016T235331_20261016T235406_P05023_N_F_J_001",
+    "june_utc": "2026-06-18T23:53:52.499671+00:00",
+    "october_utc": "2026-10-16T23:53:48.999671+00:00",
+    "elapsed_seconds": 10367996.5,
+    "valid_counts": {
+      "nisar_HHHH_db_change": 1310,
+      "nisar_HVHV_db_change": 1310
+    }
+  },
+  "USACE LiDAR": {
+    "status": "paired",
+    "june_id": "FRF-geomorphology_DEMs_duneLidarDEM_202606.nc#time_index=111",
+    "october_id": "FRF-geomorphology_DEMs_duneLidarDEM_202610.nc#time_index=362",
+    "june_utc": "2026-06-19T00:31:03.999998+00:00",
+    "october_utc": "2026-10-16T23:33:04.000004+00:00",
+    "elapsed_seconds": 10364520.000006,
+    "valid_counts": {
+      "lidar_change_m": 168
+    }
+  },
+  "Sentinel-1": {
+    "status": "paired",
+    "june_id": "S1D_IW_GRDH_1SDV_20260630T225725_20260630T225755_003472_006229_rtc",
+    "october_id": "S1D_IW_GRDH_1SDV_20261016T225729_20261016T225759_005047_0098AC_rtc",
+    "june_utc": "2026-06-30T22:57:40.476321Z",
+    "october_utc": "2026-10-16T22:57:44.383059Z",
+    "elapsed_seconds": 9331203.906738,
+    "valid_counts": {
+      "s1_VV_gamma0_db_change": 1450,
+      "s1_VH_gamma0_db_change": 1450
+    }
+  },
+  "Sentinel-2": {
+    "status": "paired",
+    "june_id": "S2C_MSIL2A_20260618T154811_R054_T18SVF_20260618T205116",
+    "october_id": "S2C_MSIL2A_20261016T155241_R054_T18SVF_20261016T193412",
+    "june_utc": "2026-06-18T16:03:02.616397Z",
+    "october_utc": "2026-10-16T16:03:03.679973Z",
+    "elapsed_seconds": 10368001.063576,
+    "valid_counts": {
+      "s2_B02_reflectance_change": 1442,
+      "s2_B03_reflectance_change": 1442,
+      "s2_B04_reflectance_change": 1442,
+      "s2_B08_reflectance_change": 1442,
+      "s2_B11_reflectance_change": 1442,
+      "s2_B12_reflectance_change": 1442,
+      "s2_ndvi_change": 1442,
+      "s2_ndwi_change": 1442,
+      "s2_mndwi_change": 1442
+    }
+  }
+}

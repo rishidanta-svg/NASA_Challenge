@@ -335,6 +335,7 @@ export function MapView() {
         </>
       )}
 
+      {slots['nisar-hh-land-water-candidate']?.visible && resolvedPrimary['nisar-hh-land-water-candidate'] && <div className="product-notice">Exploratory NISAR transition · not a validated shoreline</div>}
       <div className="earth-map-controls" aria-label="Map view controls">
         <div className="view-mode" role="group" aria-label="Map dimension mode">
           <button aria-pressed={mode === '2d'} onClick={() => set({mode:'2d'})} data-testid="mode-2d">2D</button>

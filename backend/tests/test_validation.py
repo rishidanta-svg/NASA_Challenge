@@ -60,7 +60,8 @@ def test_configurable_nisar_reader_transforms_window_before_selection(tmp_path, 
     from pyproj import Transformer
     import nisar
     bounds=Transformer.from_crs(32618,3857,always_xy=True).transform_bounds(*nisar.utm_window(),densify_pts=21)
-    source=tmp_path/(nisar.GRANULE+'.h5')
+    identity=pd.read_csv(nisar.PROC/'nisar_meta.csv').iloc[0].granule_ur
+    source=tmp_path/(identity+'.h5')
     with h5py.File(source,'w') as f:
         g=f.create_group('science/LSAR/GCOV/grids/frequencyA')
         g['projection']=3857
@@ -77,4 +78,4 @@ def test_configurable_nisar_reader_transforms_window_before_selection(tmp_path, 
         assert np.nanmax(abs(ds.HV.values+10)) < 1e-6
     meta=read_nisar_metadata(output/'nisar_meta.csv')
     assert meta.epsg.iloc[0]==3857
-    assert meta.granule.iloc[0]==nisar.GRANULE
+    assert meta.granule.iloc[0]==identity

@@ -15,25 +15,25 @@ Add `--skip-png` on a machine without Chrome to regenerate science products, HTM
 
 ## NISAR input configuration
 
-The main reader currently reproduces the single June30 GCOV product already used by main. It does not silently replace it with the June18 or October16 scenes from the separate geospatial pipeline.
+The reader supports the three corrected June18/September29/October16 acquisitions. Offline inputs are matched against their complete granule names in `data/processed/nisar_meta.csv`, rather than silently being assigned to June. The earlier June30 product is no longer the main validation input.
 
 ```sh
-.venv/bin/python src/nisar.py --input /absolute/path/NISAR_L2_PR_GCOV_024_069_D_070_4005_DHDH_A_20260630T235334_20260630T235409_P05023_N_F_J_001.h5 --output-dir /tmp/nisar-reproduction
+.venv/bin/python src/nisar.py --input /absolute/path/to/exact-granule-name.h5 --output-dir /tmp/nisar-reproduction
 ```
 
-`NISAR_INPUT` supplies the same input path; `--raw-dir` or `NISAR_RAW_DIR` chooses the search directory. Without either, the reader searches `data/raw/nisar/`. `--output-dir` defaults to `data/processed/`; use a separate directory to inspect reproduction without overwriting committed products. This reader does not download data. Unsupported acquisition IDs fail explicitly. PNG figure export uses Kaleido and requires an installed Chrome/Chromium browser. The source EPSG is read before transforming the UTM study window into source coordinates.
+Repeat `--input` for several files, or supply `--raw-dir` / `NISAR_RAW_DIR`. `NISAR_INPUT` supplies a single path. A separate output directory avoids replacing committed products. No local input means authenticated HTTPS range access to the three recorded granules. Unknown IDs and duplicate analysis epochs fail explicitly. Local and remote routes use the source CRS before selecting pixels; offline input does not require importing Earthdata authentication code.
 
 ## Identity and timing
 
 The metadata adapter accepts `granule`, legacy `granule_ur`, or CMR `concept_id`, preserving original fields. It rejects empty fields, duplicate monthly analysis slots, nonpositive spacing, timezone-free acquisition times and disagreements between granule timestamps and metadata. Monthly keys are analysis groups, not acquisition dates. Sentinel-1's September group includes an October4 observation; do not derive acquisition times from group labels.
 
-Main uses June30 NISAR; the map bundle uses June18 and October16. The original document pairing check remains FAIL until the team confirms/reproduces the intended pairings. Neither timestamps nor expected IDs were edited to make it pass. `outputs/acquisition_time_gaps.csv` records signed satellite-minus-LiDAR gaps and the input lineage.
+Main and the map share the June18/October16 NISAR scenes; main also has a September29 ascending pass. The corrected main inputs now pass the original document pairing check. `outputs/acquisition_time_gaps.csv` records signed satellite-minus-LiDAR gaps and the input lineage.
 
 ## Spatial support and limits
 
 Main's native LiDAR change uses y=700..1199 and 17,654 common cells. The map-native support ends at1190 and has17,466 cells. Restricting main to700..1190 gives17,467 cells; all17,466 jointly valid differences are exactly equal. One remaining native mask difference at FRF x=56,y=700 is retained, not filled. Resampled UTM maps and10m comparisons have separate masks and counts. Their medians/areas must not be swapped.
 
-`outputs/input_audit.json` records measured geometry/mask checks and bundle integrity. Integrity is not an independent accuracy assessment. The inferred boundary products are not elevation surfaces; CV RMSE is horizontal error, not vertical sigma. Matched-row Bayesian RMSE7.188m versus baseline7.161m does not establish improvement. The generated physics collection is still absent.
+`outputs/input_audit.json` records measured geometry/mask checks and bundle integrity. Integrity is not an independent accuracy assessment. The inferred boundary products are not elevation surfaces; CV RMSE is horizontal error, not vertical sigma. Matched-row Bayesian RMSE7.188m versus baseline7.161m does not establish improvement. The unified physics collection is delivered and separately verified.
 
 ## Run integrated frontend/backend
 

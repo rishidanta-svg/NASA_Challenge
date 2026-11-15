@@ -37,7 +37,7 @@ class Science:
             ("nisar_meta.csv", "NISAR", "granule", "begin_utc"),
         ]:
             for row in rows(self.root / "data/processed" / filename):
-                identity = row.get(key) or row.get("concept_id")
+                identity = row.get(key) or row.get("granule_ur") or row.get("concept_id")
                 stamp = row.get(time)
                 if identity and stamp:
                     result.append({"id": identity, "sensor": sensor, "product": filename.removesuffix("_meta.csv"),

@@ -327,14 +327,14 @@ function syncReference(map: MLMap, ctx: SyncContext) {
 // ---------------- overlay slots ----------------
 function slotIds(slot: string) {
   const src = `plg-slot-${slot}`;
-  return { src, raster: `${src}-raster`, line: `${src}-line`, fill: `${src}-fill` };
+  return { src, raster: `${src}-raster`, line: `${src}-line`, fill: `${src}-fill`, point: `${src}-point` };
 }
 
 function syncSlot(map: MLMap, def: SlotDef, desc: LayerDescriptor | null, ui: SlotUiState, rasterBefore: string | undefined, vectorBefore: string | undefined) {
   const t = trackedFor(map);
   const ids = slotIds(def.id);
   if (t.get(def.id) !== (desc?.id ?? undefined)) {
-    removeLayers(map, [ids.raster, ids.line, ids.fill]);
+    removeLayers(map, [ids.raster, ids.line, ids.fill, ids.point]);
     if (map.getSource(ids.src)) map.removeSource(ids.src);
     t.delete(def.id);
   }
@@ -361,6 +361,7 @@ function syncSlot(map: MLMap, def: SlotDef, desc: LayerDescriptor | null, ui: Sl
     } else if (desc.kind === 'geojson') {
       const data = desc.url!.startsWith(MOCK_PREFIX) ? mockGeoJson(desc.url!) : apiUrl(desc.url!);
       map.addSource(ids.src, { type: 'geojson', data, attribution: desc.provenance.source });
+      map.addLayer({id:ids.point,type:'circle',source:ids.src,filter:['==',['geometry-type'],'Point'],paint:{'circle-radius':3.5,'circle-color':def.color,'circle-stroke-color':'#333333','circle-stroke-width':1}},vectorBefore);
       map.addLayer(
         {
           id: ids.fill,
@@ -394,6 +395,7 @@ function syncSlot(map: MLMap, def: SlotDef, desc: LayerDescriptor | null, ui: Sl
     map.setPaintProperty(ids.line, 'line-opacity', ui.opacity);
     setVis(map, ids.line, ui.visible);
   }
+  if (map.getLayer(ids.point)) { map.setPaintProperty(ids.point,'circle-opacity',ui.opacity);setVis(map,ids.point,ui.visible); }
   if (map.getLayer(ids.fill)) {
     map.setPaintProperty(ids.fill, 'fill-opacity', ui.opacity * 0.3);
     setVis(map, ids.fill, ui.visible);

@@ -1,3 +1,5 @@
+> Historical snapshot. Current consolidated status: [INTEGRATION_STATUS.md](INTEGRATION_STATUS.md).
+
 # Repository integration review — 15 November 2026
 
 ## Snapshot and local copies

@@ -20,6 +20,7 @@ export interface SlotDef {
 }
 
 export const SLOTS: SlotDef[] = [
+  {id:'nisar-hh-land-water-candidate',exactDate:true,title:'Exploratory NISAR HH brightness transition',group:'sensor',sensor:'NISAR',meaning:'Exploratory candidate; waterline comparability failed, not a validated shoreline',expectedUnits:'m',defaultOpacity:1,color:'#eeeeee'},
   {
     id: 'lidar-dz',
     title: 'LiDAR elevation change',

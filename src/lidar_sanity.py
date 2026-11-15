@@ -1,4 +1,5 @@
 """Sanity checks on the lidar: June->Oct elevation change and profile plots."""
+import os
 from pathlib import Path
 import numpy as np
 import pandas as pd
@@ -57,7 +58,7 @@ fig.update_layout(height=700, width=1100, title="Lidar profiles with extracted b
 fig.update_xaxes(title="xFRF cross-shore (m)", range=[40, 110])
 fig.update_yaxes(title="elevation (m NAVD88)")
 import time
-for attempt in range(8):  # kaleido has a known startup race ("kaleido_scopes is not defined"); retry
+for attempt in range(0 if os.getenv("SARS_SKIP_PNG") == "1" else 8):  # kaleido has a known startup race ("kaleido_scopes is not defined"); retry
     try:
         fig.write_image(FIG / "qa_lidar_profiles.png", scale=1)
         break
@@ -65,4 +66,4 @@ for attempt in range(8):  # kaleido has a known startup race ("kaleido_scopes is
         if attempt == 7:
             raise
         time.sleep(1 + attempt)
-print("saved", FIG / "qa_lidar_profiles.png")
+print("PNG retained (export skipped)" if os.getenv("SARS_SKIP_PNG") == "1" else "saved", FIG / "qa_lidar_profiles.png")

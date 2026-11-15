@@ -1,3 +1,5 @@
+> Historical snapshot. Current consolidated status: [INTEGRATION_STATUS.md](INTEGRATION_STATUS.md).
+
 # Poltergeist interface
 
 The integrated React interface uses a full-map layout, neutral chrome and one panel at a time. Explore introduces the study; Layers provides a single overlay choice; Compare opens June/October elevation comparison automatically; Findings starts with two feature estimates and reveals acquisition/validation tables on request. About holds sources, map help and optional current NOAA conditions. Escape closes the active panel and profile. Only available overlays are selectable. There are no default opacity, tilt or exaggeration sliders.

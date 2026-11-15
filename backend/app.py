@@ -68,6 +68,12 @@ def create_app(root=None, unified_root=None):
     def layers():
         return JSONResponse([d for _, d in catalog.layers.values()], headers=CACHE)
 
+    @app.get("/api/boundary-analysis/{id}")
+    def legacy_analysis(id: str):
+        if id not in catalog.transects:
+            raise HTTPException(404,"Unknown transect")
+        return {"status":"unavailable","reason":"Superseded: use /api/analysis/{id} for acquisition-tagged observations and /api/coastal/nisar for the current experiment"}
+
     @app.get("/api/coastal/observations")
     def coastal_observations(include_samples: bool = False):
         return JSONResponse(catalog.coastal.summary(include_samples=include_samples), headers=CACHE)

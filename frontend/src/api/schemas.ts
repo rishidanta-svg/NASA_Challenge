@@ -498,3 +498,23 @@ export const BoundaryAnalysisSchema = z.object({
   limitations: z.array(z.string()),
 });
 export type BoundaryAnalysis = z.infer<typeof BoundaryAnalysisSchema>;
+
+// Independent NISAR experiments. Withheld products never require fabricated metrics.
+export const NisarEvidenceSchema=z.object({
+  processing_version:z.string(),
+  input_qa:z.object({status:z.string(),reason:z.string().optional()}).passthrough(),
+  shoreline:z.object({status:z.string(),epochs:z.record(z.object({
+    candidate_rows:z.number().int().nonnegative().optional(),
+    comparability:z.object({status:z.string()}).passthrough().optional(),
+  }).passthrough()).default({})}).passthrough(),
+  terrain_ablation:z.object({
+    status:z.string(),n:z.number().int().nonnegative(),reason:z.string().optional(),
+    scientific_target:z.string(),units:z.literal('m'),
+    metrics:z.record(ErrorMetricsSchema).optional(),
+    acquisition_pairs:z.record(z.object({june_id:z.string(),october_id:z.string(),june_utc:isoDateTime,october_utc:isoDateTime}).passthrough()).optional(),
+    per_strip:z.array(z.object({frf_y_start_m:z.number(),n:z.number().int(),C_minus_B_rmse_m:z.number().finite()}).passthrough()).optional(),
+    ablation:z.object({C_minus_B_rmse_m:z.number().finite(),C_minus_B_rmse_percent:z.number().finite().nullable(),strips_with_lower_rmse_for_C:z.number().int()}).passthrough().optional(),
+    terrain_model_deployment:z.object({status:z.string(),reason:z.string()}).optional(),
+  }).passthrough(),
+}).passthrough();
+export type NisarEvidence=z.infer<typeof NisarEvidenceSchema>;

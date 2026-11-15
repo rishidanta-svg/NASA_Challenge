@@ -10,3 +10,7 @@ plotly>=6.1,<7
 kaleido>=1,<2
 pystac-client==0.8.6
 pytest>=8,<9
+
+requests>=2.32,<3
+planetary-computer>=1,<2
+earthaccess>=0.11,<1

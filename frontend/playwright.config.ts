@@ -11,7 +11,7 @@ export default defineConfig({
   },
   webServer: [
     {
-      command: '../.venv/bin/python -m uvicorn backend.app:app --app-dir .. --host 127.0.0.1 --port 8000',
+      command: `${process.env.POLTERGEIST_PYTHON || '../.venv/bin/python'} -m uvicorn backend.app:app --app-dir .. --host 127.0.0.1 --port 8000`,
       url: 'http://localhost:8000/api/study-area',
       reuseExistingServer: true,
       timeout: 20_000,

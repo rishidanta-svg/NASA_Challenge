@@ -74,8 +74,21 @@ def audit(root=ROOT):
                 record('LiDAR common-support/datum audit','PASS',detail)
     except Exception as exc:
         record('LiDAR common-support/datum audit','FAIL',str(exc))
-    record('Physics collection delivery', 'PENDING' if not (root/'physics-data-foundation/data/duck_observations.nc').is_file() else 'NOT VERIFIED',
-           'Generated physics collection requires separate delivery and validation; scripts/QA prose do not establish data availability')
+    directory=root/'data/processed/verified/unified'
+    try:
+        count=0
+        for line in (directory/'SHA256SUMS').read_text().splitlines():
+            digest,name=line.split('  ',1); path=(directory/name).resolve()
+            if not path.is_relative_to(directory.resolve()):raise ValueError('Invalid unified checksum path')
+            if hashlib.sha256(path.read_bytes()).hexdigest()!=digest:raise ValueError(f'Unified checksum mismatch: {name}')
+            count+=1
+        if count!=45:raise ValueError(f'Expected 45 unified assets; got {count}')
+        record('Physics collection delivery','PASS',f'{count} unified assets delivered and verified; full scientific verification uses validate_collection.py')
+    except FileNotFoundError:
+        record('Physics collection delivery','PENDING','Unified collection is not delivered')
+    except Exception as exc:
+        record('Physics collection delivery','FAIL',str(exc))
+
     return checks
 
 

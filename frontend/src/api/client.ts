@@ -17,6 +17,8 @@ import { fetchNoaaLatest } from './noaa';
 import {
   BoundaryAnalysisSchema,
   type BoundaryAnalysis,
+  NisarEvidenceSchema,
+  type NisarEvidence,
   AcquisitionListSchema,
   AnalysisSchema,
   CoastalEvidenceSchema,
@@ -177,4 +179,8 @@ export async function getEnvironmentLatest(): Promise<Sourced<EnvironmentLatest>
 
 export async function getBoundaryAnalysis(id: string): Promise<Sourced<BoundaryAnalysis>> {
   return sourced(await get(`/api/boundary-analysis/${encodeURIComponent(id)}`, BoundaryAnalysisSchema, 300_000));
+}
+
+export async function getNisarEvidence(): Promise<Sourced<NisarEvidence>> {
+  return sourced(await get('/api/coastal/nisar',NisarEvidenceSchema,300_000));
 }

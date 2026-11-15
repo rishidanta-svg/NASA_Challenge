@@ -18,7 +18,7 @@ export function App() {
     setPanel(next);set({compare:next === 'compare'});
     if (next === 'compare') {
       const state=useApp.getState();Object.keys(state.slots).forEach(id=>state.setSlot(id,{visible:id==='lidar-elevation'}));
-      set({date:'2026-06-19',compareDate:'2026-10-16',terrainSource:state.terrainSource==='aws'?'aws':'lidar-dem-june'});
+      set({date:'2026-06-18',compareDate:'2026-10-16',terrainSource:state.terrainSource==='aws'?'aws':'lidar-dem-june'});
     }
   }
   const loadAll = useCallback(

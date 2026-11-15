@@ -1,3 +1,5 @@
+> Historical snapshot. Current consolidated status: [INTEGRATION_STATUS.md](INTEGRATION_STATUS.md).
+
 # Resolution status — 15 November 2026
 
 The six assigned engineering tasks are implemented on review/coastal-consolidation:

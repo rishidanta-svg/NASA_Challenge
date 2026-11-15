@@ -337,3 +337,28 @@ def test_health_and_optional_spa_serving(tmp_path, monkeypatch):
 
     unknown_api = client.get("/api/does-not-exist")
     assert unknown_api.status_code == 404
+
+
+def test_superseded_boundary_endpoint_does_not_serve_old_results():
+    assert CLIENT.get("/api/boundary-analysis/FRF-950").json()["status"] == "unavailable"
+    assert CLIENT.get("/api/boundary-analysis/unknown").status_code == 404
+    result = CLIENT.get("/api/analysis/FRF-950").json()
+    assert "coastal_observations" in result
+    assert result["coastal_observations"]["waterlines"][0]["acquired_at"].startswith("2026-06-18")
+
+
+def test_production_runtime_outputs_and_metadata_files_present():
+    from backend.reconstruction import CoastalReconstructionStore
+
+    outputs_dir = ROOT / "outputs"
+    processed_dir = ROOT / "data" / "processed"
+    for name in ("metrics.csv", "sensor_boundaries.csv", "lidar_boundaries.csv"):
+        assert (outputs_dir / name).is_file(), f"Missing runtime file: outputs/{name}"
+    for name in ("s1_meta.csv", "s2_meta.csv"):
+        assert (processed_dir / name).is_file(), f"Missing runtime file: data/processed/{name}"
+
+    store = CoastalReconstructionStore(DATA, outputs_dir=outputs_dir, processed_dir=processed_dir)
+    assert len(store.metrics_rows) > 0
+    assert len(store.reconstructed) > 0
+    assert "s2-boundary-june" in store.boundary_geojson
+    assert "nisar-boundary-october" in store.boundary_geojson

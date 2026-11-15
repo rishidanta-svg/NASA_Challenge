@@ -1,10 +1,42 @@
-# Poltergeist — coastal observatory
+# POLTERGEIST — Coastal Observatory (NASA Space Apps 2026)
 
-Integrated map-first UI, verified multisensor observations, optical tide/setup corrections and independently evaluated NISAR experiments for Duck, North Carolina. Research tool; not an operational erosion forecast.
+Interactive multi-sensor coastal observation platform for **Duck, North Carolina** (USACE Field Research Facility, June–October 2026), built with FastAPI, Rasterio, React, TypeScript, and MapLibre GL JS.
 
-## Run locally
+POLTERGEIST integrates airborne **USACE LiDAR** elevation truth, **Sentinel-2** optical shorelines, **Sentinel-1** C-band SAR, **NASA–ISRO NISAR** L-band SAR, and matched **NOAA / FRF** ocean-atmosphere telemetry so users can inspect coastal change without conflating satellite scattering signatures with verified erosion.
 
-Use Python 3.11 and Node.js 22 or newer:
+> **Research observatory notice:** Observed quantities, conditional tide-adjusted estimates, exploratory SAR signals, and withheld models are strictly distinguished throughout the API and UI.
+
+---
+
+## Core Capabilities
+
+- **Guided Tour (5 interactive steps):** Walks users step-by-step through the Duck study area, NISAR HH/HV backscatter and temporal change, cross-sensor satellite swipe comparison, independent USACE LiDAR elevation truth (`CrossSection` profiles), and Sentinel-2 optical tide correction (*"Don't just detect change. Verify it."*).
+- **Explore, Layers, Compare & Findings:** Interactive 2D/3D MapLibre terrain (`1 m` USACE LiDAR merged over AWS Terrarium), synchronized June vs. October swipe comparison, coordinate inspector (`WGS84` / `UTM 18N` / `USACE FRF`), measured cross-shore profiles with gap preservation, and downloadable JSON evidence bundles.
+- **Unified Verified Dataset (`data/processed/verified/`):** 28 cataloged multi-sensor acquisitions, 45 checksummed assets, 4-epoch Parquet environmental telemetry tables (`nearest`, `tide_stage`, `antecedent`, `cross_date`), and strict explicit error reporting if required Parquet/GeoTIFF files are unavailable.
+
+---
+
+## Verified Methodology & Key Findings
+
+1. **Physical Coastal Elevation Change (USACE LiDAR, Measured):**
+   - **−0.268 m median beach lowering** across **17,654 matched 1 m cells** (`y = 700–1199 m`, June → October 2026), with approximately **11,684 m²** lowering more than `0.1 m`.
+   - On the paired `y = 700–1190 m` map subset (`17,466` native paired cells), median vertical change is **−0.269 m** (mean **−0.314 m**).
+   - *Limitation:* Measures vertical bare-earth surface change (`NAVD88`) between survey dates, not confirmed net sediment volume loss across the complete nearshore profile.
+
+2. **Optical Waterline Accuracy via Tide Correction (Sentinel-2, Verified Retrospective):**
+   - Translating instantaneous cloud-masked **Sentinel-2 NDWI** waterlines along independent pre-surveyed USACE foreshore slopes using matched **NOAA Station 8651370** water levels (`MHW = 0.359 m NAVD88 = 1.026 m MLLW`) reduces horizontal shoreline-position RMSE by **49.7%** (**7.42 m → 3.73 m**) across **36 matched October LiDAR MHW positions**.
+   - *Limitation:* Attributed strictly to Sentinel-2 optical physics and prior foreshore slope/gauge data — not satellite-only, not claimed universal, and **never attributed to NISAR**. Experimental wave-setup sensitivity (`physics-s2-setup`) remains opt-in and non-operational.
+
+3. **Multi-Sensor Radar Comparison & Negative Results (NISAR & Sentinel-1, Withheld / Exploratory):**
+   - **Cross-sensor divergence:** **76 of 168 strict overlap cells** (**671 of 1,310** wider radar cells) exhibit opposite change signs between NISAR L-band ΔHH (`Track 069` descending) and Sentinel-1 C-band ΔVV (`Track 106` ascending). Wavelength differences, viewing geometry, overpass timing offsets (June `4.42 days`, October `45.2 min`), and moisture/wave conditions may all contribute; this dataset does not isolate a single cause.
+   - **NISAR HH waterline candidate (`Exploratory`):** Fails the physical scene comparability screen (`39.95 m` June and `37.76 m` October landward offset vs. tide-transferred Sentinel-2); shoreline metrics are withheld.
+   - **Spatial terrain ablation (`Withheld`):** Over 5 held-out 100 m alongshore blocks (`n = 168`), adding NISAR (`Model C`, `0.2582 m` RMSE) did not improve over Sentinel-1 + Sentinel-2 (`Model B`, `0.2549 m` RMSE). Terrain prediction deployment remains withheld.
+
+---
+
+## Local Development
+
+Requirements: **Python 3.11** and **Node.js 22+**.
 
 ```sh
 python3.11 -m venv .venv
@@ -13,44 +45,58 @@ npm --prefix frontend ci
 .venv/bin/python scripts/run_local.py
 ```
 
-On Windows use `.venv\Scripts\python.exe` in place of `.venv/bin/python`. Keep that terminal open: the UI and API are local processes, not a hosted service. Open http://localhost:5173. If a port is occupied use `--api-port 8015 --web-port 5175`; the launcher connects the matching API/CORS settings automatically. It never installs dependencies or kills existing services.
+Open `http://localhost:5173`. Keep the launcher terminal open while exploring. Use `--api-port` / `--web-port` if default ports are occupied.
 
-The active UI is `frontend/`. The separate historical validation viewer in root `dist/` and the older prototype in `legacy/` remain for provenance; neither is the integrated map application.
-
-## What is connected
-
-- 28-acquisition unified data with 45 checksummed release assets and acquisition-matched environment records.
-- Real satellite and LiDAR layers, measured 2D/3D terrain, profile plots, survey comparison and exact acquisition metadata.
-- Optical NDWI/MNDWI, tide-only correction and explicitly experimental mean-wave setup.
-- Exploratory NISAR HH candidates with failed shoreline comparability clearly labelled.
-- 168-cell buffered spatial elevation-change ablation, including same-row zero-change and training-mean baselines.
-- Current Findings separates observations, exploratory experiments and archived models. Available overlays are exposed under Layers → More satellite comparisons.
-
-NISAR has not demonstrated added value in the tested terrain model; C increases RMSE versus B. Classification, reliable prediction intervals and deployment as an improved terrain model remain withheld. Main's three-date historical validation is separate from the current June–October map experiment. See [final integration status](docs/INTEGRATION_STATUS.md).
-
-## Verify
+To run the API and frontend separately:
 
 ```sh
-.venv/bin/python -m pytest backend/tests -q
-.venv/bin/python physics-data-foundation/validate_collection.py --processed-only --output data/processed/verified/unified
-.venv/bin/python run_validation.py --skip-download --skip-png
-npm --prefix frontend run build
+.venv/bin/python -m uvicorn backend.app:app --host 127.0.0.1 --port 8000
+npm --prefix frontend run dev
 ```
 
-The numerical pipeline refreshes summaries, citations and tables. `--skip-png` retains existing PNGs when Chrome/Kaleido image export is unavailable; HTML figures are regenerated. Source reacquisition requires Earthdata credentials and network access; offline scoring uses committed processed inputs.
+---
 
-Frontend contract tests: in `frontend/` run `POLTERGEIST_PYTHON=/absolute/path/to/.venv/bin/python npm test`. Ordinary `npm test` runs unit tests and skips only the Python-backed contract suite when its interpreter is not configured. Browser tests: build for the desired API, then `POLTERGEIST_PYTHON=/absolute/path/to/.venv/bin/python npm run e2e` (Chrome required).
+## Verification & Tests
 
-## Data and science references
+```sh
+# 1. Backend API, Parquet telemetry, reconstruction, and NISAR withholding tests
+.venv/bin/python -m pytest backend/tests -q
 
-- [Current physics workflow](docs/duck-physics.md)
-- [NISAR methods, results and withholding](docs/duck-nisar.md)
-- [Dataset handoff](physics-data-foundation/HANDOFF.md)
-- [Reproduction and audit](docs/REPRODUCTION.md)
-- [Historical independent validation](VALIDATION_SUMMARY.md)
+# 2. Unified dataset integrity check (28 observations, 45 verified assets)
+.venv/bin/python physics-data-foundation/validate_collection.py --processed-only --output data/processed/verified/unified
 
-## Production hosting
+# 3. Frontend typecheck, unit/contract suite, and production build
+npm --prefix frontend run typecheck
+POLTERGEIST_PYTHON="$(pwd)/.venv/bin/python" npm --prefix frontend test
+npm --prefix frontend run build
 
-Option A — **Single container (recommended)**: The root `Dockerfile` builds `frontend/dist/` with same-origin API routes (`VITE_API_BASE_URL=""`), installs `requirements-api.txt`, and runs `uvicorn backend.app:app --host 0.0.0.0 --port ${PORT:-8000}` with `GET /health`. When `frontend/dist/index.html` is present, FastAPI serves both the compiled SPA and `/api/*` from the same origin.
+# 4. Browser E2E tests (requires Google Chrome + Playwright)
+POLTERGEIST_PYTHON="$(pwd)/.venv/bin/python" npm --prefix frontend run e2e
+```
 
-Option B — **Separate frontend & API**: Host the FastAPI backend (`uvicorn backend.app:app`) with `POLTERGEIST_CORS_ORIGINS=https://your-frontend-origin`, build the UI with `VITE_API_BASE_URL=https://your-api-host npm --prefix frontend run build`, and serve `frontend/dist/`. Do not deploy the historical root `dist/` archive. Original source-environment pins are retained in `legacy/requirements-science-verified.txt`; the integrated install uses the compatible API/validation stack above.
+---
+
+## Production Deployment
+
+### Option A — Single Container (Recommended)
+The root [Dockerfile](Dockerfile) builds `frontend/dist/` with same-origin API routes (`VITE_API_BASE_URL=""`), installs `requirements-api.txt`, copies `backend/`, `data/processed/verified/`, required `outputs/{metrics,sensor_boundaries,lidar_boundaries}.csv`, and `data/processed/{s1,s2}_meta.csv`, and serves both `/api/*` and the SPA on port `${PORT:-8000}` with healthcheck `GET /health`:
+
+```sh
+docker build -t poltergeist .
+docker run -p 8000:8000 poltergeist
+```
+
+### Option B — Separate Frontend & API
+Host `uvicorn backend.app:app --host 0.0.0.0 --port 8000` with `POLTERGEIST_CORS_ORIGINS=https://your-frontend-origin`, and build `frontend/` with `VITE_API_BASE_URL=https://your-api-origin npm --prefix frontend run build`.
+
+---
+
+## Documentation & Provenance
+
+- [Duck Optical & Terrain Physics](docs/duck-physics.md)
+- [Duck NISAR Experiments & API Handoff](docs/duck-nisar.md)
+- [Frontend–API Data Contract](docs/frontend-api-contract.md)
+- [Reproduction, Support Extent & Container Notes](docs/REPRODUCTION.md)
+- [Verified Pipeline QA Notes](reports/duck_pipeline.md)
+- [Data Citations](CITATIONS.md)
+- *Historical archive:* The pre-cleanup validation pipeline (`src/`, `run_validation.py`, NetCDF tables, historical figures, and legacy prototype) is preserved intact in Git tag `archive/pre-cleanup-v1` and branch `archive/historical-validation`.

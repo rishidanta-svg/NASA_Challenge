@@ -8,6 +8,9 @@ frontend/dist
 frontend/test-results
 legacy
 reports
-outputs
+outputs/*
+!outputs/metrics.csv
+!outputs/sensor_boundaries.csv
+!outputs/lidar_boundaries.csv
 data/raw
 data/interim

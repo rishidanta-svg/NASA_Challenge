@@ -1,4 +1,0 @@
-date_key,requested_utc,scan_utc,gap_s,coregQCFlag,rmsReflectorError_m,assessmentPlanesOffset_m,valid_cells,opendap_url
-2026-06,2026-06-19T00:31:04,2026-06-19T00:31:03,1.792e-06,1.0,0.09749265875906821,0.039278837942281666,20045,https://chldata.erdc.dren.mil/thredds/dodsC/frf/geomorphology/DEMs/duneLidarDEM/2026/FRF-geomorphology_DEMs_duneLidarDEM_202606.nc
-2026-09,2026-09-29T10:33:04,2026-09-29T10:33:03,2.048e-06,1.0,0.08951546831881116,0.04291021849624002,14779,https://chldata.erdc.dren.mil/thredds/dodsC/frf/geomorphology/DEMs/duneLidarDEM/2026/FRF-geomorphology_DEMs_duneLidarDEM_202609.nc
-2026-10,2026-10-16T23:33:04,2026-10-16T23:33:04,4.608e-06,1.0,0.07538581020412906,0.051040170880635324,19333,https://chldata.erdc.dren.mil/thredds/dodsC/frf/geomorphology/DEMs/duneLidarDEM/2026/FRF-geomorphology_DEMs_duneLidarDEM_202610.nc

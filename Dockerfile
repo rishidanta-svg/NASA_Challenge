@@ -17,6 +17,8 @@ COPY requirements-api.txt ./
 RUN pip install --no-cache-dir -r requirements-api.txt
 
 COPY backend ./backend
+COPY outputs/metrics.csv outputs/sensor_boundaries.csv outputs/lidar_boundaries.csv ./outputs/
+COPY data/processed/s1_meta.csv data/processed/s2_meta.csv ./data/processed/
 COPY data/processed/verified ./data/processed/verified
 COPY --from=frontend-build /app/frontend/dist ./frontend/dist
 

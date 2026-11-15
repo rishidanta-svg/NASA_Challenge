@@ -127,7 +127,7 @@ def citations():
           "", "Contains modified Copernicus Sentinel data (2026). Lidar courtesy of the USACE Field Research Facility, Duck NC.",
           "Lidar QC definitions (coregQCFlag 1: plane-matching co-registration, RMS reflector error < 0.1 m, assessment-plane offsets < 0.1 m) are from the FRF file metadata.",
           "AI use: analysis code was written with assistance from Claude (Anthropic) and must be reviewed and understood by the team."]
-    (ROOT / "CITATIONS.md").write_text("\n".join(L) + "\n")
+    (ROOT / "CITATIONS.md").write_text("\n".join(L) + "\n", encoding="utf-8")
 
 
 # ------------------------------------------------------------------ summary
@@ -266,7 +266,7 @@ def summary():
     else:
         L.append("(self-checks not run yet)")
     L += ["", "Figures: `outputs/figures/` (PNG and interactive HTML). Tables: `outputs/*.csv`. Sources: `CITATIONS.md`."]
-    (ROOT / "VALIDATION_SUMMARY.md").write_text("\n".join(L) + "\n")
+    (ROOT / "VALIDATION_SUMMARY.md").write_text("\n".join(L) + "\n", encoding="utf-8")
 
 
 if __name__ == "__main__":

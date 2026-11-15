@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { lazy, Suspense, useCallback, useEffect, useState } from 'react';
 import { getAcquisitions, getCoastalEvidence, getLayers, getStudyArea, getTerrainChange, getTransects } from './api/client';
 import { clearCache } from './api/http';
 import type { CoastalEvidence } from './api/schemas';
@@ -6,11 +6,13 @@ import { BoundaryWorkspace } from './components/BoundaryWorkspace';
 import { CrossSection } from './components/CrossSection';
 import { Icon } from './components/Icon';
 import { Legend } from './components/Legend';
+import { StudyOverview } from './components/StudyOverview';
 import { MapTools } from './components/MapTools';
 import { slotById } from './config/slots';
 import { lngLatToFrf, lngLatToUtm18N } from './lib/frf';
 import { resolveSlot } from './lib/layers';
-import { MapView } from './map/MapView';
+import { MapBoundary } from './components/MapBoundary';
+const MapView=lazy(()=>import('./map/MapView').then(module=>({default:module.MapView})));
 import { flyToStudyArea } from './map/registry';
 import { useApp } from './state/store';
 
@@ -18,13 +20,15 @@ type Panel = 'overview' | 'layers' | 'compare' | 'findings' | 'about' | null;
 
 export function App() {
   const [panel, setPanel] = useState<Panel>('overview');
+  const [refreshing, setRefreshing] = useState(false);
+  const [revision,setRevision] = useState(0);
   const [coastal, setCoastal] = useState<CoastalEvidence | null>(null);
   const set = useApp((s) => s.set);
   const { bottomOpen, layers, date, slots, inspected, transects, cursor } = useApp();
 
   function open(next: Panel) {
     setPanel(next);
-    set({ compare: next === 'compare' });
+    set({ compare: next === 'compare',inspected:null,bottomOpen:false });
     if (next === 'compare') {
       const state = useApp.getState();
       Object.keys(state.slots).forEach((id) => state.setSlot(id, { visible: id === 'lidar-elevation' }));
@@ -38,14 +42,14 @@ export function App() {
 
   const loadAll = useCallback(
     async (force = false) => {
-      if (force) clearCache('api:');
+      if (force) {clearCache('api:');setRefreshing(true);setCoastal(null);setRevision(v=>v+1);}
       await Promise.all([
         getStudyArea().then((studyArea) => set({ studyArea })),
         getLayers().then((layers) => set({ layers })),
         getAcquisitions().then((acquisitions) => set({ acquisitions })),
         getTerrainChange().then((terrainChange) => set({ terrainChange })),
         getCoastalEvidence().then((res) => {
-          if (res.data) setCoastal(res.data);
+          setCoastal(res.data);
         }),
         getTransects().then((transects) => {
           const selected = useApp.getState().selectedTransectId;
@@ -56,6 +60,7 @@ export function App() {
           set({ transects, selectedTransectId });
         }),
       ]);
+      setRefreshing(false);
     },
     [set],
   );
@@ -96,12 +101,6 @@ export function App() {
         )
       : null;
 
-  const mhwRaw = coastal?.validation.targets.fixed_mhw_contour?.raw_vs_tide.methods?.raw?.rmse_m;
-  const mhwTide = coastal?.validation.targets.fixed_mhw_contour?.raw_vs_tide.methods?.tide?.rmse_m;
-  const mhwRed = (coastal?.validation.targets.fixed_mhw_contour?.raw_vs_tide as { rmse_reduction_percent?: Record<string, number> } | undefined)
-    ?.rmse_reduction_percent?.tide;
-  const lidarMean = coastal?.terrain?.mean_m;
-
   return (
     <div className="earth-app">
       <header className="app-header">
@@ -116,7 +115,7 @@ export function App() {
           poltergeist<span>Coastal observatory</span>
         </a>
         <div className="header-meta" aria-label="Study metadata">
-          <span className="project-label">Duck, North Carolina · FRF 700–1190 m</span>
+          <span className="project-label">Duck, North Carolina</span>
           <span className="header-period num">Jun–Oct 2026</span>
           {activeDesc && (
             <button type="button" className="header-layer-pill" onClick={() => open('layers')} title="Click to manage active map layer">
@@ -153,8 +152,10 @@ export function App() {
         ))}
       </nav>
 
-      <main className="map-workspace" aria-label="Coastal map">
-        <MapView />
+      <main id="coastal-workspace" className="map-workspace" aria-label="Coastal map">
+        {layers?.state === 'unavailable' && <div className="connection-notice" role="status"><strong>Study data could not be loaded.</strong><span>The background map is still available.</span><button disabled={refreshing} onClick={()=>void loadAll(true)}>{refreshing?'Retrying…':'Retry connection'}</button><details><summary>Details</summary>{layers.reason}</details></div>}
+
+        <MapBoundary><Suspense fallback={<div className="map-loading" role="status">Loading coastal map…</div>}><MapView /></Suspense></MapBoundary>
 
         <button
           className="location-search"
@@ -190,106 +191,11 @@ export function App() {
               </button>
             </div>
             {panel === 'overview' ? (
-              <div className="panel-content">
-                <div className="location-label">
-                  <Icon name="pin" size={15} /> USACE Field Research Facility · Duck, NC
-                </div>
-                <h1>Duck coastline</h1>
-                <p className="intro">Multi-sensor observation study integrating LiDAR elevation truth, optical waterlines, SAR backscatter, and coastal tide/wave telemetry (June–October 2026).</p>
-                <div className="study-facts">
-                  <span>
-                    <strong className="num">500 m</strong>Study reach
-                  </span>
-                  <span>
-                    <strong className="num">2 epochs</strong>June & October
-                  </span>
-                  <span>
-                    <strong className="num">4 sensors</strong>10 m grid
-                  </span>
-                </div>
-
-                {(mhwRed != null || lidarMean != null) && (
-                  <div className="explore-verified-box">
-                    <div className="panel-heading">
-                      <span className="eyebrow">Verified Result Snapshot</span>
-                      <button type="button" className="inline-link" onClick={() => open('findings')}>
-                        Full analysis →
-                      </button>
-                    </div>
-                    {mhwRed != null && mhwRaw != null && mhwTide != null && (
-                      <p className="slot-meta" style={{ marginTop: 6, marginBottom: 4 }}>
-                        <strong className="num">−{mhwRed.toFixed(1)}%</strong> Sentinel-2 shoreline RMSE via NOAA tide correction (
-                        <span className="num">{mhwRaw.toFixed(2)} → {mhwTide.toFixed(2)} m</span> across 36 October LiDAR MHW positions).
-                      </p>
-                    )}
-                    {lidarMean != null && (
-                      <p className="slot-meta" style={{ margin: 0 }}>
-                        <strong className="num">{lidarMean.toFixed(2)} m</strong> mean October−June beach Δz across{' '}
-                        <span className="num">{coastal?.terrain?.native_paired_cells?.toLocaleString() ?? '17,466'}</span> paired 1 m USACE LiDAR cells.
-                      </p>
-                    )}
-                  </div>
-                )}
-
-                <p className="section-label">Integrated data sources</p>
-                <div className="sensor-pills-grid">
-                  <div className="sensor-pill">
-                    <strong>USACE LiDAR</strong>
-                    <small>m NAVD88 · Reference</small>
-                  </div>
-                  <div className="sensor-pill">
-                    <strong>Sentinel-2</strong>
-                    <small>NDWI / MNDWI · Tide-adjusted</small>
-                  </div>
-                  <div className="sensor-pill">
-                    <strong>Sentinel-1 C-SAR</strong>
-                    <small>VV / VH dB · Track 106</small>
-                  </div>
-                  <div className="sensor-pill">
-                    <strong>NISAR L-SAR</strong>
-                    <small>HH / HV dB · Exploratory</small>
-                  </div>
-                </div>
-
-                <p className="section-label">Start exploring</p>
-                <button className="action-row" onClick={() => open('layers')}>
-                  <Icon name="layers" />
-                  <span>
-                    <strong>See coastal change</strong>
-                    <small>Switch between LiDAR Δz, Sentinel-1/2, and exploratory NISAR layers</small>
-                  </span>
-                  <Icon name="arrow" size={16} />
-                </button>
-                <button className="action-row" onClick={() => open('compare')}>
-                  <Icon name="compare" />
-                  <span>
-                    <strong>Compare two observations</strong>
-                    <small>Swipe between June and October surveys with aligned acquisition timing</small>
-                  </span>
-                  <Icon name="arrow" size={16} />
-                </button>
-                <button
-                  className="action-row"
-                  onClick={() => {
-                    open('findings');
-                    set({ bottomOpen: false });
-                  }}
-                >
-                  <Icon name="chart" />
-                  <span>
-                    <strong>Understand the findings</strong>
-                    <small>Tide correction verification (−49.7%), environmental state & limits</small>
-                  </span>
-                  <Icon name="arrow" size={16} />
-                </button>
-                <div className="quiet-note">
-                  Retrospective coastal research platform. Observed values, conditional estimates, and exploratory radar diagnostics are strictly distinguished.
-                </div>
-              </div>
+              <StudyOverview coastal={coastal} open={open} />
             ) : panel === 'findings' ? (
-              <BoundaryWorkspace />
+              <BoundaryWorkspace key={revision} />
             ) : (
-              <MapTools panel={panel} onRefresh={() => void loadAll(true)} />
+              <MapTools key={`${panel}-${revision}`} panel={panel} onRefresh={() => void loadAll(true)} />
             )}
           </aside>
         )}
@@ -304,10 +210,10 @@ export function App() {
             </div>
             <div className="inspector-coords num">
               <div>
-                <small>WGS84</small>
+                <small>Location</small>
                 <span>{inspected.lat.toFixed(5)}°N, {Math.abs(inspected.lng).toFixed(5)}°W</span>
               </div>
-              {inspUtm && (
+              <details><summary>Survey coordinates</summary>{inspUtm && (
                 <div>
                   <small>UTM 18N (EPSG:32618)</small>
                   <span>E {inspUtm[0].toFixed(1)} m · N {inspUtm[1].toFixed(1)} m</span>
@@ -319,6 +225,7 @@ export function App() {
                   <span>x {inspFrf[0].toFixed(1)} m cross-shore · y {inspFrf[1].toFixed(1)} m alongshore</span>
                 </div>
               )}
+              </details>
             </div>
             {activeDesc && (
               <div className="inspector-layer-box">
@@ -346,7 +253,7 @@ export function App() {
                     })
                   }
                 >
-                  Open {nearestTransect.properties.id} profile
+                  Open nearest beach profile
                 </button>
                 <button
                   type="button"
@@ -379,8 +286,8 @@ export function App() {
         )}
 
         <div className="map-bottom-bar">
-          <span>{layers?.state === 'real' ? 'Study data connected' : 'Study data unavailable'}</span>
-          <span>June – October 2026</span>
+          <span>{refreshing || !layers ? 'Connecting to study data…' : layers.state === 'real' ? 'Study data connected' : 'Study data unavailable'}</span>
+          <span>Background imagery is not survey-dated</span>
           {cursor && (
             <span className="num">
               {cursor.lat.toFixed(4)}°N, {Math.abs(cursor.lng).toFixed(4)}°W

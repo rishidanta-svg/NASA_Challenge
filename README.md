@@ -1,5 +1,7 @@
 # Poltergeist — coastal observatory
 
+Final user experience, exports, validation and run instructions: [Final release notes](docs/FINAL_RELEASE.md).
+
 Integrated map-first UI, verified multisensor observations, optical tide/setup corrections and independently evaluated NISAR experiments for Duck, North Carolina. Research tool; not an operational erosion forecast.
 
 ## Run locally

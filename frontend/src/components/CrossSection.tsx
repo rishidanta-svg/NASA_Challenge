@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { getTransect, type Sourced } from '../api/client';
 import type { TransectDetail } from '../api/schemas';
+import { profileCsv, saveDownload } from '../lib/exports';
 import { useApp } from '../state/store';
 
 const MHW_NAVD88_M = 0.359;
@@ -66,6 +67,7 @@ export function CrossSection() {
               Sensor markers
             </label>
           )}
+          <button disabled={!t} onClick={()=>{if(t)saveDownload(`poltergeist-${t.properties.id}-profile.csv`,profileCsv(t),'text/csv;charset=utf-8')}}>Export CSV</button>
           <button aria-label="Close beach profile" onClick={() => set({ bottomOpen: !bottomOpen, showTransects: false })}>
             Close
           </button>
@@ -73,7 +75,7 @@ export function CrossSection() {
       </div>
       {j && o ? (
         <div className="cross-section-body">
-          <div className="chart-svg-wrap">
+          <div className="chart-svg-wrap"><div className="profile-chart-key"><span>━ June</span><span>┄ October</span><small>Ground height · metres NAVD88</small></div>
             <svg
               viewBox={`0 0 ${W} ${H}`}
               width="100%"

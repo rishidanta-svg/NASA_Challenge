@@ -9,7 +9,7 @@ describe.skipIf(!process.env.POLTERGEIST_PYTHON)('live backend/frontend contract
     const script=`import json\nfrom backend.app import create_app\nfrom fastapi.testclient import TestClient\nc=TestClient(create_app())\npaths={'coastal':'/api/coastal/observations','nisar':'/api/coastal/nisar','analysis':'/api/analysis/FRF-950','transect':'/api/transects/FRF-950','layers':'/api/layers','acquisitions':'/api/acquisitions'}\nprint(json.dumps({k:c.get(p).json() for k,p in paths.items()}))`;
     payload=JSON.parse(execFileSync(process.env.POLTERGEIST_PYTHON!,['-c',script],{cwd:resolve(process.cwd(),'..'),encoding:'utf8',maxBuffer:4_000_000}));
   },30000);
-  it('accepts current optical/terrain evidence',()=>expect(CoastalEvidenceSchema.safeParse(payload.coastal).success).toBe(true));
+  it('accepts current optical/terrain evidence and preserves the matched tide comparison',()=>{const c=CoastalEvidenceSchema.parse(payload.coastal);expect(c.validation.targets.fixed_mhw_contour?.raw_vs_tide.rmse_reduction_percent?.tide).toBeCloseTo(49.7245,3);});
   it('accepts NISAR experiment and preserves withholding',()=>{
     const n=NisarEvidenceSchema.parse(payload.nisar);
     expect(n.terrain_ablation.terrain_model_deployment?.status).toBe('withheld');

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { getAnalysis, getCoastalEvidence, getNisarEvidence, type Sourced } from '../api/client';
 import type { Analysis, CoastalEvidence, NisarEvidence } from '../api/schemas';
+import { saveDownload, studyBrief } from '../lib/exports';
 import { useApp } from '../state/store';
 
 const metres = (v: number | null | undefined) => (v == null ? 'Not available' : `${v.toFixed(2)} m`);
@@ -73,7 +74,7 @@ export function BoundaryWorkspace() {
   const rawRmse = mhwCheck?.raw_vs_tide.methods?.raw?.rmse_m;
   const tideRmse = mhwCheck?.raw_vs_tide.methods?.tide?.rmse_m;
   const setupRmse = mhwCheck?.raw_vs_tide_vs_setup.methods?.setup?.rmse_m;
-  const tideReduction = (mhwCheck?.raw_vs_tide as { rmse_reduction_percent?: Record<string, number> } | undefined)?.rmse_reduction_percent?.tide;
+  const tideReduction = rawRmse != null && rawRmse > 0 && tideRmse != null ? (1-tideRmse/rawRmse)*100 : null;
   const mhwN = mhwCheck?.raw_vs_tide.n;
 
   const unlabeled = (n?.input_qa as { unlabeled_features?: Record<string, UnlabeledRange> } | undefined)?.unlabeled_features;
@@ -92,12 +93,12 @@ export function BoundaryWorkspace() {
   return (
     <section className="boundary-workspace" aria-label="Coastal findings">
       <div className="panel-heading" style={{ marginBottom: 4 }}>
-        <span className="eyebrow">Verified Coastal Evidence & Diagnostics</span>
+        <span className="eyebrow">Study findings</span>
         <span className="badge">Duck FRF · Jun–Oct 2026</span>
       </div>
       <h1>What the observations show</h1>
       <p className="intro">
-        Independent LiDAR elevation truth, tide-corrected Sentinel-2 optical boundaries, environmental telemetry, and separate exploratory radar experiments.
+        Measured beach heights, tide-adjusted waterlines, and tests of what radar adds. Expand the sections for methods and sources.
       </p>
 
       <div className="findings-tabs" role="group" aria-label="Findings section">
@@ -114,12 +115,12 @@ export function BoundaryWorkspace() {
           {rawRmse != null && tideRmse != null && tideReduction != null && (
             <article className="verified-result-card" aria-label="Verified Sentinel-2 tide correction result">
               <div className="panel-heading">
-                <span className="eyebrow">Primary Verified Optical Result · Sentinel-2</span>
-                <span className="badge badge-observed num">−{tideReduction.toFixed(1)}% RMSE</span>
+                <span className="eyebrow">October optical waterline comparison</span>
+                <span className="badge badge-estimated num">−{tideReduction.toFixed(1)}% RMSE</span>
               </div>
               <p className="verified-headline">
                 <strong className="num">{tideReduction.toFixed(1)}% reduction</strong> in Sentinel-2 shoreline-position RMSE across{' '}
-                <strong className="num">{mhwN ?? 36}</strong> October LiDAR MHW contour positions (
+                <strong className="num">{mhwN ?? 'Not available'}</strong> October LiDAR MHW contour positions (
                 <span className="num">{c?.target?.value.toFixed(3) ?? '0.359'} m {c?.target?.vertical_datum ?? 'NAVD88'}</span>).
               </p>
               <div className="rmse-compare-bars" aria-label="Before and after tide correction RMSE visual">
@@ -153,9 +154,10 @@ export function BoundaryWorkspace() {
                   </div>
                 )}
               </div>
-              <p className="slot-meta" style={{ marginBottom: 0 }}>
+              <p className="slot-meta">This is a local retrospective October comparison, not general satellite accuracy. Tide correction worsens the June wet/dry-proxy comparison.</p>
+              <details><summary>How tide correction works</summary><p className="slot-meta" style={{ marginBottom: 0 }}>
                 <strong>Role of tide correction:</strong> Optical indices detect the instantaneous wet/dry edge at satellite overpass tide, not fixed MHW. Translating water-level elevation difference onto the surveyed foreshore slope reconciles apparent shoreline shift. Attributed strictly to Sentinel-2 optical physics — never NISAR.
-              </p>
+              </p></details>
             </article>
           )}
 
@@ -206,13 +208,13 @@ export function BoundaryWorkspace() {
                   <p>
                     Mean Oct − Jun height along this transect (study-wide paired mean:{' '}
                     <span className="num">{c?.terrain?.mean_m != null ? `${c.terrain.mean_m.toFixed(2)} m` : 'Not available'}</span> on{' '}
-                    <span className="num">{c?.terrain?.native_paired_cells?.toLocaleString() ?? '17,466'}</span> cells).
+                    <span className="num">{c?.terrain?.native_paired_cells?.toLocaleString() ?? 'Not available'}</span> cells).
                   </p>
                   <small>Measured USACE LiDAR (NAVD88), not satellite-predicted</small>
                 </article>
               </div>
 
-              <div className="env-telemetry-box">
+              <details className="env-telemetry-box"><summary>Conditions during this observation</summary>
                 <div className="panel-heading">
                   <span className="eyebrow">Matched Environmental & Optical Variables ({epoch})</span>
                   <span className="badge">NOAA 8651370 + FRF</span>
@@ -261,7 +263,7 @@ export function BoundaryWorkspace() {
                     </strong>
                   </div>
                 </div>
-              </div>
+              </details>
 
               <details>
                 <summary>Source observations and physical assumptions</summary>
@@ -397,7 +399,7 @@ export function BoundaryWorkspace() {
       ) : (
         <>
           {!n ? (
-            <p role="status">{nisar?.reason ?? 'Loading independent NISAR experiments…'}</p>
+            <p role="status">{nisar?.reason ?? 'Loading held-out NISAR experiments…'}</p>
           ) : (
             <>
               <p className="intro">
@@ -554,6 +556,7 @@ export function BoundaryWorkspace() {
         </>
       )}
 
+      <button className="full-button" disabled={!c} onClick={()=>{if(c)saveDownload('poltergeist-duck-study-brief.html',studyBrief(c,n??null),'text/html;charset=utf-8')}}>Download printable study brief</button>
       <button className="full-button" disabled={!c && !n} onClick={download}>
         Download results and evidence
       </button>

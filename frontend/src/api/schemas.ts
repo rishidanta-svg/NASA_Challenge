@@ -330,6 +330,7 @@ const ErrorMetricsSchema = z.object({
   bias_m: z.number().finite(),
 });
 const ValidationComparisonSchema = z.object({
+  rmse_reduction_percent: z.record(z.number().finite()).optional(),
   status: ReliabilitySchema,
   n: z.number().int().nonnegative(),
   reason: z.string().optional(),

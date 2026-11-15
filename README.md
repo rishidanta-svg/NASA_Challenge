@@ -30,6 +30,31 @@ This repository pairs the **quantitative boundary validation pipeline** (`run_va
 
 ---
 
+## Reconstruction Algorithm: Robust Generalized-Bayesian Fusion
+
+The current reconstruction layer is implemented in `src/reconstruct.py`. It keeps
+the validated Sentinel-2 NDWI waterline separate from the Sentinel-1 dune-toe
+estimate. For the dune toe, it combines VV/VH evidence using Student-t
+observation likelihoods with a small uniform outlier component and a uniform
+cross-shore prior. Because VV and VH come from the same Sentinel-1 acquisition,
+their log-likelihood contributions are tempered (power 0.5 each) rather than
+treated as independent observations. Large VV/VH disagreements are flagged and
+the fused point estimate is withheld. LiDAR is used only after estimation for
+independent scoring.
+
+**Current local validation result (2026-11-15):** 132 of 150 alongshore rows
+received accepted Bayesian dune-toe estimates; 18 were flagged as ambiguous.
+On the 41 accepted rows with LiDAR dune-toe references, Bayesian RMSE was
+**7.19 m**, compared with **7.16 m** for the v1 inverse-variance baseline on
+those same rows. The baseline on all 42 matched rows had RMSE **7.08 m**.
+Therefore, this run does **not** demonstrate an accuracy improvement from the
+Bayesian estimator. Its current demonstrated benefit is explicit uncertainty
+handling and withholding estimates where the two radar polarizations conflict.
+The model is a generalized-Bayesian approximation, not a fully calibrated
+posterior: the VV/VH dependence is tempered rather than estimated from
+independent calibration data. Further validation is required before claiming
+superior accuracy or operational performance.
+
 ## Reproducing the Validation Pipeline
 
 ### 1. Reproduce metrics, figures, and reports from included preprocessed data (no credentials needed)

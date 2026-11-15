@@ -10,29 +10,28 @@ import { MapView } from './map/MapView';
 import { useApp } from './state/store';
 
 export function App() {
-  const { selectedTransectId, set } = useApp();
+  const set = useApp((state) => state.set);
 
   const loadAll = useCallback(
     async (force = false) => {
       if (force) clearCache('api:');
-      const [studyArea, layers, acquisitions, transects, terrainChange] = await Promise.all([
-        getStudyArea(),
-        getLayers(),
-        getAcquisitions(),
-        getTransects(),
-        getTerrainChange(),
+      await Promise.all([
+        getStudyArea().then((studyArea) => set({ studyArea })),
+        getLayers().then((layers) => set({ layers })),
+        getAcquisitions().then((acquisitions) => set({ acquisitions })),
+        getTerrainChange().then((terrainChange) => set({ terrainChange })),
+        getTransects().then((transects) => {
+          const selected = useApp.getState().selectedTransectId;
+          const features = transects.data ?? [];
+          const selectedTransectId = features.some((feature) => feature.properties.id === selected)
+            ? selected
+            : features[1]?.properties.id ?? features[0]?.properties.id ?? null;
+          set({ transects, selectedTransectId });
+        }),
       ]);
-      const defaultTransectId = selectedTransectId ?? transects.data?.[1]?.properties.id ?? transects.data?.[0]?.properties.id ?? null;
-      set({
-        studyArea,
-        layers,
-        acquisitions,
-        transects,
-        terrainChange,
-        selectedTransectId: defaultTransectId,
-      });
+
     },
-    [selectedTransectId, set],
+    [set],
   );
 
   useEffect(() => {

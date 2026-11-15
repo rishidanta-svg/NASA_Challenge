@@ -15,13 +15,14 @@ export function CrossSection() {
   useEffect(() => {
     if (!selectedTransectId) return;
     let cancelled = false;
-    void (async () => {
-      const [d, a] = await Promise.all([getTransect(selectedTransectId), getAnalysis(selectedTransectId)]);
-      if (!cancelled) {
-        setDetail(d);
-        setAnalysis(a);
-      }
-    })();
+    setDetail(null);
+    setAnalysis(null);
+    void getTransect(selectedTransectId).then((result) => {
+      if (!cancelled) setDetail(result);
+    });
+    void getAnalysis(selectedTransectId).then((result) => {
+      if (!cancelled) setAnalysis(result);
+    });
     return () => {
       cancelled = true;
     };
@@ -45,8 +46,8 @@ export function CrossSection() {
   const sx = (x: number) => pad.l + ((x - xMin) / (xMax - xMin || 1)) * (W - pad.l - pad.r);
   const sy = (z: number) => pad.t + ((zMax - z) / (zMax - zMin || 1)) * (H - pad.t - pad.b);
 
-  const linePath = (pts: { x_m: number; z_m: number }[]) =>
-    pts.map((p, i) => `${i === 0 ? 'M' : 'L'}${sx(p.x_m).toFixed(1)},${sy(p.z_m).toFixed(1)}`).join(' ');
+  const linePath = (pts: { x_m: number; z_m: number }[], maxStep = Infinity) =>
+    pts.map((p, i) => `${i === 0 || p.x_m - pts[i - 1]!.x_m > maxStep ? 'M' : 'L'}${sx(p.x_m).toFixed(1)},${sy(p.z_m).toFixed(1)}`).join(' ');
 
   const modelBandPath = () => {
     if (!a?.points.length) return '';
@@ -190,8 +191,8 @@ export function CrossSection() {
               )}
 
               {/* Measured / primary epoch curves */}
-              <path d={linePath(june.points)} fill="none" stroke="#65dfce" strokeWidth="2" />
-              <path d={linePath(october.points)} fill="none" stroke="#edbf7c" strokeWidth="2" />
+              <path d={linePath(june.points, 1.01)} fill="none" stroke="#65dfce" strokeWidth="2" />
+              <path d={linePath(october.points, 1.01)} fill="none" stroke="#edbf7c" strokeWidth="2" />
 
               {hoverX !== null && (
                 <line
@@ -216,7 +217,7 @@ export function CrossSection() {
               <div className="mono" style={{ fontSize: 11, marginTop: 8, lineHeight: 1.5 }}>
                 {hoverX !== null && hJune && hOct ? (
                   <>
-                    <div>FRF x = {hJune.x_m.toFixed(1)} m</div>
+                    <div>Along transect = {hJune.x_m.toFixed(1)} m</div>
                     <div>
                       June z = {hJune.z_m.toFixed(2)} m · Oct z = {hOct.z_m.toFixed(2)} m (Δz ={' '}
                       {(hOct.z_m - hJune.z_m).toFixed(2)} m)

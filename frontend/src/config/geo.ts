@@ -9,7 +9,7 @@
 /** Study-area bounds as given in the project brief (WGS84 degrees). */
 export const STUDY_BOUNDS = {
   west: -75.753384,
-  south: 36.18370,
+  south: 36.183704,
   east: -75.750335,
   north: 36.18826,
 } as const;

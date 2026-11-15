@@ -1,61 +1,91 @@
 import { expect, test } from '@playwright/test';
 
-const ARTIFACT_DIR = '/Users/tanvidanta/.gemini/antigravity/brain/7e0d87ad-fc9f-4aba-acea-1e94e9a2d8b7';
+test('POLTERGEIST displays live NOAA and verified June and October Duck FRF layers in 2D and 3D', async ({ page }, info) => {
+  const images = new Set<string>();
+  const errors: string[] = [];
+  const failures: string[] = [];
+  let basemapLoaded = false;
+  page.on('pageerror', (error) => errors.push(error.message));
+  page.on('response', (response) => {
+    const url = new URL(response.url());
+    if (url.hostname === 'tiles.openfreemap.org' && url.pathname.includes('/styles/') && response.ok()) basemapLoaded = true;
+    const layer = /^\/api\/tiles\/([^/]+)\//.exec(url.pathname)?.[1];
+    if (layer && response.ok() && response.headers()['content-type'] === 'image/png') images.add(layer);
+    if (layer && response.status() >= 400) failures.push(`${layer} ${response.status()}`);
+  });
+  const noaa = page.waitForResponse((r) => r.url().endsWith('/api/environment/latest') && r.ok());
 
-test('POLTERGEIST 2D -> 3D Duck FRF coastal map, scientific slots, cross-section, and live NOAA data', async ({
-  page,
-}) => {
   await page.goto('/');
-
-  // Verify POLTERGEIST branding (no LITTORAL branding)
   await expect(page.locator('.brand-title')).toHaveText('POLTERGEIST');
-  await expect(page.locator('body')).not.toContainText('LITTORAL');
+  await expect(page.locator('.maplibregl-canvas').first()).toBeVisible();
+  await expect.poll(() => basemapLoaded, { timeout: 20_000 }).toBe(true);
 
-  // Verify MapLibre canvas renders
-  const canvas = page.locator('.maplibregl-canvas').first();
-  await expect(canvas).toBeVisible();
-
-  // Verify all 10 scientific overlay slots exist
-  for (const slotId of [
-    'lidar-dz',
-    'nisar-hh',
-    'nisar-hv',
-    'nisar-boundary',
-    's1-vv',
-    's1-vh',
-    's2-index',
-    's2-boundary',
-    'model-dz',
-    'model-sigma',
-  ]) {
-    await expect(page.getByTestId(`slot-${slotId}`)).toBeVisible();
+  const zoom = () => page.locator('.map-hud-camera').innerText().then((value) => Number(/Z ([0-9.]+)/.exec(value)?.[1]));
+  await expect.poll(zoom).toBeGreaterThan(15);
+  const dz = page.getByTestId('slot-lidar-dz');
+  await expect(dz.getByRole('img')).toHaveAccessibleName('Color scale from -2.5 to 2.5 m');
+  await expect.poll(() => images.has('lidar-dz-2026-oct-jun'), { timeout: 20_000 }).toBe(true);
+  for (const slot of ['nisar-boundary','s1-vv','s1-vh','s2-index','s2-boundary','model-dz','model-sigma']) {
+    await expect(page.getByTestId(`slot-${slot}`).getByText('AWAITING')).toBeVisible();
   }
 
-  // Enable radar and optical boundaries + model prediction
-  await page.getByTestId('slot-nisar-boundary').locator('input[type="checkbox"]').check();
-  await page.getByTestId('slot-s2-boundary').locator('input[type="checkbox"]').check();
-
-  // Select transect FRF-Y1000 and verify Inspector + Cross-Section update
-  await page.getByTestId('transect-FRF-Y1000').click();
-  await expect(page.getByTestId('cross-section')).toContainText('FRF y = 1000 m (FRF-Y1000)');
-
-  // Wait for OpenFreeMap tiles + live NOAA 8651370 response to settle
-  await page.waitForTimeout(3500);
+  await page.getByTestId('transect-FRF-950').click();
+  await expect(page.getByTestId('cross-section')).toContainText('FRF y = 950 m (FRF-950)');
+  await expect(page.getByTestId('cross-section')).toContainText('REAL · VERIFIED');
+  await expect(page.getByRole('img', {name: 'Cross-shore elevation profile for FRF y = 950 m'})).toBeVisible();
+  const environment = await (await noaa).json();
+  const water = environment.observations.find((item: { variable: string }) => item.variable === 'water_level');
+  expect(water.station_id).toBe('8651370');
+  expect(water.observed_at).toMatch(/^\d{4}-\d{2}-\d{2}T/);
+  expect(Number.isFinite(water.value)).toBe(true);
   await expect(page.getByTestId('env-panel')).toContainText('Water level');
+  await expect(page.getByTestId('env-panel')).toContainText('NAVD88');
+  await dz.scrollIntoViewIfNeeded();
+  await page.screenshot({ path: info.outputPath('duck-2d-measured-change.png') });
 
-  // Capture 2D verified screenshot
-  await page.screenshot({ path: `${ARTIFACT_DIR}/poltergeist-2d-duck-frf.png` });
+  const toggle = (id: string) => page.getByTestId(`slot-${id}`).getByRole('checkbox');
+  await toggle('lidar-dz').uncheck();
+  for (const [slot, layer] of [
+    ['lidar-elevation', 'lidar-elevation-june'],
+    ['lidar-coverage', 'lidar-paired-coverage'],
+    ['nisar-quality', 'nisar-quality-june'],
+    ['nisar-hh-change', 'nisar-hh-change'],
+    ['nisar-hv-change', 'nisar-hv-change'],
+  ]) {
+    await toggle(slot!).check();
+    await expect.poll(() => images.has(layer!)).toBe(true);
+    await toggle(slot!).uncheck();
+  }
+  for (const pol of ['hh', 'hv']) {
+    await toggle(`nisar-${pol}`).check();
+    await expect.poll(() => images.has(`nisar-${pol}-june`)).toBe(true);
+  }
+  await page.screenshot({ path: info.outputPath('duck-june-radar.png') });
+  await page.getByRole('button', { name: 'Oct 2026' }).click();
+  for (const pol of ['hh', 'hv']) {
+    await expect(page.getByTestId(`slot-nisar-${pol}`)).toContainText('October 2026');
+    await expect.poll(() => images.has(`nisar-${pol}-october`)).toBe(true);
+  }
+  await page.getByTestId('slot-nisar-hv').scrollIntoViewIfNeeded();
+  await page.screenshot({ path: info.outputPath('duck-october-radar.png') });
 
-  // Switch basemap to Dark and confirm scientific overlays remain active
+  await toggle('nisar-hh').uncheck();
+  await toggle('nisar-hv').uncheck();
+  await toggle('lidar-elevation').check();
+  await expect.poll(() => images.has('lidar-elevation-october')).toBe(true);
+  const darkStyle = page.waitForResponse((r) => r.url().endsWith('/styles/dark') && r.ok());
   await page.getByTestId('basemap-select').selectOption('dark');
-  await page.waitForTimeout(2000);
-
-  // Switch to Phase 2: 3D Terrain mode
+  await darkStyle;
+  await page.getByRole('combobox', { name: '3D elevation DEM source' }).selectOption('lidar-dem-october');
   await page.getByTestId('mode-3d').click();
-  await expect(page.locator('.map-hud-top-left')).toContainText('3D');
-  await expect(page.locator('.map-hud-top-left')).toContainText('1× vert');
-  await page.waitForTimeout(2500);
-
-  // Capture 3D verified screenshot
-  await page.screenshot({ path: `${ARTIFACT_DIR}/poltergeist-3d-terrain.png` });
+  await expect(page.locator('.map-hud-top-left')).toContainText('USACE LiDAR ~1 m');
+  await expect.poll(() => images.has('lidar-dem-october'), { timeout: 18_000 }).toBe(true);
+  await expect.poll(zoom).toBeGreaterThan(15);
+  await expect(page.getByRole('slider', { name: 'Camera tilt degrees' })).toHaveValue('58');
+  await page.getByRole('slider', { name: '3D vertical exaggeration' }).fill('2');
+  await expect(page.locator('.map-hud-top-left')).toContainText('2× vert');
+  await page.getByTestId('slot-lidar-elevation').scrollIntoViewIfNeeded();
+  await page.screenshot({ path: info.outputPath('duck-3d-lidar.png') });
+  expect(failures).toEqual([]);
+  expect(errors).toEqual([]);
 });

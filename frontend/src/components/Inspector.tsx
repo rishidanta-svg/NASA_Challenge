@@ -23,13 +23,14 @@ export function Inspector() {
       return;
     }
     let cancelled = false;
-    void (async () => {
-      const [t, a] = await Promise.all([getTransect(selectedTransectId), getAnalysis(selectedTransectId)]);
-      if (!cancelled) {
-        setTransect(t);
-        setAnalysis(a);
-      }
-    })();
+    setTransect(null);
+    setAnalysis(null);
+    void getTransect(selectedTransectId).then((result) => {
+      if (!cancelled) setTransect(result);
+    });
+    void getAnalysis(selectedTransectId).then((result) => {
+      if (!cancelled) setAnalysis(result);
+    });
     return () => {
       cancelled = true;
     };
@@ -203,7 +204,7 @@ export function Inspector() {
               <div className="slot-card" style={{ marginTop: 8 }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <span className="eyebrow">PHYSICS-INFORMED MODEL</span>
-                  <DataStateBadge state={analysis?.state ?? 'mock'} inferred />
+                  <DataStateBadge state={analysis?.state ?? 'unavailable'} inferred />
                 </div>
                 <div className="slot-meta" style={{ marginTop: 4 }}>
                   <strong>{aData.model_name}</strong> ({aData.model_version}) · Target: {aData.target_epoch_label}

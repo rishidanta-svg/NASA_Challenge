@@ -5,18 +5,14 @@
  * data came from:
  *   real        — validated response from FastAPI (or NOAA for environment)
  *   config      — declared project configuration (e.g. the study bbox)
- *   mock        — synthetic placeholder because the backend is unreachable / not implemented
  *   unavailable — no data (never filled with invented values)
  *
- * Mock fallback happens only for network errors, 404/501 and explicit
- * `{status:"unavailable"}` responses. A response that violates the contract is
- * reported as an error (state "unavailable"), not silently replaced.
+ * Unavailable or invalid science responses retain their own state.
  */
 import type { ZodType, ZodTypeDef } from 'zod';
 import { API_BASE_URL, ENVIRONMENT_SOURCE, NOAA_STATION } from '../config/env';
 import { FRF_Y_RANGE_M, NOAA_DUCK_STATION, STUDY_BOUNDS } from '../config/geo';
-import { ApiError, cached, fetchJson } from './http';
-import { mockAnalysis, mockLayers, mockTerrainChange, mockTransectDetail, mockTransectSummaries } from './mock';
+import { cached, fetchJson } from './http';
 import { fetchNoaaLatest } from './noaa';
 import {
   AcquisitionListSchema,
@@ -67,39 +63,30 @@ export function apiUrl(path: string): string {
   return /^https?:\/\//.test(path) ? path : `${API_BASE_URL}${path}`;
 }
 
-type Got<T> = { ok: true; data: T } | { ok: false; fallback: boolean; reason: string };
+type Got<T> = { ok: true; data: T } | { ok: false; reason: string };
 
-/** Fetch + validate. `fallback` tells the caller whether mock substitution is appropriate. */
+/** Fetch and validate one independent product. */
 async function get<T>(path: string, schema: ZodType<T, ZodTypeDef, unknown>, ttlMs: number): Promise<Got<T>> {
   try {
     const body = await cached(`api:${path}`, ttlMs, () => fetchJson(apiUrl(path)));
     const un = UnavailableSchema.safeParse(body);
-    if (un.success) return { ok: false, fallback: true, reason: `Backend: ${un.data.reason}` };
+    if (un.success) return { ok: false, reason: `Backend: ${un.data.reason}` };
     const parsed = schema.safeParse(body);
     if (!parsed.success) {
       const issue = parsed.error.issues[0];
       return {
         ok: false,
-        fallback: false,
         reason: `Contract violation at ${path}: ${issue?.path.join('.') || '(root)'} — ${issue?.message ?? 'invalid'}`,
       };
     }
     return { ok: true, data: parsed.data };
   } catch (err) {
-    if (err instanceof ApiError) {
-      const fallback = err.kind === 'network' || err.kind === 'timeout' || err.status === 404 || err.status === 501;
-      return { ok: false, fallback, reason: err.message };
-    }
-    return { ok: false, fallback: true, reason: String(err) };
+    return { ok: false, reason: err instanceof Error ? err.message : String(err) };
   }
 }
 
-function withMock<T>(g: Got<T>, mock: () => T | null): Sourced<T> {
+function sourced<T>(g: Got<T>): Sourced<T> {
   if (g.ok) return { data: g.data, state: 'real', origin: 'fastapi', fetchedAt: now() };
-  if (g.fallback) {
-    const data = mock();
-    if (data !== null) return { data, state: 'mock', origin: 'mock', reason: g.reason, fetchedAt: now() };
-  }
   return { data: null, state: 'unavailable', origin: 'none', reason: g.reason, fetchedAt: now() };
 }
 
@@ -128,24 +115,24 @@ export async function getAcquisitions(): Promise<Sourced<Acquisition[]>> {
 }
 
 export async function getLayers(): Promise<Sourced<LayerDescriptor[]>> {
-  return withMock(await get(ENDPOINTS.layers, LayerListSchema, 300_000), mockLayers);
+  return sourced(await get(ENDPOINTS.layers, LayerListSchema, 300_000));
 }
 
 export async function getTerrainChange(): Promise<Sourced<TerrainChange>> {
-  return withMock(await get(ENDPOINTS.terrainChange, TerrainChangeSchema, 300_000), mockTerrainChange);
+  return sourced(await get(ENDPOINTS.terrainChange, TerrainChangeSchema, 300_000));
 }
 
 export async function getTransects(): Promise<Sourced<TransectSummary[]>> {
   const g = await get(ENDPOINTS.transects, TransectCollectionSchema, 300_000);
-  return withMock(g.ok ? { ok: true, data: g.data.features } : g, mockTransectSummaries);
+  return sourced(g.ok ? { ok: true, data: g.data.features } : g);
 }
 
 export async function getTransect(id: string): Promise<Sourced<TransectDetail>> {
-  return withMock(await get(ENDPOINTS.transect(id), TransectDetailSchema, 300_000), () => mockTransectDetail(id));
+  return sourced(await get(ENDPOINTS.transect(id), TransectDetailSchema, 300_000));
 }
 
 export async function getAnalysis(id: string): Promise<Sourced<Analysis>> {
-  return withMock(await get(ENDPOINTS.analysis(id), AnalysisSchema, 300_000), () => mockAnalysis(id));
+  return sourced(await get(ENDPOINTS.analysis(id), AnalysisSchema, 300_000));
 }
 
 /**

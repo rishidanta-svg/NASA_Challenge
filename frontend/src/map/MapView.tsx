@@ -130,8 +130,8 @@ export function MapView() {
     const map = new maplibregl.Map({
       container: primaryRef.current,
       style: initialStyle,
-      center: REGIONAL_VIEW.center,
-      zoom: REGIONAL_VIEW.zoom,
+      bounds: STUDY_BBOX,
+      fitBoundsOptions: { padding: 65 },
       pitch: 0,
       bearing: 0,
       maxPitch: 82,
@@ -155,11 +155,10 @@ export function MapView() {
       syncSecondary();
     };
 
+    syncCam();
     map.on('load', () => {
       syncScientific(map, ctxPrimaryRef.current);
       syncCam();
-      // Smoothly frame the Duck FRF study area after initial regional context load
-      map.fitBounds(STUDY_BBOX, { padding: 65, duration: 1500 });
     });
 
     map.on('style.load', () => {

@@ -94,6 +94,7 @@ export function LayerPanel() {
               value={terrainSource}
               onChange={(e) => set({ terrainSource: e.target.value })}
               aria-label="3D elevation DEM source"
+              style={{ minWidth: 0, maxWidth: '72%' }}
             >
               <option value="aws">AWS Regional Terrain (Terrarium)</option>
               {dems.map((d) => (

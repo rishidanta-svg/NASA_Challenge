@@ -2,7 +2,7 @@
 
 This document defines the HTTP/JSON/GeoJSON/Tile contract consumed by the **POLTERGEIST** Map & Visualization frontend (`frontend/src/api/schemas.ts` and `frontend/src/api/client.ts`).
 
-The frontend validates every response at runtime with Zod. While the FastAPI backend is offline or a specific dataset is not yet produced, the frontend remains functional using clearly watermarked `MOCK` overlays, `AWAITING DATA` slot badges, and direct browser queries to **NOAA CO-OPS Station 8651370 (Duck, NC)**.
+The frontend validates every response at runtime with Zod. Each verified dataset loads independently. Unavailable datasets show `AWAITING DATA`. The browser can query **NOAA CO-OPS Station 8651370 (Duck, NC)** directly if the API is unavailable.
 
 ---
 
@@ -25,13 +25,17 @@ The frontend validates every response at runtime with Zod. While the FastAPI bac
 
 ## 2. Overlay Slot Identifiers (`slot`)
 
-The frontend provides 10 independent scientific overlay slots (`frontend/src/config/slots.ts`). Each item returned by `GET /api/layers` maps into one slot via its `slot` field:
+The frontend provides independent scientific overlay slots (`frontend/src/config/slots.ts`). Each item returned by `GET /api/layers` maps into one slot via its `slot` field:
 
 | `slot` | `group` | `sensor` | Physical Meaning | `inferred` |
 |---|---|---|---|---|
 | `lidar-dz` | `measured` | `LIDAR` | Measured bare-earth elevation change ($\Delta z$, m) | `false` |
 | `nisar-hh` | `sensor` | `NISAR` | L-band GCOV backscatter, HH polarisation (dB) | `false` |
 | `nisar-hv` | `sensor` | `NISAR` | L-band GCOV backscatter, HV polarisation (dB) | `false` |
+| `lidar-elevation` | `measured` | `LIDAR` | Per-epoch bare-earth height (m NAVD88) | `false` |
+| `lidar-coverage` | `measured` | `LIDAR` | Paired valid area fraction per 10 m cell | `false` |
+| `nisar-hh-change`, `nisar-hv-change` | `sensor` | `NISAR` | October minus June scattering (dB) | `false` |
+| `nisar-quality` | `sensor` | `NISAR` | GCOV valid-data support | `false` |
 | `nisar-boundary` | `sensor` | `NISAR` | Extracted radar backscatter transition line (never equated with physical erosion) | `false` |
 | `s1-vv` | `sensor` | `SENTINEL-1` | C-band backscatter, VV polarisation (dB) | `false` |
 | `s1-vh` | `sensor` | `SENTINEL-1` | C-band backscatter, VH polarisation (dB) | `false` |
@@ -90,7 +94,7 @@ Chronological list of verified satellite and LiDAR acquisitions over Duck FRF (J
 ```
 
 ### 3.3 `GET /api/layers`
-List of layer descriptors populating the 10 scientific slots (and optional `raster_dem` LiDAR 3D terrain sources).
+List of layer descriptors populating the scientific slots (and optional `raster_dem` LiDAR 3D terrain sources).
 
 ```json
 [
@@ -140,3 +144,9 @@ Physics-informed model output along transect `{id}`. Must declare `"inferred": t
 
 ### 3.7 `GET /api/environment/latest`
 Latest verified NOAA/USACE environmental measurements at Duck Pier (station `8651370`), with `observed_at` UTC timestamps, `units`, `datum`, and `qc_flag`.
+
+### 3.8 Raster and observed-geometry assets
+
+Raster descriptors use relative `/api/tiles/{id}/{z}/{x}/{y}.png` URLs. Resolve them against the configured API base. `GET /api/rasters/{id}.tif` returns the original registered COG. `GET /api/transects/observations.geojson` returns the measured line segments with gaps preserved. The main transect endpoint returns one selectable reference line per profile. Its horizontal distances are relative to the start of that line, with the FRF x origin described in `x_reference`.
+
+The selectable LiDAR 3D sources encode the 1 m UTM display DEMs with Terrarium. Tiles use AWS regional terrain outside the valid LiDAR footprint. Scientific elevations and changes use the original NAVD88 LiDAR support and preserve NoData.

@@ -8,6 +8,12 @@ This repository pairs the **quantitative boundary validation pipeline** (`run_va
 
 ---
 
+## Run the integrated POLTERGEIST map
+
+The React and MapLibre app and FastAPI data service run together from this checkout. See the [local setup and integration QA](docs/full-integration.md).
+
+---
+
 ## Key Validation Deliverables & Quick Links
 
 - **Plain-English Validation Report:** [`VALIDATION_SUMMARY.md`](VALIDATION_SUMMARY.md)

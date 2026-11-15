@@ -1,0 +1,551 @@
+{
+  "schema_version": 1,
+  "status": "verified_lidar_only",
+  "created_utc": "2026-11-15T05:32:25.127354+00:00",
+  "study_wsen_epsg4326": [
+    -75.753384,
+    36.183704,
+    -75.750335,
+    36.18826
+  ],
+  "frf_y_range_m": [
+    700,
+    1190
+  ],
+  "source": {
+    "june": {
+      "filename": "raw/frf_june_slice.nc",
+      "bytes": 293455,
+      "sha256": "988a852ad55a78b567cc8b72fa588a670322043d0897ab04d6285690e09026a8",
+      "source_filename": "FRF-geomorphology_DEMs_duneLidarDEM_202606.nc",
+      "url": "https://chldata.erdc.dren.mil/thredds/dodsC/frf/geomorphology/DEMs/duneLidarDEM/2026/FRF-geomorphology_DEMs_duneLidarDEM_202606.nc",
+      "file_server_url": "https://chldata.erdc.dren.mil/thredds/fileServer/frf/geomorphology/DEMs/duneLidarDEM/2026/FRF-geomorphology_DEMs_duneLidarDEM_202606.nc",
+      "retrieved_at": "2026-11-15T05:07:31.378257+00:00",
+      "timestamp_utc": "2026-06-19T00:31:04Z",
+      "decoded_netcdf_time_utc": "2026-06-19T00:31:03.999998+00:00",
+      "netcdf_time_coordinate": 1781829063.999998,
+      "netcdf_time_units": "seconds since 1970-01-01 00:00:00",
+      "netcdf_calendar": "gregorian",
+      "source_time_index": 111,
+      "horizontal_datum": "FRF coordinates (rotated from NAD83(2011), North Carolina State Plane, meters(3200) using origin [901951.6805 E, 274093.1562 N] and rotation angle 69.9747)",
+      "vertical_datum": "NAVD88 (geoid12b)",
+      "source_elevation_fill": -999.99,
+      "source_license": "These data may be redistributed and used without restriction. Data are intended for scholarly use by the research community, with the express agreement that users will properly acknowledge the USACE Field Research Facility and the supporting investigator(s). Use or reproduction of these data for commercial purposes is prohibited without prior written permission.",
+      "quality": {
+        "coregQCFlag": 1.0,
+        "coregAlgorithmFlag": 1.0,
+        "rmsReflectorError": 0.09749265875906821,
+        "assessmentPlanesOffset": 0.039278837942281666,
+        "translationSigma": [
+          0.001652577210725563,
+          0.0006978537898480224,
+          0.0008360905948694014
+        ],
+        "rotationSigma": [
+          5.831602309040183e-06,
+          9.6774472330942e-06,
+          5.3128917278703295e-06
+        ]
+      },
+      "source_quality_attributes": {
+        "coregQCFlag": "'Coregistration algorithm quality indicator. This flag should be used to evaluate quality of DEM rectification prior to data use.  Flag 1 indicates co-registration using a plane-matching co-registration algorithm, norm of translationSigma < 0.004 m, norm of the assessment plane offsets < 0.1 m, and the RMS reflector error < 0.1 m. Flag 2 indicates that the original rectification matrix was used (the scan was not co-registered). Flag 3 indicates co-registration using a plane-matching algorithm with a combined translationSigma >= 0.004 m or a different co-registration algorithm used, with the norm of the assessment plane offsets < 0.1 m, and the RMS reflector error < 0.1 m. Flag 4 indicates that the norm of the assessment plane offsets >= 0.1 m or the RMS reflector error >= 0.1 m Flag 9 indicates that the scan was missing or that co-registration was not attempted General flag definitions guided by the Ocean Data Standards, UNESCO 2013 - IOC Manurals and Guides, 54, Volume 3 Version 1.'",
+        "coregAlgorithmFlag": "'Coregistration algorithm type indicator. See coregQCFlag for indication of overall coregistration quality and rotationSigms/translationSigma for plane-matching coregistration quality. Flag 1 indicates co-registration using a plane-matching co-registration algorithm. Flag 2 indicates no co-registration, using only the appropriate rectification matrix. Flag 3 indicates co-registration using a recent scan's coregistration matrix, within 12 hours before scan or 6 hours since scan. Flag 4 indicates co-registration using reflector centroids of the closest four reflectors, exclude the furthest reflector. Flag 5 indicates co-registration using reflector centroids of five reflectors. Flag 6 indicates co-registration using reflector centroids of six reflectors. Flag 9 indicates no co-registration attempted.'",
+        "rmsReflectorError": "'Root mean square residual error of the centroids of 4-6 reflectors in scan.  Actual reflector centroid locations were determined from a 3-minute survey using real-time kinematic (RTK) global positioning system (GPS) surveying equipment, with position converted to the local FRF coordinate system. Reflector centroids in scan were found using a reflectance threshold in 1 m cube around surveyed reflector location. See rotationSigma and translationSigma for the residual standard error in rotation and translation, respectively, from the plane-matching algorithm. See assessmentPlanesOffset for the norm of the x-, y-, and z-offsets from the co-registration assessment planes. Co-registration QC Flag indicates the overall quality of the co-registration. Co-registration Algorithm Flag indicates which alogrithm was used for co-registration.'",
+        "assessmentPlanesOffset": "'Norm of offsets in the x-, y-, and z-directions from the co-registration accuracy assessment planes in meters. The y-z assessment plane is a support beam on the FRF Pier, centered at approximately 182.33, 516.56, 6.17 (xFRF, yFRF, elevation) and is 0.037 m x 3.24 m x 0.89 m.  The y-z assessment plane is located approximately 449 m from the lidar.  The x-z assessment plane is the front face of the structure immediately to the south of the main FRF building, centered at approximately -33.70, 482.39, 7.96 (xFRF, yFRF, elevation) and is 2.81 m x 0.053 m x 2.40 m. The x-z assessment plane is located approximately 470 m from the lidar. The x-y assessment plane is a portion of the cul-de-sac in the neighborhood to the north of the device, centered at approximately -24.89, 1085.11, 3.25 (xFRF, yFRF, elevation) and is 2.36 m x 4.00 m x 0.043 m. The x-y assessment plane is located approximately 159 m from the lidar. Note that this offset is not indicative of the offset across the entire DEM.  See rotationSigma and translationSigma for the residual standard error in rotation and translation, respectively, from the plane-matching algorithm. Co-registration QC Flag indicates the overall quality of the co-registration. Co-registration Algorithm Flag indicates which alogrithm was used for co-registration.'",
+        "translationSigma": "'Residual standard error in translation calculated from the least squares fit during plane-matching co-registration with dimensions listed in errorDimension. See rotationSigma for the residual standard error in rotation from plane-matching co-registration. See assessmentPlanesOffset for the norm of the x-, y-, and z-offsets from the co-registration assessment planes. See rmsReflectorError for RMS error of reflector centroids in scan. Co-registration QC Flag indicates the overall quality of the co-registration. Co-registration Algorithm Flag indicates which alogrithm was used for co-registration.'",
+        "rotationSigma": "'Residual standard error in rotation calculated from the least squares fit during plane-matching co-registration with dimensions listed in errorDimension. See translationSigma for the residual standard error in translation from plane-matching co-registration. See assessmentPlanesOffset for the norm of the x-, y-, and z-offsets from the co-registration assessment planes. See rmsReflectorError for RMS error of reflector centroids in scan. Co-registration QC Flag indicates the overall quality of the co-registration. Co-registration Algorithm Flag indicates which alogrithm was used for co-registration.'"
+      },
+      "coordinate_check_residual_m": {
+        "valid_pixels": 63960,
+        "min": 0.02983762669801321,
+        "max": 0.069570564716709,
+        "mean": 0.04787898694947289,
+        "median": 0.047177507697651805,
+        "std": 0.01061936843211166,
+        "rmse": 0.04904251601625598
+      },
+      "horizontal_operation": "Inverse of SPCS83 North Carolina zone (meters) + NAD83(2011) to WGS 84 (1) + UTM zone 18N",
+      "horizontal_operation_reported_accuracy_m": 2.0,
+      "source_center_lonlat": [
+        -75.75168706902073,
+        36.18370440071783
+      ],
+      "pixel_center_bounds_wsen": [
+        -75.75338781282922,
+        36.183704319790714,
+        -75.75032467797341,
+        36.188271189962705
+      ],
+      "status": "numeric_slice_verified"
+    },
+    "october": {
+      "filename": "raw/frf_october_slice.nc",
+      "bytes": 290215,
+      "sha256": "4196707bccdf047621e4261bffd4c3477feb487bfc4402290d4b18e9abb40bac",
+      "source_filename": "FRF-geomorphology_DEMs_duneLidarDEM_202610.nc",
+      "url": "https://chldata.erdc.dren.mil/thredds/dodsC/frf/geomorphology/DEMs/duneLidarDEM/2026/FRF-geomorphology_DEMs_duneLidarDEM_202610.nc",
+      "file_server_url": "https://chldata.erdc.dren.mil/thredds/fileServer/frf/geomorphology/DEMs/duneLidarDEM/2026/FRF-geomorphology_DEMs_duneLidarDEM_202610.nc",
+      "retrieved_at": "2026-11-15T05:07:39.374282+00:00",
+      "timestamp_utc": "2026-10-16T23:33:04Z",
+      "decoded_netcdf_time_utc": "2026-10-16T23:33:04.000004+00:00",
+      "netcdf_time_coordinate": 1792193584.0000045,
+      "netcdf_time_units": "seconds since 1970-01-01 00:00:00",
+      "netcdf_calendar": "gregorian",
+      "source_time_index": 362,
+      "horizontal_datum": "FRF coordinates (rotated from NAD83(2011), North Carolina State Plane, meters(3200) using origin [901951.6805 E, 274093.1562 N] and rotation angle 69.9747)",
+      "vertical_datum": "NAVD88 (geoid12b)",
+      "source_elevation_fill": -999.99,
+      "source_license": "These data may be redistributed and used without restriction. Data are intended for scholarly use by the research community, with the express agreement that users will properly acknowledge the USACE Field Research Facility and the supporting investigator(s). Use or reproduction of these data for commercial purposes is prohibited without prior written permission.",
+      "quality": {
+        "coregQCFlag": 1.0,
+        "coregAlgorithmFlag": 1.0,
+        "rmsReflectorError": 0.07538581020412906,
+        "assessmentPlanesOffset": 0.051040170880635324,
+        "translationSigma": [
+          0.0017332340216787017,
+          0.0007325056957474751,
+          0.0008812286905835825
+        ],
+        "rotationSigma": [
+          6.199482247092447e-06,
+          1.0152558095041979e-05,
+          5.580889624629147e-06
+        ]
+      },
+      "source_quality_attributes": {
+        "coregQCFlag": "'Coregistration algorithm quality indicator. This flag should be used to evaluate quality of DEM rectification prior to data use.  Flag 1 indicates co-registration using a plane-matching co-registration algorithm, norm of translationSigma < 0.004 m, norm of the assessment plane offsets < 0.1 m, and the RMS reflector error < 0.1 m. Flag 2 indicates that the original rectification matrix was used (the scan was not co-registered). Flag 3 indicates co-registration using a plane-matching algorithm with a combined translationSigma >= 0.004 m or a different co-registration algorithm used, with the norm of the assessment plane offsets < 0.1 m, and the RMS reflector error < 0.1 m. Flag 4 indicates that the norm of the assessment plane offsets >= 0.1 m or the RMS reflector error >= 0.1 m Flag 9 indicates that the scan was missing or that co-registration was not attempted General flag definitions guided by the Ocean Data Standards, UNESCO 2013 - IOC Manurals and Guides, 54, Volume 3 Version 1.'",
+        "coregAlgorithmFlag": "'Coregistration algorithm type indicator. See coregQCFlag for indication of overall coregistration quality and rotationSigms/translationSigma for plane-matching coregistration quality. Flag 1 indicates co-registration using a plane-matching co-registration algorithm. Flag 2 indicates no co-registration, using only the appropriate rectification matrix. Flag 3 indicates co-registration using a recent scan's coregistration matrix, within 12 hours before scan or 6 hours since scan. Flag 4 indicates co-registration using reflector centroids of the closest four reflectors, exclude the furthest reflector. Flag 5 indicates co-registration using reflector centroids of five reflectors. Flag 6 indicates co-registration using reflector centroids of six reflectors. Flag 9 indicates no co-registration attempted.'",
+        "rmsReflectorError": "'Root mean square residual error of the centroids of 4-6 reflectors in scan.  Actual reflector centroid locations were determined from a 3-minute survey using real-time kinematic (RTK) global positioning system (GPS) surveying equipment, with position converted to the local FRF coordinate system. Reflector centroids in scan were found using a reflectance threshold in 1 m cube around surveyed reflector location. See rotationSigma and translationSigma for the residual standard error in rotation and translation, respectively, from the plane-matching algorithm. See assessmentPlanesOffset for the norm of the x-, y-, and z-offsets from the co-registration assessment planes. Co-registration QC Flag indicates the overall quality of the co-registration. Co-registration Algorithm Flag indicates which alogrithm was used for co-registration.'",
+        "assessmentPlanesOffset": "'Norm of offsets in the x-, y-, and z-directions from the co-registration accuracy assessment planes in meters. The y-z assessment plane is a support beam on the FRF Pier, centered at approximately 182.33, 516.56, 6.17 (xFRF, yFRF, elevation) and is 0.037 m x 3.24 m x 0.89 m.  The y-z assessment plane is located approximately 449 m from the lidar.  The x-z assessment plane is the front face of the structure immediately to the south of the main FRF building, centered at approximately -33.70, 482.39, 7.96 (xFRF, yFRF, elevation) and is 2.81 m x 0.053 m x 2.40 m. The x-z assessment plane is located approximately 470 m from the lidar. The x-y assessment plane is a portion of the cul-de-sac in the neighborhood to the north of the device, centered at approximately -24.89, 1085.11, 3.25 (xFRF, yFRF, elevation) and is 2.36 m x 4.00 m x 0.043 m. The x-y assessment plane is located approximately 159 m from the lidar. Note that this offset is not indicative of the offset across the entire DEM.  See rotationSigma and translationSigma for the residual standard error in rotation and translation, respectively, from the plane-matching algorithm. Co-registration QC Flag indicates the overall quality of the co-registration. Co-registration Algorithm Flag indicates which alogrithm was used for co-registration.'",
+        "translationSigma": "'Residual standard error in translation calculated from the least squares fit during plane-matching co-registration with dimensions listed in errorDimension. See rotationSigma for the residual standard error in rotation from plane-matching co-registration. See assessmentPlanesOffset for the norm of the x-, y-, and z-offsets from the co-registration assessment planes. See rmsReflectorError for RMS error of reflector centroids in scan. Co-registration QC Flag indicates the overall quality of the co-registration. Co-registration Algorithm Flag indicates which alogrithm was used for co-registration.'",
+        "rotationSigma": "'Residual standard error in rotation calculated from the least squares fit during plane-matching co-registration with dimensions listed in errorDimension. See translationSigma for the residual standard error in translation from plane-matching co-registration. See assessmentPlanesOffset for the norm of the x-, y-, and z-offsets from the co-registration assessment planes. See rmsReflectorError for RMS error of reflector centroids in scan. Co-registration QC Flag indicates the overall quality of the co-registration. Co-registration Algorithm Flag indicates which alogrithm was used for co-registration.'"
+      },
+      "coordinate_check_residual_m": {
+        "valid_pixels": 63960,
+        "min": 0.02983762669801321,
+        "max": 0.069570564716709,
+        "mean": 0.04787898694947289,
+        "median": 0.047177507697651805,
+        "std": 0.01061936843211166,
+        "rmse": 0.04904251601625598
+      },
+      "horizontal_operation": "Inverse of SPCS83 North Carolina zone (meters) + NAD83(2011) to WGS 84 (1) + UTM zone 18N",
+      "horizontal_operation_reported_accuracy_m": 2.0,
+      "source_center_lonlat": [
+        -75.75168706902073,
+        36.18370440071783
+      ],
+      "pixel_center_bounds_wsen": [
+        -75.75338781282922,
+        36.183704319790714,
+        -75.75032467797341,
+        36.188271189962705
+      ],
+      "status": "numeric_slice_verified"
+    }
+  },
+  "native": {
+    "june": {
+      "file": "lidar_june_native.tif",
+      "valid_pixels": 19851,
+      "min": 0.4995708926100981,
+      "max": 7.998088820030788,
+      "mean": 2.9662822267029605,
+      "median": 1.960952798502118,
+      "std": 2.1242352544188443,
+      "rmse": 3.6484525027153314,
+      "missing_centers": 43900,
+      "map_derivative": {
+        "file": "lidar_june_utm_1m.tif",
+        "valid_pixels": 19822,
+        "min": 0.49957090616226196,
+        "max": 7.998088836669922,
+        "mean": 2.962409019470215,
+        "median": 1.960041880607605,
+        "std": 2.1218059062957764,
+        "rmse": 3.6438891887664795
+      }
+    },
+    "october": {
+      "file": "lidar_october_native.tif",
+      "valid_pixels": 19120,
+      "min": 0.041682826567570136,
+      "max": 7.9998632456237475,
+      "mean": 2.654897214940212,
+      "median": 1.7862682823881908,
+      "std": 2.3130302267025145,
+      "rmse": 3.5211628834146227,
+      "missing_centers": 44631,
+      "map_derivative": {
+        "file": "lidar_october_utm_1m.tif",
+        "valid_pixels": 19095,
+        "min": 0.04168282821774483,
+        "max": 7.999863147735596,
+        "mean": 2.654043197631836,
+        "median": 1.7862757444381714,
+        "std": 2.3121511936187744,
+        "rmse": 3.519941568374634
+      }
+    },
+    "delta_z": {
+      "file": "lidar_delta_z_native.tif",
+      "valid_pixels": 17466,
+      "min": -2.254744790597508,
+      "max": 0.886267400409837,
+      "mean": -0.3144888265749184,
+      "median": -0.2686067610632109,
+      "std": 0.35461300512713045,
+      "rmse": 0.47397637646380997,
+      "missing_centers": 46285,
+      "map_derivative": {
+        "file": "lidar_delta_z_utm_1m.tif",
+        "valid_pixels": 17441,
+        "min": -2.2547447681427,
+        "max": 0.8862674236297607,
+        "mean": -0.31435635685920715,
+        "median": -0.26852473616600037,
+        "std": 0.3548539876937866,
+        "rmse": 0.47406888008117676
+      }
+    },
+    "study_centers": 63751,
+    "paired_fraction_of_study_centers": 0.2739721729855218,
+    "grid": {
+      "epsg": 6542,
+      "width": 130,
+      "height": 491,
+      "affine": [
+        0.9395415039254672,
+        0.34243504844199485,
+        901581.1234642349,
+        0.34243504844199485,
+        -0.9395415039254672,
+        275225.20654483675
+      ],
+      "first_center": [
+        901581.7644525111,
+        275224.907991609
+      ]
+    },
+    "map_grid": {
+      "epsg": 32618,
+      "width": 279,
+      "height": 508,
+      "affine": [
+        1.0,
+        0.0,
+        432256.0,
+        0.0,
+        -1.0,
+        4005093.0
+      ],
+      "first_center": [
+        432256.5,
+        4005092.5
+      ]
+    }
+  },
+  "map_1m": "Nearest native sample on an EPSG:32618 display lattice",
+  "lidar_reference_grid": {
+    "grid": {
+      "epsg": 32618,
+      "width": 29,
+      "height": 52,
+      "affine": [
+        10.0,
+        0.0,
+        432250.0,
+        0.0,
+        -10.0,
+        4005100.0
+      ],
+      "first_center": [
+        432255.0,
+        4005095.0
+      ]
+    },
+    "study_intersecting_pixels": 1450,
+    "paired_lidar_pixels_at_threshold": 168,
+    "paired_lidar_fraction_of_study_intersecting_pixels": 0.11586206896551725,
+    "bands": {
+      "study_area_fraction": {
+        "valid_pixels": 1508,
+        "min": 0.0,
+        "max": 1.0,
+        "mean": 0.8866290495604816,
+        "median": 1.0,
+        "std": 0.2911136398761801,
+        "rmse": 0.9331978476435109
+      },
+      "lidar_june_m": {
+        "valid_pixels": 193,
+        "min": 0.8536877699768814,
+        "max": 7.685306364983602,
+        "mean": 2.8260794302764203,
+        "median": 1.934202792535565,
+        "std": 1.9344643072734269,
+        "rmse": 3.4247448229534356
+      },
+      "lidar_june_std_m": {
+        "valid_pixels": 193,
+        "min": 0.017305297723729275,
+        "max": 1.5461448795702613,
+        "mean": 0.3412108538690771,
+        "median": 0.2431617463606751,
+        "std": 0.3116835561015638,
+        "rmse": 0.46213795120308115
+      },
+      "lidar_june_sample_count": {
+        "valid_pixels": 1450,
+        "min": 0.0,
+        "max": 130.0,
+        "mean": 17.271724137931034,
+        "median": 0.0,
+        "std": 39.026789567217804,
+        "rmse": 42.677895433358586
+      },
+      "lidar_june_coverage": {
+        "valid_pixels": 1450,
+        "min": 0.0,
+        "max": 1.0,
+        "mean": 0.13673552516564025,
+        "median": 0.0,
+        "std": 0.31129455282724466,
+        "rmse": 0.3400013271477593
+      },
+      "lidar_june_valid": {
+        "valid_pixels": 1450,
+        "min": 0.0,
+        "max": 1.0,
+        "mean": 0.13310344827586207,
+        "median": 0.0,
+        "std": 0.33968650301849934,
+        "rmse": 0.3648334527916294
+      },
+      "lidar_october_m": {
+        "valid_pixels": 184,
+        "min": 0.3172460600429425,
+        "max": 7.6747486101464535,
+        "mean": 2.529216219886019,
+        "median": 1.7634073500870842,
+        "std": 2.143944036382144,
+        "rmse": 3.3156342859358117
+      },
+      "lidar_october_std_m": {
+        "valid_pixels": 184,
+        "min": 0.026412314783542407,
+        "max": 1.7327588504307267,
+        "mean": 0.3343467322422629,
+        "median": 0.24970319742165203,
+        "std": 0.33044658279618433,
+        "rmse": 0.4700879507525745
+      },
+      "lidar_october_sample_count": {
+        "valid_pixels": 1450,
+        "min": 0.0,
+        "max": 130.0,
+        "mean": 16.66551724137931,
+        "median": 0.0,
+        "std": 38.12061417045195,
+        "rmse": 41.604334986334926
+      },
+      "lidar_october_coverage": {
+        "valid_pixels": 1450,
+        "min": 0.0,
+        "max": 1.0,
+        "mean": 0.13168388504754605,
+        "median": 0.0,
+        "std": 0.30405963979036255,
+        "rmse": 0.3313501322327491
+      },
+      "lidar_october_valid": {
+        "valid_pixels": 1450,
+        "min": 0.0,
+        "max": 1.0,
+        "mean": 0.12689655172413794,
+        "median": 0.0,
+        "std": 0.3328570517274061,
+        "rmse": 0.35622542262468854
+      },
+      "lidar_dz_m": {
+        "valid_pixels": 168,
+        "min": -1.2092009912422483,
+        "max": 0.17983934665457724,
+        "mean": -0.3149957991531119,
+        "median": -0.2825943754415266,
+        "std": 0.28332739000293977,
+        "rmse": 0.4236705836023851
+      },
+      "lidar_dz_std_m": {
+        "valid_pixels": 168,
+        "min": 0.027488610456661386,
+        "max": 0.48205029868921834,
+        "mean": 0.17357517431150268,
+        "median": 0.14798473153440053,
+        "std": 0.10146429888796371,
+        "rmse": 0.20105557710766087
+      },
+      "lidar_dz_sample_count": {
+        "valid_pixels": 1450,
+        "min": 0.0,
+        "max": 130.0,
+        "mean": 15.21448275862069,
+        "median": 0.0,
+        "std": 36.36810174771927,
+        "rmse": 39.42231995132742
+      },
+      "lidar_dz_coverage": {
+        "valid_pixels": 1450,
+        "min": 0.0,
+        "max": 1.0,
+        "mean": 0.12028839470514166,
+        "median": 0.0,
+        "std": 0.29024883690757186,
+        "rmse": 0.3141873409718129
+      },
+      "lidar_dz_valid": {
+        "valid_pixels": 1450,
+        "min": 0.0,
+        "max": 1.0,
+        "mean": 0.11586206896551725,
+        "median": 0.0,
+        "std": 0.32005944751021953,
+        "rmse": 0.34038517735870527
+      }
+    }
+  },
+  "min_valid_area_fraction": 0.5,
+  "dispersion": "area-weighted population standard deviation",
+  "files": [
+    {
+      "filename": "comparison_pixels.csv",
+      "bytes": 205225,
+      "sha256": "ed83edc0d9ca863b35a07da91b5f94211f62c0376a519e8a6e537af91bf5f95b"
+    },
+    {
+      "filename": "duck_lidar_alignment.png",
+      "bytes": 278403,
+      "sha256": "c8f7bb2799a34fdf0b3e02764e0c091dfa107941169080424c2b2b85e23b7294"
+    },
+    {
+      "filename": "lidar_delta_z_native.tif",
+      "bytes": 145397,
+      "sha256": "ccab3785d18fafcf674f2d0fe3cda9eff5e4270e0a614e0d77882bb1b831a4fa"
+    },
+    {
+      "filename": "lidar_delta_z_utm_1m.tif",
+      "bytes": 73139,
+      "sha256": "86f4f7123f23f4c35be2ec400a96a65e4d81fc1c34112b1a9f8fce366936bf63"
+    },
+    {
+      "filename": "lidar_dz_coverage.tif",
+      "bytes": 3098,
+      "sha256": "4dbb0f2dc63880eeb938e646592e3cf61f1089138c15aabafd7668b7481ee1f7"
+    },
+    {
+      "filename": "lidar_dz_m.tif",
+      "bytes": 2857,
+      "sha256": "90e81c7d70c96a6a932c75b30b2c43f2069495740bc9755004af1719e28efa84"
+    },
+    {
+      "filename": "lidar_dz_sample_count.tif",
+      "bytes": 2636,
+      "sha256": "ed8afb867c30978fc0dd2482d8649691addf1471afdb528dcca7370f9c4e45b6"
+    },
+    {
+      "filename": "lidar_dz_std_m.tif",
+      "bytes": 2863,
+      "sha256": "5278de9e9386cffa47562c5e9b0072fcb1e05a7fb38bbe8041aac411e8c558e4"
+    },
+    {
+      "filename": "lidar_dz_valid.tif",
+      "bytes": 1954,
+      "sha256": "853081b7f6095b3b8cc07b78465e416690e16633d8804d732211cc771dae4e68"
+    },
+    {
+      "filename": "lidar_june_coverage.tif",
+      "bytes": 3138,
+      "sha256": "10824215f18e14bab4d39753a2678e76b9afa0f15505ec7ebf093f621b4cc291"
+    },
+    {
+      "filename": "lidar_june_m.tif",
+      "bytes": 3022,
+      "sha256": "16e672abfa1911a63c069191190d317295735d591154885c31bb87f71bb835f0"
+    },
+    {
+      "filename": "lidar_june_native.tif",
+      "bytes": 164120,
+      "sha256": "01e5c49ac3cae39a5ae81e2c28105694a677e5cc063019ded17fdd973110cc81"
+    },
+    {
+      "filename": "lidar_june_sample_count.tif",
+      "bytes": 2716,
+      "sha256": "53436608340a7aade452ce4074e9dfdca322adc1a0a09d451b6f79112b7b90f4"
+    },
+    {
+      "filename": "lidar_june_std_m.tif",
+      "bytes": 3033,
+      "sha256": "6a0ef517023e26b75371d79efbcd9300451b05bcc5c474a97e96464f7a0cd933"
+    },
+    {
+      "filename": "lidar_june_utm_1m.tif",
+      "bytes": 78328,
+      "sha256": "d3984fa4bd2a596573458534830f0c79b9f9e87c54fc24c62fc406f19f603f09"
+    },
+    {
+      "filename": "lidar_june_valid.tif",
+      "bytes": 2036,
+      "sha256": "180e1f3a782decc6f0985294875e3447e1313208def0e873030013ab3fa81f74"
+    },
+    {
+      "filename": "lidar_october_coverage.tif",
+      "bytes": 3142,
+      "sha256": "26c8696ea97d8fc4cd49225ebdf650953454cb32540c5bff30bf8d729da8c201"
+    },
+    {
+      "filename": "lidar_october_m.tif",
+      "bytes": 2984,
+      "sha256": "e8acbf6ff46c176e5ffd50316a490353b80576ee2539fdc83016174684d42c93"
+    },
+    {
+      "filename": "lidar_october_native.tif",
+      "bytes": 158482,
+      "sha256": "9e17545b23f549b1f9ebfec785df10af9c9892c975474c623f0c523343ec1c95"
+    },
+    {
+      "filename": "lidar_october_sample_count.tif",
+      "bytes": 2713,
+      "sha256": "b117093aa6b29e7b03b463d81fc7376b14350dbb4087afbf9c0bdf217d31241c"
+    },
+    {
+      "filename": "lidar_october_std_m.tif",
+      "bytes": 2992,
+      "sha256": "9a841d3f70f6cd7d3e9aa919e419bbaeca4eee5f69322fdf6eea898fe8901634"
+    },
+    {
+      "filename": "lidar_october_utm_1m.tif",
+      "bytes": 75628,
+      "sha256": "f97179ab486a8bea291763e068bbc70e833c44462d547bc1f9f6ab4401febae9"
+    },
+    {
+      "filename": "lidar_october_valid.tif",
+      "bytes": 2030,
+      "sha256": "32ee34407deeae8e1e85a622cc6b3d4692c89d36403dfe69d4e767db36782add"
+    },
+    {
+      "filename": "profiles.json",
+      "bytes": 25792,
+      "sha256": "9d4b31223aa837040ce9223171e89f1b28776f1a93e992fbf070fce3205378a8"
+    },
+    {
+      "filename": "study_area_fraction.tif",
+      "bytes": 2658,
+      "sha256": "d397760467d6e32dc5fa319babd6c48c4dcfd58bcafbf7202aea0bd7d0bc99f2"
+    },
+    {
+      "filename": "transects.geojson",
+      "bytes": 17240,
+      "sha256": "d358295f0c1ea4111d808dd03364dfe5b593c94abed42a43270c7b2d0116a515"
+    }
+  ]
+}

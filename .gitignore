@@ -1,5 +1,10 @@
 .venv/
-data/raw/
 __pycache__/
 .DS_Store
+.env
 _previous_run/
+data/raw/
+data/interim/
+data/processed/latest_*.json
+data/processed/lidar-*/
+data/processed/comparison-*/

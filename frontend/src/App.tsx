@@ -4,6 +4,7 @@ import { clearCache } from './api/http';
 import type { CoastalEvidence } from './api/schemas';
 import { BoundaryWorkspace } from './components/BoundaryWorkspace';
 import { CrossSection } from './components/CrossSection';
+import { GuidedTour } from './components/GuidedTour';
 import { Icon } from './components/Icon';
 import { Legend } from './components/Legend';
 import { MapTools } from './components/MapTools';
@@ -14,7 +15,7 @@ import { MapView } from './map/MapView';
 import { flyToStudyArea } from './map/registry';
 import { useApp } from './state/store';
 
-type Panel = 'overview' | 'layers' | 'compare' | 'findings' | 'about' | null;
+type Panel = 'overview' | 'tour' | 'layers' | 'compare' | 'findings' | 'about' | null;
 
 export function App() {
   const [panel, setPanel] = useState<Panel>('overview');
@@ -34,6 +35,20 @@ export function App() {
         terrainSource: state.terrainSource === 'aws' ? 'aws' : 'lidar-dem-june',
       });
     }
+  }
+
+  function showMapLayer(slotId: string, nextDate?: string, openProfile = false) {
+    const state = useApp.getState();
+    Object.keys(state.slots).forEach((id) => state.setSlot(id, { visible: id === slotId }));
+    state.setSlot(slotId, { visible: true });
+    set({
+      compare: false,
+      showStudyArea: true,
+      ...(nextDate ? { date: nextDate } : {}),
+      ...(openProfile ? { showTransects: true, bottomOpen: true } : {}),
+    });
+    setPanel(openProfile ? null : 'layers');
+    flyToStudyArea();
   }
 
   const loadAll = useCallback(
@@ -98,8 +113,9 @@ export function App() {
 
   const mhwRaw = coastal?.validation.targets.fixed_mhw_contour?.raw_vs_tide.methods?.raw?.rmse_m;
   const mhwTide = coastal?.validation.targets.fixed_mhw_contour?.raw_vs_tide.methods?.tide?.rmse_m;
-  const mhwRed = (coastal?.validation.targets.fixed_mhw_contour?.raw_vs_tide as { rmse_reduction_percent?: Record<string, number> } | undefined)
-    ?.rmse_reduction_percent?.tide;
+  const mhwRed =
+    coastal?.validation.targets.fixed_mhw_contour?.raw_vs_tide.rmse_reduction_percent?.tide ??
+    (mhwRaw != null && mhwTide != null && mhwRaw > 0 ? ((mhwRaw - mhwTide) / mhwRaw) * 100 : undefined);
   const lidarMean = coastal?.terrain?.mean_m;
 
   return (
@@ -134,6 +150,7 @@ export function App() {
         {(
           [
             ['overview', 'globe', 'Explore'],
+            ['tour', 'tour', 'Guided Tour'],
             ['layers', 'layers', 'Layers'],
             ['compare', 'compare', 'Compare'],
             ['findings', 'chart', 'Findings'],
@@ -170,13 +187,14 @@ export function App() {
         </button>
 
         {panel && (
-          <aside className={`tool-panel ${panel === 'findings' ? 'wide-panel' : ''}`} aria-label={`${panel} panel`}>
+          <aside className={`tool-panel ${panel === 'findings' ? 'wide-panel' : ''} ${panel === 'tour' ? 'tour-shell' : ''}`} aria-label={`${panel} panel`}>
             <div className="panel-toolbar">
               <span>
                 {
                   (
                     {
                       overview: 'Study area',
+                      tour: 'Guided Tour · Duck Investigation',
                       layers: 'Map layers',
                       compare: 'Compare observations',
                       findings: 'Coastal findings',
@@ -189,7 +207,9 @@ export function App() {
                 <Icon name="close" size={18} />
               </button>
             </div>
-            {panel === 'overview' ? (
+            {panel === 'tour' ? (
+              <GuidedTour onExplore={() => open(null)} onNavigatePanel={(next) => open(next)} />
+            ) : panel === 'overview' ? (
               <div className="panel-content">
                 <div className="location-label">
                   <Icon name="pin" size={15} /> USACE Field Research Facility · Duck, NC
@@ -252,6 +272,14 @@ export function App() {
                 </div>
 
                 <p className="section-label">Start exploring</p>
+                <button className="action-row action-row-tour" onClick={() => open('tour')}>
+                  <Icon name="tour" />
+                  <span>
+                    <strong>Take the Guided Tour (5 steps)</strong>
+                    <small>Walk through NISAR, satellite disagreement, LiDAR truth &amp; tide verification</small>
+                  </span>
+                  <Icon name="arrow" size={16} />
+                </button>
                 <button className="action-row" onClick={() => open('layers')}>
                   <Icon name="layers" />
                   <span>
@@ -287,7 +315,7 @@ export function App() {
                 </div>
               </div>
             ) : panel === 'findings' ? (
-              <BoundaryWorkspace />
+              <BoundaryWorkspace onShowMapLayer={showMapLayer} onStartTour={() => open('tour')} />
             ) : (
               <MapTools panel={panel} onRefresh={() => void loadAll(true)} />
             )}
@@ -371,10 +399,28 @@ export function App() {
               </span>
             </div>
             <div className="active-legend-meta muted num">
-              <span>{activeDesc.sensor} · {activeDesc.epoch_label ?? 'Oct − Jun 2026'}</span>
+              <span>{activeDesc.sensor} · {activeDesc.acquired_at?.slice(0, 10) ?? activeDesc.epoch_label ?? 'Jun & Oct 2026'}</span>
               {activeDesc.units && <span>Units: {activeDesc.units}</span>}
             </div>
             <Legend colormap={activeDesc.colormap} units={activeDesc.units} inferred={activeDesc.inferred} meaning={activeDef?.meaning} />
+            {(activeDef?.tooltip || activeDesc.reason || activeDesc.acquired_at || activeDesc.provenance?.processing) && (
+              <details className="legend-notes">
+                <summary>Observation notes &amp; limits</summary>
+                <div className="legend-notes-body">
+                  {activeDesc.acquired_at && (
+                    <div className="num">Acquisition UTC: {activeDesc.acquired_at.slice(0, 19).replace('T', ' ')}Z</div>
+                  )}
+                  {activeDesc.native_resolution_m != null && (
+                    <div className="num">
+                      Native resolution: {activeDesc.native_resolution_m} m{activeDesc.vertical_datum ? ` · Datum: ${activeDesc.vertical_datum}` : ''}
+                    </div>
+                  )}
+                  {activeDef?.tooltip && <div>{activeDef.tooltip}</div>}
+                  {activeDesc.reason && <div className="muted">{activeDesc.reason}</div>}
+                  {activeDesc.provenance?.processing && <div className="muted">Processing: {activeDesc.provenance.processing}</div>}
+                </div>
+              </details>
+            )}
           </div>
         )}
 

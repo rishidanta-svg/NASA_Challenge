@@ -26,7 +26,12 @@ function fmtRange(r: UnlabeledRange | undefined): string {
   return `${r.range[0].toFixed(2)} to ${r.range[1].toFixed(2)} ${r.unit}`;
 }
 
-export function BoundaryWorkspace() {
+export interface BoundaryWorkspaceProps {
+  onShowMapLayer?: (slotId: string, nextDate?: string, openProfile?: boolean) => void;
+  onStartTour?: () => void;
+}
+
+export function BoundaryWorkspace({ onShowMapLayer, onStartTour }: BoundaryWorkspaceProps = {}) {
   const { selectedTransectId, transects, date, set } = useApp();
   const [tab, setTab] = useState<'observations' | 'experiments'>('observations');
   const [analysis, setAnalysis] = useState<Sourced<Analysis> | null>(null);
@@ -73,7 +78,9 @@ export function BoundaryWorkspace() {
   const rawRmse = mhwCheck?.raw_vs_tide.methods?.raw?.rmse_m;
   const tideRmse = mhwCheck?.raw_vs_tide.methods?.tide?.rmse_m;
   const setupRmse = mhwCheck?.raw_vs_tide_vs_setup.methods?.setup?.rmse_m;
-  const tideReduction = (mhwCheck?.raw_vs_tide as { rmse_reduction_percent?: Record<string, number> } | undefined)?.rmse_reduction_percent?.tide;
+  const tideReduction =
+    mhwCheck?.raw_vs_tide.rmse_reduction_percent?.tide ??
+    (rawRmse != null && tideRmse != null && rawRmse > 0 ? ((rawRmse - tideRmse) / rawRmse) * 100 : undefined);
   const mhwN = mhwCheck?.raw_vs_tide.n;
 
   const unlabeled = (n?.input_qa as { unlabeled_features?: Record<string, UnlabeledRange> } | undefined)?.unlabeled_features;
@@ -111,53 +118,106 @@ export function BoundaryWorkspace() {
 
       {tab === 'observations' ? (
         <>
-          {rawRmse != null && tideRmse != null && tideReduction != null && (
-            <article className="verified-result-card" aria-label="Verified Sentinel-2 tide correction result">
-              <div className="panel-heading">
-                <span className="eyebrow">Primary Verified Optical Result · Sentinel-2</span>
-                <span className="badge badge-observed num">−{tideReduction.toFixed(1)}% RMSE</span>
-              </div>
-              <p className="verified-headline">
-                <strong className="num">{tideReduction.toFixed(1)}% reduction</strong> in Sentinel-2 shoreline-position RMSE across{' '}
-                <strong className="num">{mhwN ?? 36}</strong> October LiDAR MHW contour positions (
-                <span className="num">{c?.target?.value.toFixed(3) ?? '0.359'} m {c?.target?.vertical_datum ?? 'NAVD88'}</span>).
-              </p>
-              <div className="rmse-compare-bars" aria-label="Before and after tide correction RMSE visual">
-                <div className="rmse-bar-row">
-                  <div className="rmse-bar-label">
-                    <span>Before tide correction (raw optical NDWI)</span>
-                    <strong className="num">RMSE {rawRmse.toFixed(2)} m</strong>
-                  </div>
-                  <div className="rmse-track">
-                    <div className="rmse-fill rmse-before" style={{ width: '100%' }} />
-                  </div>
+          <div className="headline-results-grid" aria-label="Headline verified coastal findings">
+            {rawRmse != null && tideRmse != null && tideReduction != null && (
+              <article className="verified-result-card" aria-label="Verified Sentinel-2 tide correction result">
+                <div className="panel-heading">
+                  <span className="eyebrow">Result A · Shoreline Accuracy (Sentinel-2)</span>
+                  <span className="badge badge-observed num">−{tideReduction.toFixed(1)}% RMSE</span>
                 </div>
-                <div className="rmse-bar-row">
-                  <div className="rmse-bar-label">
-                    <span>After tide correction (NOAA water level + LiDAR slope)</span>
-                    <strong className="num">RMSE {tideRmse.toFixed(2)} m</strong>
-                  </div>
-                  <div className="rmse-track">
-                    <div className="rmse-fill rmse-after" style={{ width: `${Math.min(100, (tideRmse / rawRmse) * 100).toFixed(1)}%` }} />
-                  </div>
-                </div>
-                {setupRmse != null && (
+                <p className="verified-headline">
+                  <strong className="num">{tideReduction.toFixed(1)}% reduction</strong> in Sentinel-2 waterline-position RMSE across{' '}
+                  <strong className="num">{mhwN ?? 36}</strong> October LiDAR MHW positions (
+                  <span className="num">{c?.target?.value.toFixed(3) ?? '0.359'} m {c?.target?.vertical_datum ?? 'NAVD88'}</span>).
+                </p>
+                <div className="rmse-compare-bars" aria-label="Before and after tide correction RMSE visual">
                   <div className="rmse-bar-row">
-                    <div className="rmse-bar-label muted">
-                      <span>Experimental + wave setup comparison</span>
-                      <span className="num">RMSE {setupRmse.toFixed(2)} m</span>
+                    <div className="rmse-bar-label">
+                      <span>Before (raw optical NDWI)</span>
+                      <strong className="num">RMSE {rawRmse.toFixed(2)} m</strong>
                     </div>
                     <div className="rmse-track">
-                      <div className="rmse-fill rmse-setup" style={{ width: `${Math.min(100, (setupRmse / rawRmse) * 100).toFixed(1)}%` }} />
+                      <div className="rmse-fill rmse-before" style={{ width: '100%' }} />
                     </div>
                   </div>
+                  <div className="rmse-bar-row">
+                    <div className="rmse-bar-label">
+                      <span>After (NOAA tide + LiDAR slope)</span>
+                      <strong className="num">RMSE {tideRmse.toFixed(2)} m</strong>
+                    </div>
+                    <div className="rmse-track">
+                      <div className="rmse-fill rmse-after" style={{ width: `${Math.min(100, (tideRmse / rawRmse) * 100).toFixed(1)}%` }} />
+                    </div>
+                  </div>
+                  {setupRmse != null && (
+                    <div className="rmse-bar-row">
+                      <div className="rmse-bar-label muted">
+                        <span>Experimental + wave setup</span>
+                        <span className="num">RMSE {setupRmse.toFixed(2)} m</span>
+                      </div>
+                      <div className="rmse-track">
+                        <div className="rmse-fill rmse-setup" style={{ width: `${Math.min(100, (setupRmse / rawRmse) * 100).toFixed(1)}%` }} />
+                      </div>
+                    </div>
+                  )}
+                </div>
+                <p className="slot-meta" style={{ marginBottom: 8 }}>
+                  Retrospective October comparison against 36 matched LiDAR positions — not claimed as universal. Attributed strictly to Sentinel-2 optical physics, never NISAR.
+                </p>
+                {onShowMapLayer && (
+                  <div className="result-map-links">
+                    <button type="button" className="tour-chip-btn" onClick={() => onShowMapLayer('physics-s2-ndwi', '2026-10-16')}>
+                      Raw NDWI on map
+                    </button>
+                    <button type="button" className="tour-chip-btn" onClick={() => onShowMapLayer('physics-s2-tide', '2026-10-16')}>
+                      Tide-corrected on map
+                    </button>
+                  </div>
+                )}
+              </article>
+            )}
+
+            <article className="verified-result-card verified-result-terrain" aria-label="Physical coastal change USACE LiDAR result">
+              <div className="panel-heading">
+                <span className="eyebrow">Result B · Physical Coastal Change (USACE LiDAR)</span>
+                <span className="badge badge-observed num">−0.268 m median</span>
+              </div>
+              <p className="verified-headline">
+                <strong className="num">−0.268 m</strong> median elevation change across{' '}
+                <strong className="num">17,654</strong> matched 1 m cells (<span className="num">y = 700–1199 m</span>).
+              </p>
+              <div className="terrain-metrics-strip">
+                <div>
+                  <small>Lowered &gt; 0.1 m</small>
+                  <strong className="num">~11,684 m²</strong>
+                </div>
+                <div>
+                  <small>Paired 1 m mean ({c?.terrain?.native_paired_cells?.toLocaleString() ?? '17,466'} cells)</small>
+                  <strong className="num">{c?.terrain?.mean_m != null ? `${c.terrain.mean_m.toFixed(3)} m` : '−0.314 m'}</strong>
+                </div>
+              </div>
+              <p className="slot-meta" style={{ marginBottom: 8 }}>
+                Measured bare-earth lowering between June and October 2026 surveys (<span className="num">NAVD88</span>). Reflects subaerial/intertidal height change, not confirmed net sediment loss across the full nearshore profile.
+              </p>
+              <div className="result-map-links">
+                {onShowMapLayer && (
+                  <>
+                    <button type="button" className="tour-chip-btn" onClick={() => onShowMapLayer('lidar-dz')}>
+                      View LiDAR Δz map
+                    </button>
+                    <button type="button" className="tour-chip-btn" onClick={() => onShowMapLayer('lidar-dz', undefined, true)}>
+                      Inspect profile
+                    </button>
+                  </>
+                )}
+                {onStartTour && (
+                  <button type="button" className="inline-link" onClick={onStartTour}>
+                    Guided Tour →
+                  </button>
                 )}
               </div>
-              <p className="slot-meta" style={{ marginBottom: 0 }}>
-                <strong>Role of tide correction:</strong> Optical indices detect the instantaneous wet/dry edge at satellite overpass tide, not fixed MHW. Translating water-level elevation difference onto the surveyed foreshore slope reconciles apparent shoreline shift. Attributed strictly to Sentinel-2 optical physics — never NISAR.
-              </p>
             </article>
-          )}
+          </div>
 
           <div className="boundary-controls">
             <label>

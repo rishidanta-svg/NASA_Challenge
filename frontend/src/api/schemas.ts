@@ -334,6 +334,7 @@ const ValidationComparisonSchema = z.object({
   n: z.number().int().nonnegative(),
   reason: z.string().optional(),
   methods: z.record(ErrorMetricsSchema).optional(),
+  rmse_reduction_percent: z.record(z.number().finite()).optional(),
 });
 
 export const CoastalEvidenceSchema = z.object({

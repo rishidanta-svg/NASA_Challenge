@@ -264,25 +264,50 @@ const TidePositionSchema = z.object({
   status: ReliabilitySchema,
   reasons: z.array(z.string()),
   sigma_m: z.number().finite().nonnegative().nullish(),
+  shift_m: z.number().finite().nullish(),
   slope_sensitivity_frf_m: z.tuple([z.number().finite(), z.number().finite()]).nullish(),
-});
+  slope: z.object({
+    slope_m_per_m: z.number().finite().nullish(),
+    slope_p10_p90_m_per_m: z.tuple([z.number().finite(), z.number().finite()]).nullish(),
+    coreg_qc_flag: z.number().nullish(),
+    sample_rows: z.number().int().nullish(),
+    acquired_at: isoDateTime.nullish(),
+  }).passthrough().optional(),
+}).passthrough();
 
 const MatchedConditionsSchema = z.object({
   water_level_m_mllw: z.number().nullable(),
   water_level_timestamp_utc: isoDateTime.nullish(),
   water_level_offset_s: z.number().nullish(),
+  tide_prediction_m_mllw: z.number().nullable().optional(),
+  predicted_tide_stage: z.string().nullable().optional(),
+  predicted_tide_slope_m_per_h: z.number().nullable().optional(),
+  observed_minus_predicted_m: z.number().nullable().optional(),
   wave_hs_m_17m: z.number().nullable(),
   wave_tp_s_17m: z.number().nullable(),
   wave_dir_deg_17m: z.number().nullish(),
+  wave_hs_m_26m: z.number().nullable().optional(),
+  wave_tp_s_26m: z.number().nullable().optional(),
   wind_speed_ms: z.number().nullable(),
+  wind_dir_deg: z.number().nullable().optional(),
   wind_gust_ms: z.number().nullish(),
+  rain_10min_mm: z.number().nullable().optional(),
   rain_24h_mm: z.number().nullable(),
-});
+  total_water_level_2pct_navd88_m: z.number().nullable().optional(),
+  qualifying_station_matches: z.number().int().nullable().optional(),
+}).passthrough();
 
 const WaterlineEpochSchema = z.object({
   date: z.string(),
   acquisition_id: z.string(),
   acquired_at: isoDateTime,
+  optical_qa: z.object({
+    study_cells: z.number().int().optional(),
+    clear_cells: z.number().int().optional(),
+    cloud_cells: z.number().int().optional(),
+    shadow_cells: z.number().int().optional(),
+    cloud_fraction_of_scl_cells: z.number().nullable().optional(),
+  }).passthrough().optional(),
   ndwi: TidePositionSchema,
   mndwi: TidePositionSchema,
   tide: TidePositionSchema,
@@ -315,6 +340,34 @@ export const CoastalEvidenceSchema = z.object({
   processing_version: z.string(),
   status: ReliabilitySchema,
   reasons: z.array(z.string()),
+  coordinate: z.string().optional(),
+  target: z.object({
+    value: z.number().finite(),
+    unit: z.string(),
+    vertical_datum: z.string(),
+    station_id: z.string(),
+    source: z.string().optional(),
+    description: z.string(),
+  }).optional(),
+  terrain: z.object({
+    status: ReliabilitySchema,
+    reasons: z.array(z.string()),
+    datum: z.string().optional(),
+    processing_version: z.string().optional(),
+    native_paired_cells: z.number().int().optional(),
+    mean_m: z.number().finite().nullable().optional(),
+    method: z.string().optional(),
+    acquisitions: z.array(z.object({
+      epoch: z.string(),
+      acquired_at: isoDateTime,
+      source_id: z.string(),
+      quality: z.object({
+        coregQCFlag: z.number().nullable().optional(),
+        rmsReflectorError: z.number().nullable().optional(),
+        assessmentPlanesOffset: z.number().nullable().optional(),
+      }).passthrough().optional(),
+    }).passthrough()).optional(),
+  }).passthrough().optional(),
   radar_disagreement: z.object({
     status: ReliabilitySchema,
     reasons: z.array(z.string()),
@@ -323,8 +376,15 @@ export const CoastalEvidenceSchema = z.object({
     strict_overlap_cells: z.number().int().optional(),
     opposite_strict_cells: z.number().int().optional(),
     s1_minus_nisar_seconds: z.object({ june: z.number(), october: z.number() }).optional(),
-    acquisitions: z.record(z.record(z.object({ id: z.string(), acquired_at: isoDateTime }))).optional(),
-  }),
+    acquisitions: z.record(z.record(z.object({
+      id: z.string(),
+      acquired_at: isoDateTime,
+      track: z.number().optional(),
+      orbit_direction: z.string().optional(),
+      look_direction: z.string().optional(),
+      environment: MatchedConditionsSchema.nullable().optional(),
+    }).passthrough())).optional(),
+  }).passthrough(),
   validation: z.object({
     scope: z.string(),
     targets: z.record(z.object({
@@ -333,7 +393,7 @@ export const CoastalEvidenceSchema = z.object({
       by_date: z.record(ValidationComparisonSchema),
     })),
   }),
-});
+}).passthrough();
 export type CoastalEvidence = z.infer<typeof CoastalEvidenceSchema>;
 
 export const TransectDetailSchema = TransectSummarySchema.extend({

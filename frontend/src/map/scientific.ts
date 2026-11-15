@@ -327,20 +327,35 @@ function syncReference(map: MLMap, ctx: SyncContext) {
 // ---------------- overlay slots ----------------
 function slotIds(slot: string) {
   const src = `plg-slot-${slot}`;
-  return { src, raster: `${src}-raster`, line: `${src}-line`, fill: `${src}-fill`, point: `${src}-point` };
+  return { src, raster: `${src}-raster`, line: `${src}-line`, fill: `${src}-fill`, point: `${src}-point`, label: `${src}-label` };
+}
+
+function boundaryClassification(def: SlotDef, desc: LayerDescriptor): 'observed' | 'estimated' | 'exploratory' {
+  if (def.classification) return def.classification;
+  if (def.id === 'nisar-boundary' || def.id === 'nisar-hh-land-water-candidate') return 'exploratory';
+  if (desc.inferred || def.group === 'model' || def.id === 'physics-s2-tide' || def.id === 'physics-s2-setup') return 'estimated';
+  return 'observed';
+}
+
+function boundaryBadgeLabel(cls: 'observed' | 'estimated' | 'exploratory', desc: LayerDescriptor): string {
+  const tag = cls === 'exploratory' ? 'EXPLORATORY' : cls === 'estimated' ? 'ESTIMATED' : 'OBSERVED';
+  return `${tag} · ${desc.title}`;
 }
 
 function syncSlot(map: MLMap, def: SlotDef, desc: LayerDescriptor | null, ui: SlotUiState, rasterBefore: string | undefined, vectorBefore: string | undefined) {
   const t = trackedFor(map);
   const ids = slotIds(def.id);
   if (t.get(def.id) !== (desc?.id ?? undefined)) {
-    removeLayers(map, [ids.raster, ids.line, ids.fill, ids.point]);
+    removeLayers(map, [ids.raster, ids.line, ids.fill, ids.point, ids.label]);
     if (map.getSource(ids.src)) map.removeSource(ids.src);
     t.delete(def.id);
   }
   if (!desc) return;
   const mock = isMockDescriptor(desc);
-  const dashed = desc.inferred || mock;
+  const cls = boundaryClassification(def, desc);
+  const dashArray: number[] | null =
+    cls === 'exploratory' || mock ? [1.5, 2] : cls === 'estimated' ? [5, 2.5] : null;
+  const labelText = boundaryBadgeLabel(cls, desc);
 
   if (!map.getSource(ids.src)) {
     if (desc.kind === 'raster_xyz') {
@@ -361,7 +376,7 @@ function syncSlot(map: MLMap, def: SlotDef, desc: LayerDescriptor | null, ui: Sl
     } else if (desc.kind === 'geojson') {
       const data = desc.url!.startsWith(MOCK_PREFIX) ? mockGeoJson(desc.url!) : apiUrl(desc.url!);
       map.addSource(ids.src, { type: 'geojson', data, attribution: desc.provenance.source });
-      map.addLayer({id:ids.point,type:'circle',source:ids.src,filter:['==',['geometry-type'],'Point'],paint:{'circle-radius':3.5,'circle-color':def.color,'circle-stroke-color':'#333333','circle-stroke-width':1}},vectorBefore);
+      map.addLayer({id:ids.point,type:'circle',source:ids.src,filter:['==',['geometry-type'],'Point'],paint:{'circle-radius':4,'circle-color':def.color,'circle-stroke-color':'#181b16','circle-stroke-width':1.2}},vectorBefore);
       map.addLayer(
         {
           id: ids.fill,
@@ -378,11 +393,27 @@ function syncSlot(map: MLMap, def: SlotDef, desc: LayerDescriptor | null, ui: Sl
           type: 'line',
           source: ids.src,
           filter: ['in', ['geometry-type'], ['literal', ['LineString', 'MultiLineString', 'Polygon', 'MultiPolygon']]],
-          layout: { 'line-cap': 'round', 'line-join': 'round' },
-          paint: { 'line-color': def.color, 'line-width': 2.4, ...(dashed ? { 'line-dasharray': [2, 1.5] } : {}) },
+          layout: { 'line-cap': dashArray ? 'butt' : 'round', 'line-join': 'round' },
+          paint: { 'line-color': def.color, 'line-width': 2.6, ...(dashArray ? { 'line-dasharray': dashArray } : {}) },
         },
         vectorBefore,
       );
+      map.addLayer({
+        id: ids.label,
+        type: 'symbol',
+        source: ids.src,
+        minzoom: 13.5,
+        layout: {
+          'symbol-placement': 'line',
+          'text-field': labelText,
+          'text-font': FONT,
+          'text-size': 10.5,
+          'text-letter-spacing': 0.03,
+          'text-offset': [0, -0.9],
+          'symbol-spacing': 220,
+        },
+        paint: { 'text-color': def.color, 'text-halo-color': '#0b1118', 'text-halo-width': 1.6 },
+      });
     }
     // raster_dem descriptors are handled as terrain sources, not overlays.
     t.set(def.id, desc.id);
@@ -399,6 +430,10 @@ function syncSlot(map: MLMap, def: SlotDef, desc: LayerDescriptor | null, ui: Sl
   if (map.getLayer(ids.fill)) {
     map.setPaintProperty(ids.fill, 'fill-opacity', ui.opacity * 0.3);
     setVis(map, ids.fill, ui.visible);
+  }
+  if (map.getLayer(ids.label)) {
+    map.setPaintProperty(ids.label, 'text-opacity', ui.opacity);
+    setVis(map, ids.label, ui.visible);
   }
 }
 

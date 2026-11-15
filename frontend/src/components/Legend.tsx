@@ -21,14 +21,14 @@ export function Legend({ colormap, units, inferred, meaning }: LegendProps) {
 
   return (
     <div className="legend-block">
-      {meaning && <div className="slot-meta" style={{ marginBottom: 4 }}>{meaning}</div>}
+      {meaning && <div className="slot-meta" style={{ marginBottom: 6 }}>{meaning}</div>}
       <div
         className={`legend-gradient ${inferred ? 'inferred' : ''}`}
         style={{ background: `linear-gradient(90deg, ${stopsCss})` }}
         role="img"
         aria-label={`Color scale from ${min} to ${max} ${units ?? ''}`}
       />
-      <div className="legend-ticks">
+      <div className="legend-ticks num">
         <span>
           {min > 0 ? `+${min}` : min} {units ?? ''}
         </span>
@@ -38,6 +38,10 @@ export function Legend({ colormap, units, inferred, meaning }: LegendProps) {
         <span>
           {max > 0 ? `+${max}` : max} {units ?? ''}
         </span>
+      </div>
+      <div className="legend-caption muted">
+        <span>Scale: {colormap.type}</span>
+        <span>{inferred ? 'Conditional / estimated' : 'Measured / direct'}</span>
       </div>
     </div>
   );

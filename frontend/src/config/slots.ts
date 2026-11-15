@@ -5,14 +5,20 @@
  */
 import type { LayerGroup, Sensor } from '../api/schemas';
 
+export type LayerClassification = 'observed' | 'estimated' | 'exploratory';
+
 export interface SlotDef {
   id: string;
   exactDate?: boolean;
   title: string;
   group: LayerGroup;
   sensor: Sensor;
+  /** Semantic epistemic badge used across layer legends and boundary labels. */
+  classification?: LayerClassification;
   /** What the layer physically represents — shown in the legend. */
   meaning: string;
+  /** Short plain-language explanation shown in layer inspector tooltips. */
+  tooltip?: string;
   expectedUnits: string | null;
   defaultOpacity: number;
   /** Swatch colour for the layer list / vector rendering. */
@@ -20,7 +26,19 @@ export interface SlotDef {
 }
 
 export const SLOTS: SlotDef[] = [
-  {id:'nisar-hh-land-water-candidate',exactDate:true,title:'Exploratory NISAR HH brightness transition',group:'sensor',sensor:'NISAR',meaning:'Exploratory candidate; waterline comparability failed, not a validated shoreline',expectedUnits:'m',defaultOpacity:1,color:'#eeeeee'},
+  {
+    id: 'nisar-hh-land-water-candidate',
+    exactDate: true,
+    title: 'Exploratory NISAR HH brightness transition',
+    group: 'sensor',
+    sensor: 'NISAR',
+    classification: 'exploratory',
+    meaning: 'Exploratory candidate; waterline comparability failed, not a validated shoreline',
+    tooltip: 'Otsu threshold applied to NISAR L-band HH backscatter. Most crossings fall ~38–40 m landward of expected ocean waterlines.',
+    expectedUnits: 'm',
+    defaultOpacity: 1,
+    color: '#d9822b',
+  },
   {
     id: 'lidar-dz',
     title: 'LiDAR elevation change',

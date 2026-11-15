@@ -1,0 +1,10 @@
+{
+  "status": "passed",
+  "observations": 28,
+  "native_samples_verified": 95892,
+  "pixel_rows": 40600,
+  "environment_rows": 290341,
+  "environment_nearest_matches": 694,
+  "checked_hydro_wave_height_values": 14905,
+  "change_cells": 168
+}

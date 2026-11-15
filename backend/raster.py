@@ -59,7 +59,7 @@ def encode(values, colormap=None):
     return output.getvalue()
 
 
-def render(path, descriptor, z, x, y):
+def render(path, descriptor, z, x, y, band=1):
     bounds = tile_bounds(z, x, y)
     affine = from_bounds(*bounds, SIZE, SIZE)
     values = np.full((SIZE,SIZE), np.nan, np.float32)
@@ -67,7 +67,7 @@ def render(path, descriptor, z, x, y):
     with rasterio.open(path) as source:
         a,b,c,d = transform_bounds(source.crs, "EPSG:3857", *source.bounds)
         if bounds[0] < c and bounds[2] > a and bounds[1] < d and bounds[3] > b:
-            reproject(rasterio.band(source, 1), values, dst_transform=affine, dst_crs="EPSG:3857",
+            reproject(rasterio.band(source, int(band)), values, dst_transform=affine, dst_crs="EPSG:3857",
                       src_nodata=source.nodata, dst_nodata=np.nan, resampling=Resampling.nearest)
     if dem and not np.isfinite(values).all():
         background = terrain_background(z, x, y, affine)

@@ -1,0 +1,708 @@
+{
+  "environmental_record_count": 290341,
+  "sample_match_counts": [
+    {
+      "station_id": "NDBC 44056",
+      "variable": "wave_average_period",
+      "acquisitions": 28,
+      "matched": 28
+    },
+    {
+      "station_id": "NDBC 44056",
+      "variable": "wave_mean_direction",
+      "acquisitions": 28,
+      "matched": 28
+    },
+    {
+      "station_id": "NDBC 44056",
+      "variable": "wave_peak_period",
+      "acquisitions": 28,
+      "matched": 28
+    },
+    {
+      "station_id": "NDBC 44056",
+      "variable": "wave_significant_height",
+      "acquisitions": 28,
+      "matched": 28
+    },
+    {
+      "station_id": "NDBC DUKN7",
+      "variable": "wind_direction",
+      "acquisitions": 28,
+      "matched": 27
+    },
+    {
+      "station_id": "NDBC DUKN7",
+      "variable": "wind_gust",
+      "acquisitions": 28,
+      "matched": 27
+    },
+    {
+      "station_id": "NDBC DUKN7",
+      "variable": "wind_speed",
+      "acquisitions": 28,
+      "matched": 27
+    },
+    {
+      "station_id": "NOAA CO-OPS 8651370",
+      "variable": "tide_prediction",
+      "acquisitions": 28,
+      "matched": 28
+    },
+    {
+      "station_id": "NOAA CO-OPS 8651370",
+      "variable": "water_level",
+      "acquisitions": 28,
+      "matched": 28
+    },
+    {
+      "station_id": "NOAA CO-OPS 8651370",
+      "variable": "water_level_1s_sample_sigma",
+      "acquisitions": 28,
+      "matched": 28
+    },
+    {
+      "station_id": "NOAA CO-OPS 8651370",
+      "variable": "wind_direction",
+      "acquisitions": 28,
+      "matched": 28
+    },
+    {
+      "station_id": "NOAA CO-OPS 8651370",
+      "variable": "wind_gust",
+      "acquisitions": 28,
+      "matched": 28
+    },
+    {
+      "station_id": "NOAA CO-OPS 8651370",
+      "variable": "wind_speed",
+      "acquisitions": 28,
+      "matched": 28
+    },
+    {
+      "station_id": "USACE FRF Waverider 17m",
+      "variable": "wave_average_period",
+      "acquisitions": 28,
+      "matched": 28
+    },
+    {
+      "station_id": "USACE FRF Waverider 17m",
+      "variable": "wave_mean_direction",
+      "acquisitions": 28,
+      "matched": 28
+    },
+    {
+      "station_id": "USACE FRF Waverider 17m",
+      "variable": "wave_peak_direction",
+      "acquisitions": 28,
+      "matched": 28
+    },
+    {
+      "station_id": "USACE FRF Waverider 17m",
+      "variable": "wave_peak_period",
+      "acquisitions": 28,
+      "matched": 28
+    },
+    {
+      "station_id": "USACE FRF Waverider 17m",
+      "variable": "wave_significant_height",
+      "acquisitions": 28,
+      "matched": 28
+    },
+    {
+      "station_id": "USACE FRF Waverider 26m",
+      "variable": "wave_average_period",
+      "acquisitions": 28,
+      "matched": 28
+    },
+    {
+      "station_id": "USACE FRF Waverider 26m",
+      "variable": "wave_mean_direction",
+      "acquisitions": 28,
+      "matched": 28
+    },
+    {
+      "station_id": "USACE FRF Waverider 26m",
+      "variable": "wave_peak_direction",
+      "acquisitions": 28,
+      "matched": 28
+    },
+    {
+      "station_id": "USACE FRF Waverider 26m",
+      "variable": "wave_peak_period",
+      "acquisitions": 28,
+      "matched": 28
+    },
+    {
+      "station_id": "USACE FRF Waverider 26m",
+      "variable": "wave_significant_height",
+      "acquisitions": 28,
+      "matched": 28
+    },
+    {
+      "station_id": "USACE FRF lidar hydrodynamics",
+      "variable": "transect_infragravity_hs_x120",
+      "acquisitions": 28,
+      "matched": 0
+    },
+    {
+      "station_id": "USACE FRF lidar hydrodynamics",
+      "variable": "transect_infragravity_hs_x190",
+      "acquisitions": 28,
+      "matched": 0
+    },
+    {
+      "station_id": "USACE FRF lidar hydrodynamics",
+      "variable": "transect_infragravity_hs_x80",
+      "acquisitions": 28,
+      "matched": 0
+    },
+    {
+      "station_id": "USACE FRF lidar hydrodynamics",
+      "variable": "transect_seaswell_hs_x120",
+      "acquisitions": 28,
+      "matched": 0
+    },
+    {
+      "station_id": "USACE FRF lidar hydrodynamics",
+      "variable": "transect_seaswell_hs_x190",
+      "acquisitions": 28,
+      "matched": 0
+    },
+    {
+      "station_id": "USACE FRF lidar hydrodynamics",
+      "variable": "transect_seaswell_hs_x80",
+      "acquisitions": 28,
+      "matched": 0
+    },
+    {
+      "station_id": "USACE FRF lidar hydrodynamics",
+      "variable": "transect_water_level_x120",
+      "acquisitions": 28,
+      "matched": 0
+    },
+    {
+      "station_id": "USACE FRF lidar hydrodynamics",
+      "variable": "transect_water_level_x190",
+      "acquisitions": 28,
+      "matched": 0
+    },
+    {
+      "station_id": "USACE FRF lidar hydrodynamics",
+      "variable": "transect_water_level_x80",
+      "acquisitions": 28,
+      "matched": 0
+    },
+    {
+      "station_id": "USACE FRF lidar hydrodynamics",
+      "variable": "transect_wave_peak_period_x120",
+      "acquisitions": 28,
+      "matched": 0
+    },
+    {
+      "station_id": "USACE FRF lidar hydrodynamics",
+      "variable": "transect_wave_peak_period_x190",
+      "acquisitions": 28,
+      "matched": 0
+    },
+    {
+      "station_id": "USACE FRF lidar hydrodynamics",
+      "variable": "transect_wave_peak_period_x80",
+      "acquisitions": 28,
+      "matched": 0
+    },
+    {
+      "station_id": "USACE FRF lidar wave runup",
+      "variable": "runup_timeseries_missing_percent",
+      "acquisitions": 28,
+      "matched": 20
+    },
+    {
+      "station_id": "USACE FRF lidar wave runup",
+      "variable": "total_water_level_2pct",
+      "acquisitions": 28,
+      "matched": 5
+    },
+    {
+      "station_id": "USACE FRF rain gauge",
+      "variable": "rain_10min",
+      "acquisitions": 28,
+      "matched": 28
+    }
+  ],
+  "cadence_minutes": {
+    "NOAA CO-OPS 8651370": 6,
+    "USACE FRF Waverider 17m": 30,
+    "USACE FRF Waverider 26m": 30,
+    "USACE FRF rain gauge": 10,
+    "USACE FRF lidar wave runup": 60,
+    "USACE FRF lidar hydrodynamics": 60,
+    "NDBC 44056": 30,
+    "NDBC DUKN7": 6
+  },
+  "maximum_nearest_offset_minutes": {
+    "NOAA CO-OPS 8651370": 12,
+    "USACE FRF Waverider 17m": 35,
+    "USACE FRF Waverider 26m": 35,
+    "USACE FRF rain gauge": 15,
+    "USACE FRF lidar wave runup": 30,
+    "USACE FRF lidar hydrodynamics": 30,
+    "NDBC 44056": 35,
+    "NDBC DUKN7": 12
+  },
+  "frf_requests": [
+    {
+      "source_url": "https://chldata.erdc.dren.mil/thredds/dodsC/frf/meteorology/metGauges/rain/2026/FRF-met_metGauges_rain_202606.nc",
+      "constraint": "time,sensorID,rain,qcFlag",
+      "filename": "frf_rain_202606.nc",
+      "retrieved_utc": "2026-11-15T07:06:07.166471+00:00",
+      "samples": 4320
+    },
+    {
+      "source_url": "https://chldata.erdc.dren.mil/thredds/dodsC/frf/oceanography/waves/waverider-17m/2026/FRF-ocean_waves_waverider-17m_202606.nc",
+      "constraint": "time,station_name,latitude,longitude,nominalDepth,gaugeDepth,waveHs,waveTp,waveTm,waveTm1,waveTm2,waveMeanDirection,wavePeakDirectionPeakFrequency,qcFlagE,qcFlagD,PorAST",
+      "filename": "frf_wave17_202606.nc",
+      "retrieved_utc": "2026-11-15T07:06:07.166568+00:00",
+      "samples": 1430
+    },
+    {
+      "source_url": "https://chldata.erdc.dren.mil/thredds/dodsC/frf/oceanography/waves/waverider-26m/2026/FRF-ocean_waves_waverider-26m_202606.nc",
+      "constraint": "time,station_name,latitude,longitude,nominalDepth,gaugeDepth,waveHs,waveTp,waveTm,waveTm1,waveTm2,waveMeanDirection,wavePeakDirectionPeakFrequency,qcFlagE,qcFlagD,PorAST",
+      "filename": "frf_wave26_202606.nc",
+      "retrieved_utc": "2026-11-15T07:06:07.169461+00:00",
+      "samples": 1431
+    },
+    {
+      "source_url": "https://chldata.erdc.dren.mil/thredds/dodsC/frf/oceanography/waves/lidarWaveRunup/2026/FRF-ocean_waves_lidarWaveRunup_202606.nc",
+      "constraint": "time,station_name,lidarLatitude,lidarLongitude,lidarX,lidarY,totalWaterLevel,totalWaterLevelQCFlag,percentTimeSeriesMissing",
+      "filename": "frf_runup_202606.nc",
+      "retrieved_utc": "2026-11-15T07:06:07.170241+00:00",
+      "samples": 222
+    },
+    {
+      "source_url": "https://chldata.erdc.dren.mil/thredds/dodsC/frf/oceanography/waves/lidarHydrodynamics/2026/FRF-ocean_waves_lidarHydrodynamics_202606.nc",
+      "constraint": "time,station_name,lidarLatitude,lidarLongitude,lidarX,lidarY,xFRF,yFRF,waterLevel,minWaterLevel,maxWaterLevel,waveHsIG,waveHs,waveTmIG,waveTp,waveHsTotal,waveSkewness,waveAsymmetry,hydrodynamicsFlag,percentTimeSeriesMissing",
+      "filename": "frf_hydro_202606.nc",
+      "retrieved_utc": "2026-11-15T07:13:29.562400+00:00",
+      "samples": 222,
+      "source_hydro_xfrf_stride": 10
+    },
+    {
+      "source_url": "https://chldata.erdc.dren.mil/thredds/dodsC/frf/meteorology/metGauges/rain/2026/FRF-met_metGauges_rain_202609.nc",
+      "constraint": "time,sensorID,rain,qcFlag",
+      "filename": "frf_rain_202609.nc",
+      "retrieved_utc": "2026-11-15T07:06:11.361841+00:00",
+      "samples": 4320
+    },
+    {
+      "source_url": "https://chldata.erdc.dren.mil/thredds/dodsC/frf/oceanography/waves/waverider-17m/2026/FRF-ocean_waves_waverider-17m_202609.nc",
+      "constraint": "time,station_name,latitude,longitude,nominalDepth,gaugeDepth,waveHs,waveTp,waveTm,waveTm1,waveTm2,waveMeanDirection,wavePeakDirectionPeakFrequency,qcFlagE,qcFlagD,PorAST",
+      "filename": "frf_wave17_202609.nc",
+      "retrieved_utc": "2026-11-15T07:06:12.255191+00:00",
+      "samples": 1432
+    },
+    {
+      "source_url": "https://chldata.erdc.dren.mil/thredds/dodsC/frf/oceanography/waves/waverider-26m/2026/FRF-ocean_waves_waverider-26m_202609.nc",
+      "constraint": "time,station_name,latitude,longitude,nominalDepth,gaugeDepth,waveHs,waveTp,waveTm,waveTm1,waveTm2,waveMeanDirection,wavePeakDirectionPeakFrequency,qcFlagE,qcFlagD,PorAST",
+      "filename": "frf_wave26_202609.nc",
+      "retrieved_utc": "2026-11-15T07:06:14.760899+00:00",
+      "samples": 1432
+    },
+    {
+      "source_url": "https://chldata.erdc.dren.mil/thredds/dodsC/frf/oceanography/waves/lidarWaveRunup/2026/FRF-ocean_waves_lidarWaveRunup_202609.nc",
+      "constraint": "time,station_name,lidarLatitude,lidarLongitude,lidarX,lidarY,totalWaterLevel,totalWaterLevelQCFlag,percentTimeSeriesMissing",
+      "filename": "frf_runup_202609.nc",
+      "retrieved_utc": "2026-11-15T07:06:14.785585+00:00",
+      "samples": 675
+    },
+    {
+      "source_url": "https://chldata.erdc.dren.mil/thredds/dodsC/frf/oceanography/waves/lidarHydrodynamics/2026/FRF-ocean_waves_lidarHydrodynamics_202609.nc",
+      "constraint": "time,station_name,lidarLatitude,lidarLongitude,lidarX,lidarY,xFRF,yFRF,waterLevel,minWaterLevel,maxWaterLevel,waveHsIG,waveHs,waveTmIG,waveTp,waveHsTotal,waveSkewness,waveAsymmetry,hydrodynamicsFlag,percentTimeSeriesMissing",
+      "filename": "frf_hydro_202609.nc",
+      "retrieved_utc": "2026-11-15T07:13:29.569505+00:00",
+      "samples": 675,
+      "source_hydro_xfrf_stride": 10
+    },
+    {
+      "source_url": "https://chldata.erdc.dren.mil/thredds/dodsC/frf/meteorology/metGauges/rain/2026/FRF-met_metGauges_rain_202610.nc",
+      "constraint": "time,sensorID,rain,qcFlag",
+      "filename": "frf_rain_202610.nc",
+      "retrieved_utc": "2026-11-15T07:06:19.517800+00:00",
+      "samples": 4464
+    },
+    {
+      "source_url": "https://chldata.erdc.dren.mil/thredds/dodsC/frf/oceanography/waves/waverider-17m/2026/FRF-ocean_waves_waverider-17m_202610.nc",
+      "constraint": "time,station_name,latitude,longitude,nominalDepth,gaugeDepth,waveHs,waveTp,waveTm,waveTm1,waveTm2,waveMeanDirection,wavePeakDirectionPeakFrequency,qcFlagE,qcFlagD,PorAST",
+      "filename": "frf_wave17_202610.nc",
+      "retrieved_utc": "2026-11-15T07:06:20.279645+00:00",
+      "samples": 1473
+    },
+    {
+      "source_url": "https://chldata.erdc.dren.mil/thredds/dodsC/frf/oceanography/waves/waverider-26m/2026/FRF-ocean_waves_waverider-26m_202610.nc",
+      "constraint": "time,station_name,latitude,longitude,nominalDepth,gaugeDepth,waveHs,waveTp,waveTm,waveTm1,waveTm2,waveMeanDirection,wavePeakDirectionPeakFrequency,qcFlagE,qcFlagD,PorAST",
+      "filename": "frf_wave26_202610.nc",
+      "retrieved_utc": "2026-11-15T07:06:24.468441+00:00",
+      "samples": 1471
+    },
+    {
+      "source_url": "https://chldata.erdc.dren.mil/thredds/dodsC/frf/oceanography/waves/lidarWaveRunup/2026/FRF-ocean_waves_lidarWaveRunup_202610.nc",
+      "constraint": "time,station_name,lidarLatitude,lidarLongitude,lidarX,lidarY,totalWaterLevel,totalWaterLevelQCFlag,percentTimeSeriesMissing",
+      "filename": "frf_runup_202610.nc",
+      "retrieved_utc": "2026-11-15T07:06:25.812431+00:00",
+      "samples": 723
+    },
+    {
+      "source_url": "https://chldata.erdc.dren.mil/thredds/dodsC/frf/oceanography/waves/lidarHydrodynamics/2026/FRF-ocean_waves_lidarHydrodynamics_202610.nc",
+      "constraint": "time,station_name,lidarLatitude,lidarLongitude,lidarX,lidarY,xFRF,yFRF,waterLevel,minWaterLevel,maxWaterLevel,waveHsIG,waveHs,waveTmIG,waveTp,waveHsTotal,waveSkewness,waveAsymmetry,hydrodynamicsFlag,percentTimeSeriesMissing",
+      "filename": "frf_hydro_202610.nc",
+      "retrieved_utc": "2026-11-15T07:13:29.574974+00:00",
+      "samples": 723,
+      "source_hydro_xfrf_stride": 10
+    }
+  ],
+  "original_discovery_requests": [
+    {
+      "file": "s2_earth_june.json",
+      "url": "https://earth-search.aws.element84.com/v1/search?collections=sentinel-2-l2a&bbox=-75.753384,36.183704,-75.750335,36.18826&datetime=2026-06-11T00:00:00Z/2026-06-30T23:59:59Z&limit=100",
+      "http_status": "200",
+      "size_bytes": 209690,
+      "error": null
+    },
+    {
+      "file": "s2_pc_june.json",
+      "url": "https://planetarycomputer.microsoft.com/api/stac/v1/search?collections=sentinel-2-l2a&bbox=-75.753384,36.183704,-75.750335,36.18826&datetime=2026-06-11T00:00:00Z/2026-06-30T23:59:59Z&limit=100",
+      "http_status": "200",
+      "size_bytes": 153902,
+      "error": null
+    },
+    {
+      "file": "s1_earth_grd_june.json",
+      "url": "https://earth-search.aws.element84.com/v1/search?collections=sentinel-1-grd&bbox=-75.753384,36.183704,-75.750335,36.18826&datetime=2026-06-11T00:00:00Z/2026-06-30T23:59:59Z&limit=100",
+      "http_status": "200",
+      "size_bytes": 39290,
+      "error": null
+    },
+    {
+      "file": "s1_pc_rtc_june.json",
+      "url": "https://planetarycomputer.microsoft.com/api/stac/v1/search?collections=sentinel-1-rtc&bbox=-75.753384,36.183704,-75.750335,36.18826&datetime=2026-06-11T00:00:00Z/2026-06-30T23:59:59Z&limit=100",
+      "http_status": "200",
+      "size_bytes": 24855,
+      "error": null
+    },
+    {
+      "file": "s1_pc_grd_june.json",
+      "url": "https://planetarycomputer.microsoft.com/api/stac/v1/search?collections=sentinel-1-grd&bbox=-75.753384,36.183704,-75.750335,36.18826&datetime=2026-06-11T00:00:00Z/2026-06-30T23:59:59Z&limit=100",
+      "http_status": "200",
+      "size_bytes": 43072,
+      "error": null
+    },
+    {
+      "file": "s1_opera_june.json",
+      "url": "https://cmr.earthdata.nasa.gov/stac/ASF/search?collections=OPERA_L2_RTC-S1_V1&bbox=-75.753384,36.183704,-75.750335,36.18826&datetime=2026-06-11T00:00:00Z/2026-06-30T23:59:59Z&limit=100",
+      "http_status": "200",
+      "size_bytes": 894,
+      "error": null
+    },
+    {
+      "file": "s1_asf_grd_june.json",
+      "url": "https://api.daac.asf.alaska.edu/services/search/param?platform=Sentinel-1&processingLevel=GRD_HD&intersectsWith=POINT%28-75.7518595+36.185981999999996%29&start=2026-06-11T00:00:00Z&end=2026-06-30T23:59:59Z&output=geojson",
+      "http_status": "200",
+      "size_bytes": 12878,
+      "error": null
+    },
+    {
+      "file": "s2_earth_september.json",
+      "url": "https://earth-search.aws.element84.com/v1/search?collections=sentinel-2-l2a&bbox=-75.753384,36.183704,-75.750335,36.18826&datetime=2026-09-25T00:00:00Z/2026-10-02T23:59:59Z&limit=100",
+      "http_status": "200",
+      "size_bytes": 84227,
+      "error": null
+    },
+    {
+      "file": "s2_pc_september.json",
+      "url": "https://planetarycomputer.microsoft.com/api/stac/v1/search?collections=sentinel-2-l2a&bbox=-75.753384,36.183704,-75.750335,36.18826&datetime=2026-09-25T00:00:00Z/2026-10-02T23:59:59Z&limit=100",
+      "http_status": "200",
+      "size_bytes": 61652,
+      "error": null
+    },
+    {
+      "file": "s1_earth_grd_september.json",
+      "url": "https://earth-search.aws.element84.com/v1/search?collections=sentinel-1-grd&bbox=-75.753384,36.183704,-75.750335,36.18826&datetime=2026-09-25T00:00:00Z/2026-10-02T23:59:59Z&limit=100",
+      "http_status": "200",
+      "size_bytes": 8362,
+      "error": null
+    },
+    {
+      "file": "s1_pc_rtc_september.json",
+      "url": "https://planetarycomputer.microsoft.com/api/stac/v1/search?collections=sentinel-1-rtc&bbox=-75.753384,36.183704,-75.750335,36.18826&datetime=2026-09-25T00:00:00Z/2026-10-02T23:59:59Z&limit=100",
+      "http_status": "200",
+      "size_bytes": 6374,
+      "error": null
+    },
+    {
+      "file": "s1_pc_grd_september.json",
+      "url": "https://planetarycomputer.microsoft.com/api/stac/v1/search?collections=sentinel-1-grd&bbox=-75.753384,36.183704,-75.750335,36.18826&datetime=2026-09-25T00:00:00Z/2026-10-02T23:59:59Z&limit=100",
+      "http_status": "200",
+      "size_bytes": 8864,
+      "error": null
+    },
+    {
+      "file": "s1_opera_september.json",
+      "url": "https://cmr.earthdata.nasa.gov/stac/ASF/search?collections=OPERA_L2_RTC-S1_V1&bbox=-75.753384,36.183704,-75.750335,36.18826&datetime=2026-09-25T00:00:00Z/2026-10-02T23:59:59Z&limit=100",
+      "http_status": "200",
+      "size_bytes": 894,
+      "error": null
+    },
+    {
+      "file": "s1_asf_grd_september.json",
+      "url": "https://api.daac.asf.alaska.edu/services/search/param?platform=Sentinel-1&processingLevel=GRD_HD&intersectsWith=POINT%28-75.7518595+36.185981999999996%29&start=2026-09-25T00:00:00Z&end=2026-10-02T23:59:59Z&output=geojson",
+      "http_status": "200",
+      "size_bytes": 2621,
+      "error": null
+    },
+    {
+      "file": "s2_earth_october.json",
+      "url": "https://earth-search.aws.element84.com/v1/search?collections=sentinel-2-l2a&bbox=-75.753384,36.183704,-75.750335,36.18826&datetime=2026-10-12T00:00:00Z/2026-10-20T23:59:59Z&limit=100",
+      "http_status": "200",
+      "size_bytes": 84479,
+      "error": null
+    },
+    {
+      "file": "s2_pc_october.json",
+      "url": "https://planetarycomputer.microsoft.com/api/stac/v1/search?collections=sentinel-2-l2a&bbox=-75.753384,36.183704,-75.750335,36.18826&datetime=2026-10-12T00:00:00Z/2026-10-20T23:59:59Z&limit=100",
+      "http_status": "200",
+      "size_bytes": 61699,
+      "error": null
+    },
+    {
+      "file": "s1_earth_grd_october.json",
+      "url": "https://earth-search.aws.element84.com/v1/search?collections=sentinel-1-grd&bbox=-75.753384,36.183704,-75.750335,36.18826&datetime=2026-10-12T00:00:00Z/2026-10-20T23:59:59Z&limit=100",
+      "http_status": "200",
+      "size_bytes": 8450,
+      "error": null
+    },
+    {
+      "file": "s1_pc_rtc_october.json",
+      "url": "https://planetarycomputer.microsoft.com/api/stac/v1/search?collections=sentinel-1-rtc&bbox=-75.753384,36.183704,-75.750335,36.18826&datetime=2026-10-12T00:00:00Z/2026-10-20T23:59:59Z&limit=100",
+      "http_status": "200",
+      "size_bytes": 6529,
+      "error": null
+    },
+    {
+      "file": "s1_pc_grd_october.json",
+      "url": "https://planetarycomputer.microsoft.com/api/stac/v1/search?collections=sentinel-1-grd&bbox=-75.753384,36.183704,-75.750335,36.18826&datetime=2026-10-12T00:00:00Z/2026-10-20T23:59:59Z&limit=100",
+      "http_status": "200",
+      "size_bytes": 8879,
+      "error": null
+    },
+    {
+      "file": "s1_opera_october.json",
+      "url": "https://cmr.earthdata.nasa.gov/stac/ASF/search?collections=OPERA_L2_RTC-S1_V1&bbox=-75.753384,36.183704,-75.750335,36.18826&datetime=2026-10-12T00:00:00Z/2026-10-20T23:59:59Z&limit=100",
+      "http_status": "200",
+      "size_bytes": 894,
+      "error": null
+    },
+    {
+      "file": "s1_asf_grd_october.json",
+      "url": "https://api.daac.asf.alaska.edu/services/search/param?platform=Sentinel-1&processingLevel=GRD_HD&intersectsWith=POINT%28-75.7518595+36.185981999999996%29&start=2026-10-12T00:00:00Z&end=2026-10-20T23:59:59Z&output=geojson",
+      "http_status": "200",
+      "size_bytes": 2623,
+      "error": null
+    },
+    {
+      "file": "coops_water_level_june.json",
+      "url": "https://api.tidesandcurrents.noaa.gov/api/prod/datagetter?station=8651370&begin_date=20260607&end_date=20260701&product=water_level&time_zone=gmt&units=metric&format=json&application=Poltergeist&datum=MLLW",
+      "http_status": "200",
+      "size_bytes": 449449,
+      "error": null
+    },
+    {
+      "file": "coops_predictions_june.json",
+      "url": "https://api.tidesandcurrents.noaa.gov/api/prod/datagetter?station=8651370&begin_date=20260607&end_date=20260701&product=predictions&time_zone=gmt&units=metric&format=json&application=Poltergeist&datum=MLLW&interval=6",
+      "http_status": "200",
+      "size_bytes": 227735,
+      "error": null
+    },
+    {
+      "file": "coops_wind_june.json",
+      "url": "https://api.tidesandcurrents.noaa.gov/api/prod/datagetter?station=8651370&begin_date=20260607&end_date=20260701&product=wind&time_zone=gmt&units=metric&format=json&application=Poltergeist",
+      "http_status": "200",
+      "size_bytes": 492885,
+      "error": null
+    },
+    {
+      "file": "coops_water_level_september.json",
+      "url": "https://api.tidesandcurrents.noaa.gov/api/prod/datagetter?station=8651370&begin_date=20260921&end_date=20261003&product=water_level&time_zone=gmt&units=metric&format=json&application=Poltergeist&datum=MLLW",
+      "http_status": "200",
+      "size_bytes": 233033,
+      "error": null
+    },
+    {
+      "file": "coops_predictions_september.json",
+      "url": "https://api.tidesandcurrents.noaa.gov/api/prod/datagetter?station=8651370&begin_date=20260921&end_date=20261003&product=predictions&time_zone=gmt&units=metric&format=json&application=Poltergeist&datum=MLLW&interval=6",
+      "http_status": "200",
+      "size_bytes": 118226,
+      "error": null
+    },
+    {
+      "file": "coops_wind_september.json",
+      "url": "https://api.tidesandcurrents.noaa.gov/api/prod/datagetter?station=8651370&begin_date=20260921&end_date=20261003&product=wind&time_zone=gmt&units=metric&format=json&application=Poltergeist",
+      "http_status": "200",
+      "size_bytes": 257112,
+      "error": null
+    },
+    {
+      "file": "coops_water_level_october.json",
+      "url": "https://api.tidesandcurrents.noaa.gov/api/prod/datagetter?station=8651370&begin_date=20261008&end_date=20261021&product=water_level&time_zone=gmt&units=metric&format=json&application=Poltergeist&datum=MLLW",
+      "http_status": "200",
+      "size_bytes": 248395,
+      "error": null
+    },
+    {
+      "file": "coops_predictions_october.json",
+      "url": "https://api.tidesandcurrents.noaa.gov/api/prod/datagetter?station=8651370&begin_date=20261008&end_date=20261021&product=predictions&time_zone=gmt&units=metric&format=json&application=Poltergeist&datum=MLLW&interval=6",
+      "http_status": "200",
+      "size_bytes": 127294,
+      "error": null
+    },
+    {
+      "file": "coops_wind_october.json",
+      "url": "https://api.tidesandcurrents.noaa.gov/api/prod/datagetter?station=8651370&begin_date=20261008&end_date=20261021&product=wind&time_zone=gmt&units=metric&format=json&application=Poltergeist",
+      "http_status": "200",
+      "size_bytes": 276873,
+      "error": null
+    },
+    {
+      "file": "ndbc_44056_realtime.txt",
+      "url": "https://www.ndbc.noaa.gov/data/realtime2/44056.txt",
+      "http_status": "200",
+      "size_bytes": 201724,
+      "error": null
+    },
+    {
+      "file": "ndbc_44056_2026.nc",
+      "url": "https://dods.ndbc.noaa.gov/thredds/fileServer/data/stdmet/44056/44056h2026.nc",
+      "http_status": "200",
+      "size_bytes": 698788,
+      "error": null
+    },
+    {
+      "file": "ndbc_44056_month_6.txt.gz",
+      "url": "https://www.ndbc.noaa.gov/data/stdmet/6/4405662026.txt.gz",
+      "http_status": "404",
+      "size_bytes": 0,
+      "error": null
+    },
+    {
+      "file": "ndbc_44056_month_9.txt.gz",
+      "url": "https://www.ndbc.noaa.gov/data/stdmet/9/4405692026.txt.gz",
+      "http_status": "404",
+      "size_bytes": 0,
+      "error": null
+    },
+    {
+      "file": "ndbc_44056_month_a.txt.gz",
+      "url": "https://www.ndbc.noaa.gov/data/stdmet/a/44056a2026.txt.gz",
+      "http_status": "404",
+      "size_bytes": 0,
+      "error": null
+    },
+    {
+      "file": "ndbc_44056_month_10.txt.gz",
+      "url": "https://www.ndbc.noaa.gov/data/stdmet/10/44056102026.txt.gz",
+      "http_status": "404",
+      "size_bytes": 0,
+      "error": null
+    },
+    {
+      "file": "ndbc_DUKN7_realtime.txt",
+      "url": "https://www.ndbc.noaa.gov/data/realtime2/DUKN7.txt",
+      "http_status": "200",
+      "size_bytes": 958612,
+      "error": null
+    },
+    {
+      "file": "ndbc_DUKN7_2026.nc",
+      "url": "https://dods.ndbc.noaa.gov/thredds/fileServer/data/stdmet/dukn7/dukn7h2026.nc",
+      "http_status": "200",
+      "size_bytes": 3646360,
+      "error": null
+    },
+    {
+      "file": "ndbc_DUKN7_month_6.txt.gz",
+      "url": "https://www.ndbc.noaa.gov/data/stdmet/6/dukn762026.txt.gz",
+      "http_status": "404",
+      "size_bytes": 0,
+      "error": null
+    },
+    {
+      "file": "ndbc_DUKN7_month_9.txt.gz",
+      "url": "https://www.ndbc.noaa.gov/data/stdmet/9/dukn792026.txt.gz",
+      "http_status": "404",
+      "size_bytes": 0,
+      "error": null
+    },
+    {
+      "file": "ndbc_DUKN7_month_a.txt.gz",
+      "url": "https://www.ndbc.noaa.gov/data/stdmet/a/dukn7a2026.txt.gz",
+      "http_status": "404",
+      "size_bytes": 0,
+      "error": null
+    },
+    {
+      "file": "ndbc_DUKN7_month_10.txt.gz",
+      "url": "https://www.ndbc.noaa.gov/data/stdmet/10/dukn7102026.txt.gz",
+      "http_status": "404",
+      "size_bytes": 0,
+      "error": null
+    },
+    {
+      "file": "frf_root.xml",
+      "url": "https://chldata.erdc.dren.mil/thredds/catalog/frf/catalog.xml",
+      "http_status": "200",
+      "size_bytes": 2386,
+      "error": null
+    },
+    {
+      "file": "frf_waves.xml",
+      "url": "https://chldata.erdc.dren.mil/thredds/catalog/frf/oceanography/waves/catalog.xml",
+      "http_status": "200",
+      "size_bytes": 8984,
+      "error": null
+    },
+    {
+      "file": "frf_met.xml",
+      "url": "https://chldata.erdc.dren.mil/thredds/catalog/frf/meteorology/catalog.xml",
+      "http_status": "200",
+      "size_bytes": 1586,
+      "error": null
+    },
+    {
+      "file": "frf_hydro.xml",
+      "url": "https://chldata.erdc.dren.mil/thredds/catalog/frf/oceanography/catalog.xml",
+      "http_status": "200",
+      "size_bytes": 2862,
+      "error": null
+    },
+    {
+      "file": "frf_geomorph.xml",
+      "url": "https://chldata.erdc.dren.mil/thredds/catalog/frf/geomorphology/catalog.xml",
+      "http_status": "200",
+      "size_bytes": 1630,
+      "error": null
+    },
+    {
+      "file": "frf_root_legacy.xml",
+      "url": "https://chlthredds.erdc.dren.mil/thredds/catalog/frf/catalog.xml",
+      "http_status": "200",
+      "size_bytes": 2386,
+      "error": null
+    },
+    {
+      "file": "coops_station_8651370.json",
+      "url": "https://api.tidesandcurrents.noaa.gov/mdapi/prod/webapi/stations/8651370.json?expand=details,sensors,datums",
+      "http_status": "200",
+      "size_bytes": 7314,
+      "error": null
+    }
+  ]
+}

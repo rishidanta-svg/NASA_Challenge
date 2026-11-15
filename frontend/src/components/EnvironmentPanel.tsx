@@ -3,9 +3,12 @@ import { getEnvironmentLatest, type Sourced } from '../api/client';
 import { clearCache } from '../api/http';
 import type { EnvironmentLatest } from '../api/schemas';
 import { NOAA_DUCK_STATION } from '../config/geo';
+import { dayDistance } from '../lib/layers';
+import { useApp } from '../state/store';
 import { DataStateBadge } from './DataStateBadge';
 
 export function EnvironmentPanel() {
+  const { date, acquisitions } = useApp();
   const [env, setEnv] = useState<Sourced<EnvironmentLatest> | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -27,6 +30,14 @@ export function EnvironmentPanel() {
   }, [load]);
 
   const observations = env?.data?.observations ?? [];
+  const acqList = acquisitions?.data ?? [];
+  const matchedAcq =
+    acqList.length > 0
+      ? acqList.reduce((best, a) =>
+          dayDistance(a.acquired_at.slice(0, 10), date) < dayDistance(best.acquired_at.slice(0, 10), date) ? a : best,
+        )
+      : null;
+  const acqEnv = matchedAcq?.environment;
 
   return (
     <section className="panel-section" aria-label="Live Environmental Observations" data-testid="env-panel">
@@ -103,6 +114,47 @@ export function EnvironmentPanel() {
               </div>
             );
           })}
+        </div>
+      )}
+
+      {matchedAcq && acqEnv && (
+        <div
+          className="slot-card"
+          style={{ marginTop: 10 }}
+          data-testid="matched-acq-environment"
+        >
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <span className="eyebrow">ACQUISITION-TIME ENVIRONMENT ({date})</span>
+            <span className="badge badge-real">VERIFIED MATCH</span>
+          </div>
+          <div className="mono muted" style={{ fontSize: 9.5, marginTop: 3 }}>
+            Scene: {matchedAcq.sensor} · {matchedAcq.acquired_at.slice(0, 19).replace('T', ' ')} UTC
+          </div>
+          <div className="mono" style={{ fontSize: 10.5, marginTop: 6, lineHeight: 1.5 }}>
+            <div>
+              <strong>NOAA 8651370 Water Level:</strong>{' '}
+              {acqEnv.water_level_m_mllw != null ? `${acqEnv.water_level_m_mllw.toFixed(3)} m (MLLW)` : 'N/A'}
+              {acqEnv.predicted_tide_stage ? ` · ${acqEnv.predicted_tide_stage}` : ''}
+              {acqEnv.predicted_tide_slope_m_per_h != null
+                ? ` (${acqEnv.predicted_tide_slope_m_per_h >= 0 ? '+' : ''}${acqEnv.predicted_tide_slope_m_per_h.toFixed(2)} m/h)`
+                : ''}
+            </div>
+            <div>
+              <strong>FRF 17m Waverider:</strong>{' '}
+              {acqEnv.wave_hs_m_17m != null ? `Hs = ${acqEnv.wave_hs_m_17m.toFixed(2)} m` : 'Hs N/A'}
+              {acqEnv.wave_tp_s_17m != null ? ` · Tp = ${acqEnv.wave_tp_s_17m.toFixed(1)} s` : ''}
+              {acqEnv.wave_dir_deg_17m != null ? ` · ${Math.round(acqEnv.wave_dir_deg_17m)}°` : ''}
+            </div>
+            <div>
+              <strong>FRF Lidar Runup TWL 2%:</strong>{' '}
+              {acqEnv.total_water_level_2pct_navd88_m != null
+                ? `${acqEnv.total_water_level_2pct_navd88_m.toFixed(2)} m (NAVD88)`
+                : 'N/A'}
+              {acqEnv.qualifying_station_matches != null
+                ? ` · ${acqEnv.qualifying_station_matches}/38 series matched`
+                : ''}
+            </div>
+          </div>
         </div>
       )}
 

@@ -10,7 +10,7 @@ This repository pairs the **quantitative boundary validation pipeline** (`run_va
 
 ## Run the integrated POLTERGEIST map
 
-The React and MapLibre app and FastAPI data service run together from this checkout. See the [local setup and integration QA](docs/full-integration.md).
+The React and MapLibre app and FastAPI data service run together from this checkout. See the [local setup and integration QA](docs/full-integration.md) and the [Duck physics workflow, validation and API](docs/duck-physics.md).
 
 ---
 

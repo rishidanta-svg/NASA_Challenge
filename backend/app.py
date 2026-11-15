@@ -63,6 +63,10 @@ def create_app(root=None, unified_root=None):
     def layers():
         return JSONResponse([d for _, d in catalog.layers.values()], headers=CACHE)
 
+    @app.get("/api/coastal/observations")
+    def coastal_observations(include_samples: bool = False):
+        return JSONResponse(catalog.coastal.summary(include_samples=include_samples), headers=CACHE)
+
     @app.get("/api/terrain/change")
     def terrain():
         return catalog.terrain()
@@ -83,8 +87,9 @@ def create_app(root=None, unified_root=None):
     def transect(id: str):
         if id not in catalog.transects:
             raise HTTPException(404, "Unknown transect")
-        feature, profiles, boundaries, _ = catalog.transects[id]
-        return {**feature, "profiles": profiles, "boundaries": boundaries}
+        feature, profiles, boundaries, result = catalog.transects[id]
+        return {**feature, "profiles": profiles, "boundaries": boundaries,
+                "measured_change": result["coastal_observations"]["terrain"]}
 
     @app.get("/api/analysis/{id}")
     def analysis(id: str):
@@ -95,6 +100,8 @@ def create_app(root=None, unified_root=None):
 
     @app.get("/api/boundaries/{id}.geojson")
     def boundary_geojson(id: str):
+        if id in catalog.coastal.layers:
+            return JSONResponse(catalog.coastal.layers[id], headers=CACHE)
         if id not in catalog.reconstruction.boundary_geojson:
             raise HTTPException(404, "Unknown boundary layer")
         return JSONResponse(catalog.reconstruction.boundary_geojson[id], headers=CACHE)

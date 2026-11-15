@@ -257,9 +257,89 @@ export const TransectCollectionSchema = z.object({
   features: z.array(TransectSummarySchema),
 });
 
+const ReliabilitySchema = z.enum(['supported', 'conditional', 'withheld']);
+const TidePositionSchema = z.object({
+  x_frf_m: z.number().finite().nullable(),
+  x_m: z.number().finite().nullable(),
+  status: ReliabilitySchema,
+  reasons: z.array(z.string()),
+  sigma_m: z.number().finite().nonnegative().nullish(),
+  slope_sensitivity_frf_m: z.tuple([z.number().finite(), z.number().finite()]).nullish(),
+});
+
+const MatchedConditionsSchema = z.object({
+  water_level_m_mllw: z.number().nullable(),
+  water_level_timestamp_utc: isoDateTime.nullish(),
+  water_level_offset_s: z.number().nullish(),
+  wave_hs_m_17m: z.number().nullable(),
+  wave_tp_s_17m: z.number().nullable(),
+  wave_dir_deg_17m: z.number().nullish(),
+  wind_speed_ms: z.number().nullable(),
+  wind_gust_ms: z.number().nullish(),
+  rain_24h_mm: z.number().nullable(),
+});
+
+const WaterlineEpochSchema = z.object({
+  date: z.string(),
+  acquisition_id: z.string(),
+  acquired_at: isoDateTime,
+  ndwi: TidePositionSchema,
+  mndwi: TidePositionSchema,
+  tide: TidePositionSchema,
+  setup: TidePositionSchema,
+  environment: MatchedConditionsSchema.nullable(),
+});
+export type WaterlineEpoch = z.infer<typeof WaterlineEpochSchema>;
+
+const MeasuredChangeSchema = z.object({
+  status: ReliabilitySchema,
+  reasons: z.array(z.string()),
+  datum: z.string().optional(),
+  change_profile: z.array(z.object({ x_m: z.number().finite(), dz_m: z.number().finite() })),
+});
+
+const ErrorMetricsSchema = z.object({
+  n: z.number().int().positive(),
+  rmse_m: z.number().finite().nonnegative(),
+  mae_m: z.number().finite().nonnegative(),
+  bias_m: z.number().finite(),
+});
+const ValidationComparisonSchema = z.object({
+  status: ReliabilitySchema,
+  n: z.number().int().nonnegative(),
+  reason: z.string().optional(),
+  methods: z.record(ErrorMetricsSchema).optional(),
+});
+
+export const CoastalEvidenceSchema = z.object({
+  processing_version: z.string(),
+  status: ReliabilitySchema,
+  reasons: z.array(z.string()),
+  radar_disagreement: z.object({
+    status: ReliabilitySchema,
+    reasons: z.array(z.string()),
+    matched_radar_cells: z.number().int().optional(),
+    opposite_radar_cells: z.number().int().optional(),
+    strict_overlap_cells: z.number().int().optional(),
+    opposite_strict_cells: z.number().int().optional(),
+    s1_minus_nisar_seconds: z.object({ june: z.number(), october: z.number() }).optional(),
+    acquisitions: z.record(z.record(z.object({ id: z.string(), acquired_at: isoDateTime }))).optional(),
+  }),
+  validation: z.object({
+    scope: z.string(),
+    targets: z.record(z.object({
+      raw_vs_tide: ValidationComparisonSchema,
+      raw_vs_tide_vs_setup: ValidationComparisonSchema,
+      by_date: z.record(ValidationComparisonSchema),
+    })),
+  }),
+});
+export type CoastalEvidence = z.infer<typeof CoastalEvidenceSchema>;
+
 export const TransectDetailSchema = TransectSummarySchema.extend({
   profiles: z.array(ProfileSchema),
   boundaries: z.array(BoundaryPickSchema),
+  measured_change: MeasuredChangeSchema.optional(),
 });
 export type TransectDetail = z.infer<typeof TransectDetailSchema>;
 
@@ -362,6 +442,11 @@ export const AnalysisSchema = z.object({
     })
     .nullish(),
   skill: z.record(z.number().nullable()).nullish(),
+  coastal_observations: z.object({
+    processing_version: z.string(),
+    waterlines: z.array(WaterlineEpochSchema),
+    terrain: MeasuredChangeSchema,
+  }).optional(),
   physics_model: PhysicsModelOutputSchema.nullish(),
 });
 export type Analysis = z.infer<typeof AnalysisSchema>;

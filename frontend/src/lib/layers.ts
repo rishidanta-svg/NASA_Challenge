@@ -1,3 +1,4 @@
+import { slotById } from '../config/slots';
 import type { LayerDescriptor } from '../api/schemas';
 
 /** Days between two YYYY-MM-DD dates (absolute). */
@@ -14,6 +15,7 @@ export function dayDistance(a: string, b: string): number {
 export function resolveSlot(layers: LayerDescriptor[] | null | undefined, slot: string, date: string): LayerDescriptor | null {
   const cands = (layers ?? []).filter((l) => l.slot === slot && l.status === 'available');
   if (!cands.length) return null;
+  if (slotById(slot)?.exactDate) return cands.find((l) => l.reference_date === date) ?? null;
   const timeless = cands.find((l) => !l.reference_date);
   if (timeless) return timeless;
   return cands.reduce((best, l) =>

@@ -1,0 +1,41 @@
+{
+  "2026-06": {
+    "source": "https://chldata.erdc.dren.mil/thredds/dodsC/frf/geomorphology/DEMs/duneLidarDEM/2026/FRF-geomorphology_DEMs_duneLidarDEM_202606.nc",
+    "acquired_at": "2026-06-15T19:31:04+00:00",
+    "evaluation_scan_utc": "2026-06-19T00:31:03+00:00",
+    "units": "m/m",
+    "coreg_qc_flag": 1,
+    "sample_rows": 50,
+    "slope_m_per_m": 0.1333091,
+    "slope_p10_p90_m_per_m": [
+      0.09381989,
+      0.14086794
+    ]
+  },
+  "2026-09": {
+    "source": "https://chldata.erdc.dren.mil/thredds/dodsC/frf/geomorphology/DEMs/duneLidarDEM/2026/FRF-geomorphology_DEMs_duneLidarDEM_202609.nc",
+    "acquired_at": "2026-09-22T10:33:03+00:00",
+    "evaluation_scan_utc": "2026-09-29T10:33:03+00:00",
+    "units": "m/m",
+    "coreg_qc_flag": 1,
+    "sample_rows": 42,
+    "slope_m_per_m": 0.07489297,
+    "slope_p10_p90_m_per_m": [
+      0.03065399,
+      0.09968354
+    ]
+  },
+  "2026-10": {
+    "source": "https://chldata.erdc.dren.mil/thredds/dodsC/frf/geomorphology/DEMs/duneLidarDEM/2026/FRF-geomorphology_DEMs_duneLidarDEM_202610.nc",
+    "acquired_at": "2026-10-09T23:33:04+00:00",
+    "evaluation_scan_utc": "2026-10-16T23:33:04+00:00",
+    "units": "m/m",
+    "coreg_qc_flag": 1,
+    "sample_rows": 50,
+    "slope_m_per_m": 0.05921713,
+    "slope_p10_p90_m_per_m": [
+      0.02556765,
+      0.08983847
+    ]
+  }
+}

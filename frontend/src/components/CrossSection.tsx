@@ -69,6 +69,10 @@ export function CrossSection() {
 
   const hJune = hoverX !== null ? nearest(june?.points, hoverX) : null;
   const hOct = hoverX !== null ? nearest(october?.points, hoverX) : null;
+  const measuredChange = hoverX !== null ? nearest(t?.measured_change?.change_profile, hoverX) : null;
+  const hChange = measuredChange && hoverX !== null && Math.abs(measuredChange.x_m - hoverX) <= 0.5
+    ? measuredChange.dz_m : null;
+  const octWaterline = a?.coastal_observations?.waterlines.find((row) => row.date === '2026-10');
   const hMod = hoverX !== null ? nearest(modelPoints, hoverX) : null;
 
   return (
@@ -160,7 +164,8 @@ export function CrossSection() {
               {/* Separate sensor boundary guides */}
               {showGuides &&
                 t.boundaries
-                  .filter((b) => b.x_m >= xMin - 5 && b.x_m <= xMax + 5)
+                  .filter((b) => b.x_m >= xMin - 5 && b.x_m <= xMax + 5 &&
+                    (b.type !== 'optical' || !a?.coastal_observations?.waterlines.length))
                   .map((b, idx) => {
                     const x = sx(b.x_m);
                     const col = b.type === 'radar' ? '#65dfce' : b.type === 'optical' ? '#edbf7c' : '#db9d82';
@@ -182,7 +187,18 @@ export function CrossSection() {
                     );
                   })}
 
-              {/* Bayesian reconstructed horizontal boundary intervals (90% CI) + accepted dune-toe / waterline */}
+              {showGuides && (a?.coastal_observations?.waterlines ?? []).flatMap((epoch) =>
+                (['ndwi', 'tide'] as const).map((kind) => {
+                  const x = epoch[kind].x_m;
+                  if (x == null || x < xMin || x > xMax) return null;
+                  return <line key={`${epoch.date}-${kind}`} x1={sx(x)} y1={pad.t} x2={sx(x)} y2={H - pad.b}
+                    stroke={kind === 'tide' ? '#88bae8' : '#edbf7c'} strokeWidth="1.7" strokeDasharray={kind === 'tide' ? '5 3' : undefined}>
+                    <title>{epoch.date} {kind === 'tide' ? 'Tide-corrected waterline' : 'Raw optical waterline'}</title>
+                  </line>;
+                }),
+              )}
+
+              {/* Bayesian reconstructed horizontal boundary intervals (90% CI) */}
               {showModel &&
                 [junAnalysis, octAnalysis].filter(Boolean).map((ep, idx) => {
                   if (!ep) return null;
@@ -264,6 +280,7 @@ export function CrossSection() {
               <div style={{ display: 'flex', gap: 10, fontSize: 11, fontFamily: 'var(--font-mono)', flexWrap: 'wrap' }}>
                 <span style={{ color: '#65dfce' }}>━ June LiDAR</span>
                 <span style={{ color: '#edbf7c' }}>━ Oct LiDAR</span>
+                {showGuides && <span style={{ color: '#88bae8' }}>┅ Tide-corrected waterline</span>}
                 {showModel && <span style={{ color: '#d58bd8' }}>┅ Bayes Dune (90% CI)</span>}
               </div>
               <div className="mono" style={{ fontSize: 11, marginTop: 8, lineHeight: 1.5 }}>
@@ -273,9 +290,9 @@ export function CrossSection() {
                       Along transect = {hJune.x_m.toFixed(1)} m (FRF x = {(hJune.x_m + xOrigin).toFixed(1)} m)
                     </div>
                     <div>
-                      June z = {hJune.z_m.toFixed(2)} m · Oct z = {hOct.z_m.toFixed(2)} m (Δz ={' '}
-                      {(hOct.z_m - hJune.z_m).toFixed(2)} m)
+                      June z = {hJune.z_m.toFixed(2)} m · Oct z = {hOct.z_m.toFixed(2)} m
                     </div>
+                    <div>Measured Δz · {hChange !== null ? `${hChange.toFixed(2)} m` : 'no paired sample'}</div>
                     {showModel && hMod && (
                       <div style={{ color: 'var(--purple)' }}>
                         Model z = {hMod.z_m.toFixed(2)} ± {hMod.sigma_m.toFixed(2)} m
@@ -284,10 +301,9 @@ export function CrossSection() {
                   </>
                 ) : octAnalysis ? (
                   <>
-                    <div>
-                      <strong>Oct S2 Waterline:</strong> FRF x = {octAnalysis.waterline.x_frf_m?.toFixed(1) ?? '—'} m (±
-                      {octAnalysis.waterline.cv_rmse_m?.toFixed(1) ?? '—'} m)
-                    </div>
+                    {octWaterline && <div>
+                      <strong>Oct waterline (FRF x)</strong> · raw {octWaterline.ndwi.x_frf_m?.toFixed(1) ?? '—'} m · tide {octWaterline.tide.x_frf_m?.toFixed(1) ?? 'withheld'} m
+                    </div>}
                     <div style={{ color: 'var(--purple)' }}>
                       <strong>Oct Bayes Dune:</strong>{' '}
                       {octAnalysis.dunetoe.accepted_x_frf_m !== null

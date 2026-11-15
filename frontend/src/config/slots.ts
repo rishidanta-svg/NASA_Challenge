@@ -7,6 +7,7 @@ import type { LayerGroup, Sensor } from '../api/schemas';
 
 export interface SlotDef {
   id: string;
+  exactDate?: boolean;
   title: string;
   group: LayerGroup;
   sensor: Sensor;
@@ -148,6 +149,60 @@ export const SLOTS: SlotDef[] = [
     expectedUnits: null,
     defaultOpacity: 1,
     color: '#edbf7c',
+  },
+  {
+    id: 'physics-s2-ndwi',
+    exactDate: true,
+    title: 'Raw NDWI waterline',
+    group: 'sensor',
+    sensor: 'SENTINEL-2',
+    meaning: 'Cloud-masked optical crossing at acquisition',
+    expectedUnits: 'm',
+    defaultOpacity: 1,
+    color: '#fbc981',
+  },
+  {
+    id: 'physics-s2-tide',
+    exactDate: true,
+    title: 'Tide-corrected waterline',
+    group: 'sensor',
+    sensor: 'SENTINEL-2',
+    meaning: 'NDWI crossing normalized to Duck mean high water',
+    expectedUnits: 'm',
+    defaultOpacity: 1,
+    color: '#88bae8',
+  },
+  {
+    id: 'physics-s2-mndwi',
+    exactDate: true,
+    title: 'Raw MNDWI waterline',
+    group: 'sensor',
+    sensor: 'SENTINEL-2',
+    meaning: 'Cloud-masked green and SWIR crossing at 20 m',
+    expectedUnits: 'm',
+    defaultOpacity: 1,
+    color: '#cfbb87',
+  },
+  {
+    id: 'physics-s2-setup',
+    exactDate: true,
+    title: 'Wave setup sensitivity',
+    group: 'sensor',
+    sensor: 'SENTINEL-2',
+    meaning: 'Experimental tide and mean-setup comparison',
+    expectedUnits: 'm',
+    defaultOpacity: 1,
+    color: '#dca8f0',
+  },
+  {
+    id: 'radar-disagreement',
+    title: 'Radar directional disagreement',
+    group: 'sensor',
+    sensor: 'OTHER',
+    meaning: 'Opposite NISAR HH and Sentinel-1 VV changes across separately timed pairs',
+    expectedUnits: 'flag',
+    defaultOpacity: 0.65,
+    color: '#ec8c7e',
   },
   {
     id: 's1-vv-change',

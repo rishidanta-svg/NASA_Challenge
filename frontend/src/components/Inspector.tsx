@@ -7,6 +7,7 @@ import { sampleAwsElevation, type TerrainSample } from '../lib/terrarium';
 import { flyToLngLat } from '../map/registry';
 import { useApp } from '../state/store';
 import { DataStateBadge } from './DataStateBadge';
+import { CoastalEvidence } from './CoastalEvidence';
 import { EnvironmentPanel } from './EnvironmentPanel';
 
 export function Inspector() {
@@ -238,8 +239,8 @@ export function Inspector() {
                     <div key={ep.date} className="mono" style={{ fontSize: 10.5, marginBottom: 6, lineHeight: 1.45 }}>
                       <div style={{ color: 'var(--cyan)', fontWeight: 600 }}>{ep.epoch_label}</div>
                       <div>
-                        S2 NDWI Waterline: FRF x = {ep.waterline.x_frf_m?.toFixed(2) ?? '—'} m (±
-                        {ep.waterline.cv_rmse_m?.toFixed(2) ?? '—'} m)
+                        Legacy S2 NDWI Waterline: FRF x = {ep.waterline.x_frf_m?.toFixed(2) ?? '—'} m
+                        {' (CV RMSE '}{ep.waterline.cv_rmse_m?.toFixed(2) ?? '—'} m)
                       </div>
                       <div style={{ color: 'var(--purple)' }}>
                         S1 Bayes Dune Toe:{' '}
@@ -268,6 +269,8 @@ export function Inspector() {
           </div>
         )}
       </section>
+
+      <CoastalEvidence waterlines={aData?.coastal_observations?.waterlines ?? []} />
 
       {/* Live NOAA Station 8651370 Observations */}
       <EnvironmentPanel />

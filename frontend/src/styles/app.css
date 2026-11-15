@@ -610,3 +610,18 @@
     grid-template-columns: 1fr;
   }
 }
+
+.coastal-detail {
+  margin-top: 7px;
+  font-size: 11px;
+  line-height: 1.55;
+  overflow-wrap: anywhere;
+}
+.coastal-detail > summary {
+  cursor: pointer;
+  color: var(--cyan);
+  font-weight: 600;
+}
+.coastal-validation {
+  margin-top: 7px;
+}

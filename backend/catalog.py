@@ -8,6 +8,7 @@ from pathlib import Path
 
 from rasterio.warp import transform
 
+from .coastal_observations import CoastalObservations, VERSION
 from .reconstruction import CoastalReconstructionStore
 
 BBOX = [-75.753384, 36.183704, -75.750335, 36.188260]
@@ -118,6 +119,11 @@ class Catalog:
             self.create_unified_layers()
         else:
             self.acquisitions.extend(self.reconstruction.extra_acquisitions)
+        self.coastal = CoastalObservations(
+            self.root, self.unified_root, self.unified_manifest, self.cross_date_pairs,
+            self.acq_environment, self.lidar, self.reconstruction.lidar_refs,
+        )
+        self.create_physics_layers()
         self.create_transects()
 
     def _load_unified_environment(self):
@@ -198,6 +204,7 @@ class Catalog:
                     if _val("NOAA CO-OPS 8651370", "wind_direction") is not None
                     else _val("NDBC DUKN7", "wind_direction")
                 ),
+                "wind_gust_ms": _val("NOAA CO-OPS 8651370", "wind_gust"),
                 "rain_10min_mm": _val("USACE FRF rain gauge", "rain_10min"),
                 "rain_24h_mm": round(float(rain24), 2) if rain24 is not None else None,
                 "rain_72h_mm": round(float(rain72), 2) if rain72 is not None else None,
@@ -624,6 +631,49 @@ class Catalog:
                     },
                 })
 
+    def create_physics_layers(self):
+        if self.coastal.lidar["status"] != "supported":
+            for id in ("lidar-dz-2026-oct-jun", "lidar-paired-coverage"):
+                self.layers.pop(id, None)
+                self.layer_bands.pop(id, None)
+        else:
+            for id in ("lidar-dz-2026-oct-jun", "lidar-paired-coverage"):
+                if id in self.layers:
+                    desc = self.layers[id][1]
+                    desc["provenance"] = {**desc["provenance"], "processing": self.coastal.lidar["method"],
+                                          "processing_version": self.coastal.lidar["processing_version"]}
+                    desc.setdefault("qa", {})["acquisitions"] = self.coastal.lidar["acquisitions"]
+
+        for id, layer in self.coastal.layers.items():
+            radar = id == "radar-disagreement"
+            props = layer["features"][0]["properties"]
+            kind = props.get("kind")
+            when = props.get("acquired_at")
+            title, slot, quantity = {
+                "ndwi": ("Raw Sentinel-2 waterline (NDWI)", "physics-s2-ndwi", "Cloud-masked NDWI waterline at acquisition"),
+                "mndwi": ("Raw Sentinel-2 waterline (MNDWI)", "physics-s2-mndwi", "Cloud-masked MNDWI waterline at acquisition"),
+                "tide": ("Tide-corrected waterline", "physics-s2-tide", "Optical waterline normalized to Duck mean high water"),
+                "setup": ("Wave setup sensitivity", "physics-s2-setup", "Experimental normalization including mean wave setup"),
+                None: ("Radar directional disagreement", "radar-disagreement", "Opposite signs of NISAR HH and Sentinel-1 VV changes"),
+            }[kind]
+            qa = {**self.coastal.radar, "reliability": "conditional"} if radar else {
+                "acquisition_id": props["acquisition_id"], "target": props["target"],
+                "reliability": "conditional",
+            }
+            self.layers[id] = (None, {
+                "id": id, "slot": slot, "title": title, "sensor": "OTHER" if radar else "SENTINEL-2",
+                "group": "sensor", "kind": "geojson", "url": f"/api/boundaries/{id}.geojson",
+                "bounds": self.bounds, "units": "flag" if radar else "m", "quantity": quantity,
+                "acquired_at": when, "reference_date": when[:10] if when else None,
+                "epoch_label": when[:10] if when else "June to October 2026",
+                "native_crs": "EPSG:32618", "native_resolution_m": 20 if kind == "mndwi" else 10,
+                "vertical_datum": "NAVD88" if kind in ("tide", "setup") else None,
+                "inferred": kind in ("tide", "setup"), "status": "available", "qa": qa,
+                "provenance": {"source": "NASA NISAR and ESA Sentinel-1" if radar else S2_SOURCE,
+                               "processing": quantity, "processing_version": VERSION,
+                               "product_id": props.get("acquisition_id")},
+            })
+
     def create_transects(self):
         # Exact FRF transform used by the pipeline. The line starts at the first
         # paired observation and spans the profile; samples retain the source gaps.
@@ -656,6 +706,19 @@ class Catalog:
                 y_frf_m=y,
                 x_origin_frf_m=float(x[0]),
             )
+            if self.coastal.lidar["status"] == "supported":
+                june = {p["x_m"]: p["z_m"] for p in points[0]["points"]}
+                measured = [
+                    {"x_m": p["x_m"], "dz_m": round(p["z_m"] - june[p["x_m"]], 6)}
+                    for p in points[1]["points"] if p["x_m"] in june
+                ]
+            else:
+                measured = []
+            analysis["coastal_observations"] = {
+                "processing_version": VERSION,
+                "waterlines": self.coastal.transect(y, float(x[0])),
+                "terrain": {**self.coastal.lidar, "change_profile": measured},
+            }
             self.transects[id] = (feature, points, boundaries, analysis)
 
     def study(self):

@@ -17,6 +17,7 @@ import { fetchNoaaLatest } from './noaa';
 import {
   AcquisitionListSchema,
   AnalysisSchema,
+  CoastalEvidenceSchema,
   EnvironmentLatestSchema,
   LayerListSchema,
   StudyAreaSchema,
@@ -26,6 +27,7 @@ import {
   UnavailableSchema,
   type Acquisition,
   type Analysis,
+  type CoastalEvidence,
   type EnvironmentLatest,
   type LayerDescriptor,
   type StudyArea,
@@ -51,6 +53,7 @@ export const ENDPOINTS = {
   acquisitions: '/api/acquisitions',
   layers: '/api/layers',
   terrainChange: '/api/terrain/change',
+  coastalEvidence: '/api/coastal/observations',
   transects: '/api/transects',
   transect: (id: string) => `/api/transects/${encodeURIComponent(id)}`,
   analysis: (id: string) => `/api/analysis/${encodeURIComponent(id)}`,
@@ -116,6 +119,10 @@ export async function getAcquisitions(): Promise<Sourced<Acquisition[]>> {
 
 export async function getLayers(): Promise<Sourced<LayerDescriptor[]>> {
   return sourced(await get(ENDPOINTS.layers, LayerListSchema, 300_000));
+}
+
+export async function getCoastalEvidence(): Promise<Sourced<CoastalEvidence>> {
+  return sourced(await get(ENDPOINTS.coastalEvidence, CoastalEvidenceSchema, 300_000));
 }
 
 export async function getTerrainChange(): Promise<Sourced<TerrainChange>> {

@@ -180,7 +180,8 @@ export function LayerPanel() {
               const ui = slots[slot.id] ?? { visible: false, opacity: slot.defaultOpacity };
               const desc = resolveSlot(layers?.data, slot.id, date);
               const allForSlot = slotDescriptors(layers?.data, slot.id);
-              const pendingReason = allForSlot.find((d) => d.status === 'unavailable')?.reason;
+              const pendingReason = allForSlot.find((d) => d.status === 'unavailable')?.reason ??
+                (slot.exactDate && allForSlot.length ? 'No qualified layer on the selected acquisition date' : null);
               const isMock = isMockDescriptor(desc);
               const available = !!desc;
 
@@ -214,6 +215,7 @@ export function LayerPanel() {
                         <span className="mono">{desc.epoch_label}</span>
                         {desc.native_resolution_m ? ` · ${desc.native_resolution_m} m` : ''}
                         {desc.vertical_datum ? ` · ${desc.vertical_datum}` : ''}
+                        {desc.qa?.reliability === 'conditional' ? ' · Conditional' : ''}
                       </div>
                       {ui.visible && (
                         <>

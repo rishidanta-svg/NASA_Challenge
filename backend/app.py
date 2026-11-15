@@ -1,9 +1,11 @@
 """POLTERGEIST local data API using the checked-in verified and unified handoff bundles."""
 
+from datetime import datetime, timezone
 from functools import lru_cache
 import logging
 import os
 from pathlib import Path
+import re
 
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
@@ -119,24 +121,56 @@ def create_app(root=None, unified_root=None):
     def environment():
         return JSONResponse(env.latest(), headers={"Cache-Control": "public, max-age=30"})
 
+    def _parse_iso(value: str, param: str) -> datetime:
+        try:
+            normalized = value[:-1] + "+00:00" if value.endswith("Z") else value
+            # Python 3.9's fromisoformat only accepts 0, 3, or 6 fractional digits.
+            normalized = re.sub(
+                r"\.(\d+)",
+                lambda m: "." + (m.group(1) + "000000")[:6],
+                normalized,
+                count=1,
+            )
+            dt = datetime.fromisoformat(normalized)
+        except ValueError:
+            raise HTTPException(400, f"Invalid {param} timestamp") from None
+        if dt.tzinfo is None:
+            dt = dt.replace(tzinfo=timezone.utc)
+        return dt
+
     @app.get("/api/environment/acquisitions")
-    def acquisition_environments(group: str = None):
-        if not catalog.acq_environment:
+    def acquisition_environments(group: str = None, start: str = None, end: str = None):
+        if catalog.environment_status == "error":
+            raise HTTPException(500, catalog.environment_error or "Environmental dataset failed to load")
+        if catalog.environment_status == "unavailable":
             return {"status": "unavailable", "reason": "Unified environmental dataset is unavailable"}
-        records = [
-            {
-                "id": a["id"],
-                "sensor": a["sensor"],
-                "acquired_at": a["acquired_at"],
-                "group": a.get("group"),
-                "summary": catalog.acq_environment.get(a["id"], {}).get("summary"),
-                "tide_stage": catalog.acq_environment.get(a["id"], {}).get("tide_stage"),
-            }
-            for a in sorted(catalog.acquisitions, key=lambda x: x["acquired_at"])
-            if not group or a.get("group") == group
-        ]
+
+        start_dt = _parse_iso(start, "start") if start else None
+        end_dt = _parse_iso(end, "end") if end else None
+
+        records = []
+        for a in sorted(catalog.acquisitions, key=lambda x: x["acquired_at"]):
+            if group and a.get("group") != group:
+                continue
+            if start_dt or end_dt:
+                acq_dt = _parse_iso(a["acquired_at"], "acquired_at")
+                if start_dt and acq_dt < start_dt:
+                    continue
+                if end_dt and acq_dt > end_dt:
+                    continue
+            records.append(
+                {
+                    "id": a["id"],
+                    "sensor": a["sensor"],
+                    "acquired_at": a["acquired_at"],
+                    "group": a.get("group"),
+                    "summary": catalog.acq_environment.get(a["id"], {}).get("summary"),
+                    "tide_stage": catalog.acq_environment.get(a["id"], {}).get("tide_stage"),
+                }
+            )
         return JSONResponse(
             {
+                "status": "available",
                 "acquisitions": records,
                 "cross_date_contrasts": catalog.cross_date_environment,
                 "qa": catalog.environment_qa,
@@ -146,14 +180,37 @@ def create_app(root=None, unified_root=None):
 
     @app.get("/api/environment/acquisitions/{id:path}")
     def acquisition_environment_detail(id: str):
+        if catalog.environment_status == "error":
+            raise HTTPException(500, catalog.environment_error or "Environmental dataset failed to load")
+        if catalog.environment_status == "unavailable":
+            return {"status": "unavailable", "reason": "Unified environmental dataset is unavailable"}
         target = id
-        if target not in catalog.acq_environment:
-            matches = [k for k in catalog.acq_environment if k.startswith(target + "#")]
-            if len(matches) == 1:
-                target = matches[0]
-            else:
-                raise HTTPException(404, "Unknown acquisition ID")
-        return JSONResponse(catalog.acq_environment[target], headers=CACHE)
+        if target in catalog.acq_environment:
+            return JSONResponse(catalog.acq_environment[target], headers=CACHE)
+        matches = [k for k in catalog.acq_environment if k.startswith(target + "#")]
+        if len(matches) == 1:
+            return JSONResponse(catalog.acq_environment[matches[0]], headers=CACHE)
+
+        acq_by_id = {a["id"]: a for a in catalog.acquisitions}
+        matched_acq = acq_by_id.get(target)
+        if matched_acq is None:
+            acq_matches = [a for aid, a in acq_by_id.items() if aid.startswith(target + "#")]
+            if len(acq_matches) == 1:
+                matched_acq = acq_matches[0]
+        if matched_acq is not None:
+            return JSONResponse(
+                {
+                    "id": matched_acq["id"],
+                    "acquisition_utc": matched_acq["acquired_at"],
+                    "group": matched_acq.get("group"),
+                    "summary": None,
+                    "tide_stage": None,
+                    "nearest": [],
+                    "antecedent": [],
+                },
+                headers=CACHE,
+            )
+        raise HTTPException(404, "Unknown acquisition ID")
 
     @app.get("/api/tiles/{id}/{z}/{x}/{y}.png")
     def tiles(id: str, z: int, x: int, y: int):

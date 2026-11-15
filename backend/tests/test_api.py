@@ -1,11 +1,16 @@
 import json
+import logging
 import math
+import shutil
+import sys
 from io import BytesIO
 from hashlib import sha256
 
 from fastapi.testclient import TestClient
 import numpy as np
 from PIL import Image
+import pyarrow as pa
+import pyarrow.parquet as pq
 import rasterio
 from rasterio.warp import transform
 
@@ -189,3 +194,122 @@ def test_terrarium_packs_real_lidar_height(monkeypatch):
     w,s,right,top = tile_bounds(z,x,y)
     red, green, blue = pixels[int((top-n)/(top-s)*SIZE),int((e-w)/(right-w)*SIZE)]
     assert abs((red*256 + green + blue/256 - 32768) - surveyed) < 1/256
+
+
+def _stage_unified_env_fixture(tmp_path):
+    """Create a minimal verified + unified tree with real environmental Parquet files in tmp_path."""
+    unified = tmp_path / "unified"
+    env_dir = unified / "environment"
+    env_dir.mkdir(parents=True)
+    for name in ("acquisition_manifest.json", "cross_date_pairs.json", "geospatial_qa.json"):
+        shutil.copy2(UNIFIED / name, unified / name)
+    shutil.copy2(UNIFIED / "environment/environment_qa.json", env_dir / "environment_qa.json")
+    for name in ("nearest.parquet", "tide_stage.parquet", "antecedent.parquet", "cross_date.parquet"):
+        shutil.copy2(UNIFIED / "environment" / name, env_dir / name)
+    return tmp_path, env_dir
+
+
+def test_real_duck_environmental_observations_and_empty_time_range(tmp_path):
+    env_all_res = CLIENT.get("/api/environment/acquisitions")
+    assert env_all_res.status_code == 200
+    env_all = env_all_res.json()
+    assert env_all["status"] == "available"
+    assert len(env_all["acquisitions"]) == 28
+    assert len(env_all["cross_date_contrasts"]) == 152
+    assert any(a["summary"]["water_level_m_mllw"] is not None for a in env_all["acquisitions"])
+
+    lidar_id = "FRF-geomorphology_DEMs_duneLidarDEM_202606.nc#time_index=111"
+    detail = CLIENT.get(f"/api/environment/acquisitions/{lidar_id}").json()
+    assert detail["summary"]["water_level_timestamp_utc"] is not None
+    assert {r["station_id"] for r in detail["nearest"]} >= {"NOAA CO-OPS 8651370", "USACE FRF Waverider 17m"}
+    assert all("unit" in r and r["unit"] for r in detail["nearest"])
+
+    # Valid dataset with zero acquisitions in the selected time range returns empty list, not an error
+    empty_range = CLIENT.get(
+        "/api/environment/acquisitions",
+        params={"start": "2025-01-01T00:00:00Z", "end": "2025-01-02T00:00:00Z"},
+    )
+    assert empty_range.status_code == 200
+    assert empty_range.json()["status"] == "available"
+    assert empty_range.json()["acquisitions"] == []
+
+    # Legitimately absent unified dataset returns explicit unavailable status
+    absent = TestClient(create_app(tmp_path / "absent"))
+    assert absent.get("/api/environment/acquisitions").json()["status"] == "unavailable"
+
+    # Valid Parquet files with valid schemas and zero rows remain available with empty records
+    root, env_dir = _stage_unified_env_fixture(tmp_path / "zero_rows")
+    for name in ("nearest.parquet", "tide_stage.parquet", "antecedent.parquet", "cross_date.parquet"):
+        table = pq.read_table(env_dir / name)
+        pq.write_table(table.slice(0, 0), env_dir / name)
+    zero_client = TestClient(create_app(root))
+    zero_res = zero_client.get("/api/environment/acquisitions")
+    assert zero_res.status_code == 200
+    zero_body = zero_res.json()
+    assert zero_body["status"] == "available"
+    assert len(zero_body["acquisitions"]) == 28
+    assert all(a["summary"] is None for a in zero_body["acquisitions"])
+    assert zero_body["cross_date_contrasts"] == []
+    zero_detail = zero_client.get(f"/api/environment/acquisitions/{lidar_id}")
+    assert zero_detail.status_code == 200
+    assert zero_detail.json()["nearest"] == []
+
+
+def _assert_env_error_response_and_logs(client, caplog, expected_path_fragment, expected_exc_name):
+    res = client.get("/api/environment/acquisitions")
+    assert res.status_code == 500
+    assert res.headers["content-type"].startswith("application/problem+json")
+    body = res.json()
+    assert body["status"] == 500
+    assert "Traceback" not in body["detail"]
+    assert str(expected_path_fragment) not in body["detail"]
+    assert "/Users/" not in body["detail"]
+
+    detail_res = client.get("/api/environment/acquisitions/FRF-geomorphology_DEMs_duneLidarDEM_202606.nc#time_index=111")
+    assert detail_res.status_code == 500
+
+    pairs_res = client.get("/api/comparisons/pairs")
+    assert pairs_res.status_code == 200
+    pairs = pairs_res.json()
+    assert pairs["environment_status"] == "error"
+    assert pairs["environment_contrasts"] is None
+    assert pairs["environment_error"]
+
+    acqs = client.get("/api/acquisitions").json()
+    assert len(acqs) == 28
+    assert all(a["environment"] is None for a in acqs)
+
+    error_logs = [r.getMessage() for r in caplog.records if r.levelno >= logging.ERROR]
+    assert any(expected_path_fragment in msg and expected_exc_name in msg for msg in error_logs), error_logs
+
+
+def test_environment_failure_pyarrow_missing(monkeypatch, caplog):
+    caplog.set_level(logging.ERROR, logger="backend.catalog")
+    monkeypatch.setitem(sys.modules, "pyarrow", None)
+    monkeypatch.setitem(sys.modules, "pyarrow.parquet", None)
+    client = TestClient(create_app())
+    _assert_env_error_response_and_logs(client, caplog, "nearest.parquet", "ModuleNotFoundError")
+
+
+def test_environment_failure_missing_parquet(tmp_path, caplog):
+    caplog.set_level(logging.ERROR, logger="backend.catalog")
+    root, env_dir = _stage_unified_env_fixture(tmp_path)
+    (env_dir / "nearest.parquet").unlink()
+    client = TestClient(create_app(root))
+    _assert_env_error_response_and_logs(client, caplog, "nearest.parquet", "FileNotFoundError")
+
+
+def test_environment_failure_corrupted_parquet(tmp_path, caplog):
+    caplog.set_level(logging.ERROR, logger="backend.catalog")
+    root, env_dir = _stage_unified_env_fixture(tmp_path)
+    (env_dir / "nearest.parquet").write_bytes(b"corrupted-not-parquet")
+    client = TestClient(create_app(root))
+    _assert_env_error_response_and_logs(client, caplog, "nearest.parquet", "ArrowInvalid")
+
+
+def test_environment_failure_unexpected_schema(tmp_path, caplog):
+    caplog.set_level(logging.ERROR, logger="backend.catalog")
+    root, env_dir = _stage_unified_env_fixture(tmp_path)
+    pq.write_table(pa.table({"unexpected_col": [1, 2, 3]}), env_dir / "nearest.parquet")
+    client = TestClient(create_app(root))
+    _assert_env_error_response_and_logs(client, caplog, "nearest.parquet", "SchemaError")

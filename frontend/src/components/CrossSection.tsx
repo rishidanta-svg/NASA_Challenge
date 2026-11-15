@@ -128,10 +128,10 @@ export function CrossSection() {
                       y1={y}
                       x2={W - pad.r}
                       y2={y}
-                      stroke="#223241"
+                      stroke="#e0e2da"
                       strokeDasharray={Math.abs(z) < 0.01 ? undefined : '2 4'}
                     />
-                    <text x={pad.l - 6} y={y + 3} textAnchor="end" fill="#8b9eaf" fontSize="9" fontFamily="monospace">
+                    <text x={pad.l - 6} y={y + 3} textAnchor="end" fill="#73776d" fontSize="9" fontFamily="monospace">
                       {z.toFixed(1)}m
                     </text>
                   </g>
@@ -145,7 +145,7 @@ export function CrossSection() {
                   x={sx(x)}
                   y={H - 6}
                   textAnchor="middle"
-                  fill="#8b9eaf"
+                  fill="#73776d"
                   fontSize="9"
                   fontFamily="monospace"
                 >
@@ -157,7 +157,7 @@ export function CrossSection() {
               {showGuides &&
                 t.boundaries.map((b, idx) => {
                   const x = sx(b.x_m);
-                  const col = b.type === 'radar' ? '#65dfce' : b.type === 'optical' ? '#edbf7c' : '#db9d82';
+                  const col = b.type === 'radar' ? '#353832' : b.type === 'optical' ? '#90948a' : '#db9d82';
                   return (
                     <g key={`${b.type}-${b.epoch_label}-${idx}`}>
                       <line
@@ -183,7 +183,7 @@ export function CrossSection() {
                   <path
                     d={linePath(a.points)}
                     fill="none"
-                    stroke="#d58bd8"
+                    stroke="#666b5d"
                     strokeWidth="1.6"
                     strokeDasharray="4 3"
                   />
@@ -191,8 +191,8 @@ export function CrossSection() {
               )}
 
               {/* Measured / primary epoch curves */}
-              <path d={linePath(june.points, 1.01)} fill="none" stroke="#65dfce" strokeWidth="2" />
-              <path d={linePath(october.points, 1.01)} fill="none" stroke="#edbf7c" strokeWidth="2" />
+              <path d={linePath(june.points, 1.01)} fill="none" stroke="#353832" strokeWidth="2" />
+              <path d={linePath(october.points, 1.01)} fill="none" stroke="#90948a" strokeWidth="2" strokeDasharray="5 3" />
 
               {hoverX !== null && (
                 <line
@@ -200,7 +200,7 @@ export function CrossSection() {
                   y1={pad.t}
                   x2={sx(hoverX)}
                   y2={H - pad.b}
-                  stroke="#e5edf3"
+                  stroke="#44483d"
                   strokeOpacity={0.6}
                 />
               )}
@@ -210,9 +210,9 @@ export function CrossSection() {
           <div className="slot-card" style={{ margin: 0, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
             <div>
               <div style={{ display: 'flex', gap: 10, fontSize: 11, fontFamily: 'var(--font-mono)', flexWrap: 'wrap' }}>
-                <span style={{ color: '#65dfce' }}>━ June</span>
-                <span style={{ color: '#edbf7c' }}>━ October</span>
-                {showModel && a && <span style={{ color: '#d58bd8' }}>┅ Model ± 1σ</span>}
+                <span style={{ color: '#353832' }}>━ June</span>
+                <span style={{ color: '#90948a' }}>━ October</span>
+                {showModel && a && <span style={{ color: '#666b5d' }}>┅ Model ± 1σ</span>}
               </div>
               <div className="mono" style={{ fontSize: 11, marginTop: 8, lineHeight: 1.5 }}>
                 {hoverX !== null && hJune && hOct ? (
@@ -229,7 +229,7 @@ export function CrossSection() {
                     )}
                   </>
                 ) : (
-                  <span className="muted">Hover across the cross-section to inspect x/z values and uncertainty.</span>
+                  <span className="muted">Move over the profile to compare beach heights.</span>
                 )}
               </div>
             </div>

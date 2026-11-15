@@ -240,12 +240,12 @@ function syncReference(map: MLMap, ctx: SyncContext) {
   if (ctx.studyArea) {
     setGeoJson(map, ID.study, { type: 'FeatureCollection', features: [ctx.studyArea as GeoJSON.Feature] });
     if (!map.getLayer(ID.studyFill)) {
-      map.addLayer({ id: ID.studyFill, type: 'fill', source: ID.study, paint: { 'fill-color': '#65dfce', 'fill-opacity': 0.06 } });
+      map.addLayer({ id: ID.studyFill, type: 'fill', source: ID.study, paint: { 'fill-color': '#eeeeea', 'fill-opacity': 0.06 } });
       map.addLayer({
         id: ID.studyLine,
         type: 'line',
         source: ID.study,
-        paint: { 'line-color': '#65dfce', 'line-width': 2, 'line-dasharray': [3, 2] },
+        paint: { 'line-color': '#eeeeea', 'line-width': 1.2, 'line-dasharray': [3, 2] },
       });
     }
     setVis(map, ID.studyFill, ctx.showStudyArea);
@@ -264,7 +264,7 @@ function syncReference(map: MLMap, ctx: SyncContext) {
       type: 'line',
       source: ID.frfRef,
       minzoom: 13,
-      paint: { 'line-color': '#edbf7c', 'line-width': 1.2, 'line-dasharray': [1, 2] },
+      paint: { 'line-color': '#dddddd', 'line-width': 1.2, 'line-dasharray': [1, 2] },
     });
     map.addLayer({
       id: ID.frfRefLabel,
@@ -272,11 +272,11 @@ function syncReference(map: MLMap, ctx: SyncContext) {
       source: ID.frfRef,
       minzoom: 15,
       layout: { 'symbol-placement': 'line', 'text-field': ['get', 'label'], 'text-font': FONT, 'text-size': 10, 'text-offset': [0, -0.8] },
-      paint: { 'text-color': '#edbf7c', 'text-halo-color': '#0b1118', 'text-halo-width': 1.4 },
+      paint: { 'text-color': '#dddddd', 'text-halo-color': '#0b1118', 'text-halo-width': 1.4 },
     });
   }
   setVis(map, ID.frfRefLine, ctx.showStudyArea);
-  setVis(map, ID.frfRefLabel, ctx.showStudyArea);
+  setVis(map, ID.frfRefLabel, ctx.showTransects);
 
   if (ctx.transects) {
     const sel = ctx.selectedTransectId ?? '';
@@ -299,7 +299,7 @@ function syncReference(map: MLMap, ctx: SyncContext) {
         source: ID.transects,
         minzoom: 13,
         layout: { 'line-cap': 'round' },
-        paint: { 'line-color': '#c9e0d2', 'line-width': 1.4, 'line-opacity': 0.85 },
+        paint: { 'line-color': '#d8d8d8', 'line-width': 1.4, 'line-opacity': 0.85 },
       });
       map.addLayer({
         id: ID.transectHit,
@@ -314,12 +314,12 @@ function syncReference(map: MLMap, ctx: SyncContext) {
         source: ID.transectLabelSrc,
         minzoom: 15,
         layout: { 'text-field': ['get', 'label'], 'text-font': FONT, 'text-size': 10, 'text-anchor': 'right', 'text-offset': [-0.6, 0] },
-        paint: { 'text-color': '#c9e0d2', 'text-halo-color': '#0b1118', 'text-halo-width': 1.4 },
+        paint: { 'text-color': '#d8d8d8', 'text-halo-color': '#0b1118', 'text-halo-width': 1.4 },
       });
     }
-    map.setPaintProperty(ID.transectLine, 'line-color', ['case', ['==', ['get', 'id'], sel], '#7ff5de', '#c9e0d2']);
+    map.setPaintProperty(ID.transectLine, 'line-color', ['case', ['==', ['get', 'id'], sel], '#ffffff', '#d8d8d8']);
     map.setPaintProperty(ID.transectLine, 'line-width', ['case', ['==', ['get', 'id'], sel], 3.2, 1.4]);
-    map.setPaintProperty(ID.transectLabel, 'text-color', ['case', ['==', ['get', 'id'], sel], '#7ff5de', '#c9e0d2']);
+    map.setPaintProperty(ID.transectLabel, 'text-color', ['case', ['==', ['get', 'id'], sel], '#ffffff', '#d8d8d8']);
     for (const id of [ID.transectLine, ID.transectHit, ID.transectLabel]) setVis(map, id, ctx.showTransects);
   }
 }
@@ -414,9 +414,9 @@ export function syncScientific(map: MLMap, ctx: SyncContext): void {
   }
   try {
     map.setSky({
-      'sky-color': '#0b1118',
-      'horizon-color': '#1d3646',
-      'fog-color': '#0e1720',
+      'sky-color': '#dce4e7',
+      'horizon-color': '#eff2f1',
+      'fog-color': '#e8edec',
       'sky-horizon-blend': 0.6,
       'horizon-fog-blend': 0.6,
       'fog-ground-blend': 0.85,

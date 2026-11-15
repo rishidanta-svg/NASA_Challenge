@@ -61,7 +61,7 @@ export interface AppState {
 }
 
 const initialSlots = Object.fromEntries(
-  SLOTS.map((s) => [s.id, { visible: s.id === 'lidar-dz', opacity: s.defaultOpacity }]),
+  SLOTS.map((s) => [s.id, { visible: false, opacity: s.defaultOpacity }]),
 );
 
 export const useApp = create<AppState>((set) => ({
@@ -70,17 +70,17 @@ export const useApp = create<AppState>((set) => ({
   exaggeration: 1,
   hillshade: { visible: true, opacity: 0.45 },
   contours: false,
-  terrainSource: 'aws',
+  terrainSource: 'lidar-dem-june',
   slots: initialSlots,
-  showTransects: true,
+  showTransects: false,
   showStudyArea: true,
   camera: { zoom: 0, pitch: 0, bearing: 0 },
   cursor: null,
   mapErrors: [],
 
-  date: '2026-06-15',
+  date: '2026-06-19',
   compare: false,
-  compareDate: '2026-10-15',
+  compareDate: '2026-10-16',
   swipe: 0.5,
 
   selectedTransectId: null,
@@ -93,7 +93,7 @@ export const useApp = create<AppState>((set) => ({
   terrainChange: null,
 
   drawer: null,
-  bottomOpen: true,
+  bottomOpen: false,
 
   set: (p) => set(p),
   setSlot: (id, p) => set((s) => ({ slots: { ...s.slots, [id]: { ...s.slots[id]!, ...p } } })),

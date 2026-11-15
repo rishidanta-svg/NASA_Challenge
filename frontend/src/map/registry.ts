@@ -29,10 +29,10 @@ export function syncSecondary(): void {
   });
 }
 
-const STUDY_PADDING = { top: 60, bottom: 60, left: 60, right: 60 };
+const studyPadding = () => ({top:80,bottom:80,left:(primary?.getContainer().clientWidth ?? 0) > 850 ? 390 : 36,right:36});
 
 export function flyToStudyArea(): void {
-  primary?.fitBounds(STUDY_BBOX as LngLatBoundsLike, { padding: STUDY_PADDING, duration: 1600, bearing: primary.getBearing(), pitch: primary.getPitch() });
+  primary?.fitBounds(STUDY_BBOX as LngLatBoundsLike, { padding: studyPadding(), duration: 1600, bearing: primary.getBearing(), pitch: primary.getPitch() });
 }
 
 export function flyToDuck(): void {
@@ -44,7 +44,7 @@ export function flyToRegional(): void {
 }
 
 export function resetCamera(): void {
-  primary?.fitBounds(STUDY_BBOX as LngLatBoundsLike, { padding: STUDY_PADDING, bearing: 0, pitch: 0, duration: 900 });
+  primary?.fitBounds(STUDY_BBOX as LngLatBoundsLike, { padding: studyPadding(), bearing: 0, pitch: 0, duration: 900 });
 }
 
 export function setPitch(pitch: number): void {

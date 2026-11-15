@@ -1,6 +1,6 @@
 # POLTERGEIST — Coastal Observatory (NASA Space Apps 2026)
 
-Interactive multi-sensor coastal observation platform for **Duck, North Carolina** (USACE Field Research Facility, June–October 2026), built with FastAPI, Rasterio, React, TypeScript, and MapLibre GL JS.
+Interactive multi-sensor coastal observation platform for **Duck, North Carolina** (USACE Field Research Facility, June–October 2026), built with FastAPI, Rasterio, React, TypeScript, and MapLibre GL JS. See also [Final release & export notes](docs/FINAL_RELEASE.md).
 
 POLTERGEIST integrates airborne **USACE LiDAR** elevation truth, **Sentinel-2** optical shorelines, **Sentinel-1** C-band SAR, **NASA–ISRO NISAR** L-band SAR, and matched **NOAA / FRF** ocean-atmosphere telemetry so users can inspect coastal change without conflating satellite scattering signatures with verified erosion.
 

@@ -3,7 +3,7 @@ import { expect, test } from '@playwright/test';
 test('Poltergeist keeps the map clear and reveals detail on request', async ({page}) => {
   await page.goto('/');
   await expect(page.getByRole('link',{name:'poltergeist Coastal observatory'})).toBeVisible();
-  await expect(page.getByRole('heading',{name:'Duck coastline'})).toBeVisible();
+  await expect(page.getByRole('heading',{name:'A changing coastline.'})).toBeVisible();
   await expect(page.getByRole('slider')).toHaveCount(0);
   await expect(page.getByRole('heading',{name:'Location Inspector'})).toHaveCount(0);
   await expect(page.locator('.maplibregl-canvas').first()).toBeVisible();

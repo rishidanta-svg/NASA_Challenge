@@ -1740,3 +1740,40 @@ details p {
     transition: none !important;
   }
 }
+
+/* Release: task-first overview, restrained controls, readable evidence. */
+.study-overview h1{font-size:28px;letter-spacing:-.045em;margin:14px 0 12px}
+.study-overview .intro{font-size:14px;line-height:1.65}
+.study-overview .study-facts{margin:22px 0;gap:38px}
+.overview-result{border-block:1px solid var(--line);padding:20px 0;margin-bottom:20px}
+.overview-number{font-size:38px;line-height:1.3;letter-spacing:-.06em;color:#252725;margin:10px 0}
+.overview-result p{font-size:14px;margin:0 0 8px;line-height:1.5;max-width:28ch}
+.overview-result small{font-size:11px;line-height:1.6;display:block}
+.primary-action{width:100%;display:flex;align-items:center;justify-content:space-between;background:#303430;border-color:#303430;color:#fff;padding:13px 15px;margin-bottom:9px;font-size:13px;font-weight:500}
+.primary-action:hover:not(:disabled){background:#464b46}
+.study-overview .action-row{padding:14px 0;gap:12px}
+.study-overview .action-row small{font-size:11.5px;line-height:1.5}
+.overview-explainer{margin-top:16px}
+.study-overview .brief-button{margin-top:10px;background:#f5f5f3}
+.connection-notice{position:absolute;z-index:7;top:16px;left:50%;transform:translateX(-50%);padding:14px 18px;max-width:440px;background:#fff;border:1px solid #bbb;border-radius:8px;box-shadow:0 4px 16px #0001;display:grid;gap:6px;font-size:12px;overflow-wrap:anywhere}
+.connection-notice details{margin:0;padding:0;border:0;font-size:11px}
+.profile-chart-key{display:flex;gap:16px;font-size:11px;padding:8px 12px 0;align-items:center}
+.profile-chart-key small{margin-left:auto}
+.header-layer-pill{background:#f4f4f1;border-color:#d9dad4;color:#333;max-width:240px;border-radius:5px}
+.header-layer-pill>span:first-child{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.badge-observed,.badge-estimated,.badge-exploratory{background:#f4f4f1;color:#4d514b;border-color:#d5d7d0}
+.inspector-coords details{margin:0;padding:6px 0;border:0}
+.inspector-coords details>div{display:grid;gap:4px;margin-top:8px}
+.boundary-workspace>.intro{max-width:55ch}
+.science-table table{min-width:460px}
+.env-telemetry-box>summary{margin-bottom:8px}
+.tool-panel{scrollbar-width:thin;scrollbar-color:#c8cac3 transparent;overscroll-behavior:contain}
+@media(max-width:560px){.connection-notice{left:12px;right:12px;top:62px;transform:none;max-width:none}.profile-chart-key{gap:10px}.profile-chart-key small{display:none}.cross-section-header{flex-wrap:wrap;gap:8px}.cross-section-header>div{flex-wrap:wrap;gap:8px!important}.cross-section-header .muted{display:none}.study-overview h1{font-size:25px}}
+.map-loading,.map-fallback{position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;align-items:center;background:#e9ece7;color:#52574f;gap:12px;padding:32px}
+.map-fallback p{max-width:340px}
+.terrain-notice{position:absolute;z-index:3;top:16px;right:76px;max-width:330px;padding:12px 14px;background:#fff;border:1px solid #c8cac2;border-radius:7px;box-shadow:0 2px 10px #0001;display:flex;align-items:flex-start;gap:8px;font-size:12px;line-height:1.5}
+.terrain-notice button{border:0;padding:0 4px;background:transparent;font-size:18px}
+@media(max-width:850px){.terrain-notice{top:68px;left:16px;right:66px;max-width:none}}
+/* Keep the canvas pinned even when MapLibre's CSS arrives with its lazy chunk. */
+.map-stage > .map-canvas-wrap.maplibregl-map,.map-stage > .map-secondary-wrap.maplibregl-map{position:absolute;inset:0;width:100%;height:100%}
+@media(max-width:560px){.study-overview .study-facts{display:none}.study-overview h1{font-size:23px;margin:8px 0}.study-overview .intro{font-size:12.5px;line-height:1.5;margin-bottom:12px}.study-overview .location-label{font-size:10px}.study-overview .overview-result{padding:10px 0;margin-bottom:12px}.study-overview .overview-number{font-size:28px;margin:4px 0}.study-overview .overview-result p{font-size:12px;margin-bottom:4px;max-width:none}.study-overview .overview-result small{font-size:9.5px}.study-overview .primary-action{padding:11px 12px;font-size:12px}}

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { getAnalysis, getCoastalEvidence, getNisarEvidence, type Sourced } from '../api/client';
 import type { Analysis, CoastalEvidence, NisarEvidence } from '../api/schemas';
+import { saveDownload, studyBrief } from '../lib/exports';
 import { useApp } from '../state/store';
 
 const metres = (v: number | null | undefined) => (v == null ? 'Not available' : `${v.toFixed(2)} m`);
@@ -99,12 +100,12 @@ export function BoundaryWorkspace({ onShowMapLayer, onStartTour }: BoundaryWorks
   return (
     <section className="boundary-workspace" aria-label="Coastal findings">
       <div className="panel-heading" style={{ marginBottom: 4 }}>
-        <span className="eyebrow">Verified Coastal Evidence & Diagnostics</span>
+        <span className="eyebrow">Study findings</span>
         <span className="badge">Duck FRF · Jun–Oct 2026</span>
       </div>
       <h1>What the observations show</h1>
       <p className="intro">
-        Independent LiDAR elevation truth, tide-corrected Sentinel-2 optical boundaries, environmental telemetry, and separate exploratory radar experiments.
+        Measured beach heights, tide-adjusted waterlines, and tests of what radar adds. Expand the sections for methods and sources.
       </p>
 
       <div className="findings-tabs" role="group" aria-label="Findings section">
@@ -162,8 +163,14 @@ export function BoundaryWorkspace({ onShowMapLayer, onStartTour }: BoundaryWorks
                   )}
                 </div>
                 <p className="slot-meta" style={{ marginBottom: 8 }}>
-                  Retrospective October comparison against 36 matched LiDAR positions — not claimed as universal. Attributed strictly to Sentinel-2 optical physics, never NISAR.
+                  This is a local retrospective October comparison against {mhwN ?? 36} matched LiDAR positions, not general satellite accuracy. Tide correction worsens the June wet/dry-proxy comparison. Attributed strictly to Sentinel-2 optical physics — never NISAR.
                 </p>
+                <details style={{ marginBottom: 8 }}>
+                  <summary>How tide correction works</summary>
+                  <p className="slot-meta" style={{ marginBottom: 0 }}>
+                    <strong>Role of tide correction:</strong> Optical indices detect the instantaneous wet/dry edge at satellite overpass tide, not fixed MHW. Translating water-level elevation difference onto the surveyed foreshore slope reconciles apparent shoreline shift. Attributed strictly to Sentinel-2 optical physics — never NISAR.
+                  </p>
+                </details>
                 {onShowMapLayer && (
                   <div className="result-map-links">
                     <button type="button" className="tour-chip-btn" onClick={() => onShowMapLayer('physics-s2-ndwi', '2026-10-16')}>
@@ -266,13 +273,13 @@ export function BoundaryWorkspace({ onShowMapLayer, onStartTour }: BoundaryWorks
                   <p>
                     Mean Oct − Jun height along this transect (study-wide paired mean:{' '}
                     <span className="num">{c?.terrain?.mean_m != null ? `${c.terrain.mean_m.toFixed(2)} m` : 'Not available'}</span> on{' '}
-                    <span className="num">{c?.terrain?.native_paired_cells?.toLocaleString() ?? '17,466'}</span> cells).
+                    <span className="num">{c?.terrain?.native_paired_cells?.toLocaleString() ?? 'Not available'}</span> cells).
                   </p>
                   <small>Measured USACE LiDAR (NAVD88), not satellite-predicted</small>
                 </article>
               </div>
 
-              <div className="env-telemetry-box">
+              <details className="env-telemetry-box"><summary>Conditions during this observation</summary>
                 <div className="panel-heading">
                   <span className="eyebrow">Matched Environmental & Optical Variables ({epoch})</span>
                   <span className="badge">NOAA 8651370 + FRF</span>
@@ -321,7 +328,7 @@ export function BoundaryWorkspace({ onShowMapLayer, onStartTour }: BoundaryWorks
                     </strong>
                   </div>
                 </div>
-              </div>
+              </details>
 
               <details>
                 <summary>Source observations and physical assumptions</summary>
@@ -457,7 +464,7 @@ export function BoundaryWorkspace({ onShowMapLayer, onStartTour }: BoundaryWorks
       ) : (
         <>
           {!n ? (
-            <p role="status">{nisar?.reason ?? 'Loading independent NISAR experiments…'}</p>
+            <p role="status">{nisar?.reason ?? 'Loading held-out NISAR experiments…'}</p>
           ) : (
             <>
               <p className="intro">
@@ -614,6 +621,7 @@ export function BoundaryWorkspace({ onShowMapLayer, onStartTour }: BoundaryWorks
         </>
       )}
 
+      <button className="full-button" disabled={!c} onClick={()=>{if(c)saveDownload('poltergeist-duck-study-brief.html',studyBrief(c,n??null),'text/html;charset=utf-8')}}>Download printable study brief</button>
       <button className="full-button" disabled={!c && !n} onClick={download}>
         Download results and evidence
       </button>

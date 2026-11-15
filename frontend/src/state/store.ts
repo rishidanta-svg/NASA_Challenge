@@ -68,7 +68,7 @@ export const useApp = create<AppState>((set) => ({
   basemap: DEFAULT_BASEMAP,
   mode: '2d',
   exaggeration: 1,
-  hillshade: { visible: true, opacity: 0.45 },
+  hillshade: { visible: false, opacity: 0.45 },
   contours: false,
   terrainSource: 'lidar-dem-june',
   slots: initialSlots,

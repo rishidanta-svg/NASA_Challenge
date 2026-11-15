@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import maplibregl, { type Map as MLMap, type MapMouseEvent } from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import { BASEMAPS, basemapUrl } from '../config/basemaps';
@@ -15,6 +15,7 @@ import { ID, INTERACTIVE_LAYERS, resetTracking, syncScientific, type SyncContext
 import { useApp } from '../state/store';
 
 export function MapView() {
+  const [terrainNotice,setTerrainNotice]=useState<string|null>(null);
   const primaryRef = useRef<HTMLDivElement | null>(null);
   const secondaryRef = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<MLMap | null>(null);
@@ -184,6 +185,13 @@ export function MapView() {
     });
 
     map.on('error', (ev) => {
+      const source=(ev as {sourceId?:string}).sourceId;
+      const state=useApp.getState();
+      if(source?.startsWith('plg-dem-lidar-') && state.terrainSource!=='aws'){
+        set({terrainSource:'aws'});setTerrainNotice('Survey terrain tiles could not load. Showing regional terrain; measured profiles remain available.');
+      } else if(source===ID.demTerrain && state.mode==='3d'){
+        set({mode:'2d'});setTerrainNotice('Terrain could not load. The 2D map and measured beach profiles are still available.');
+      }
       const msg = ev?.error?.message;
       if (msg && !msg.includes('AbortError')) pushMapError(msg);
     });
@@ -336,13 +344,14 @@ export function MapView() {
       )}
 
       {slots['nisar-hh-land-water-candidate']?.visible && resolvedPrimary['nisar-hh-land-water-candidate'] && <div className="product-notice">Exploratory NISAR transition · not a validated shoreline</div>}
+      {terrainNotice && <div className="terrain-notice" role="status"><span>{terrainNotice}</span><button aria-label="Dismiss terrain notice" onClick={()=>setTerrainNotice(null)}>×</button></div>}
       <div className="earth-map-controls" aria-label="Map view controls">
         <div className="view-mode" role="group" aria-label="Map dimension mode">
           <button aria-pressed={mode === '2d'} onClick={() => set({mode:'2d'})} data-testid="mode-2d">2D</button>
           <button aria-pressed={mode === '3d'} onClick={() => set({mode:'3d'})} data-testid="mode-3d">3D</button>
         </div>
         <button onClick={flyToStudyArea} title="Return to study area" aria-label="Return to study area">⌖</button>
-        <button onClick={resetCamera} title="Reset map, north up" aria-label="Reset map">N ↑</button>
+        <button onClick={()=>{set({mode:'2d'});resetCamera();}} title="Reset map, north up" aria-label="Reset map">N ↑</button>
       </div>
       {mode === '3d' && <div className="terrain-caption">{terrainDem ? 'Surveyed beach terrain' : 'Regional terrain'} · {exaggeration === 1 ? 'true-scale height' : `height enhanced ×${exaggeration}`}</div>}
 

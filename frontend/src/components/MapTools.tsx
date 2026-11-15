@@ -12,7 +12,7 @@ const overlays = [
   { id: 'none', name: 'No overlay', description: 'Unobstructed coastal imagery baseline.' },
   { id: 'lidar-dz', name: 'Ground level change', description: 'Measured USACE LiDAR Δz (October − June 2026, m NAVD88).' },
   { id: 'lidar-elevation', name: 'Beach elevation', description: 'Measured bare-earth surface height above NAVD88 (m).' },
-  { id: 'physics-s2-tide', name: 'Tide-adjusted waterline', description: 'Sentinel-2 optical edge normalized to MHW (0.359 m); conditional on beach slope.' },
+  { id: 'physics-s2-tide', name: 'Tide-adjusted waterline', description: 'Sentinel-2 optical edge normalized to MHW (0.359 m NAVD88); conditional on beach slope.' },
   { id: 'nisar-hh', name: 'Radar observation', description: 'Exploratory NISAR L-band HH backscatter (dB). Not an erosion or confirmed shoreline map.' },
 ];
 
@@ -33,7 +33,7 @@ const SENSOR_GROUPS: SensorCatalogGroup[] = [
   {
     id: 'lidar',
     label: 'USACE LiDAR · Elevation Reference',
-    subtitle: 'Independent 1 m ground truth (NAVD88)',
+    subtitle: 'Surveyed 1 m beach heights (NAVD88)',
     tooltip: 'Field Research Facility dune LiDAR surveys (Jun 19 & Oct 16, 2026) in metres NAVD88 (geoid12b); coregistration QC flag = 1.',
     slotIds: ['lidar-dz', 'lidar-elevation', 'lidar-coverage'],
   },
@@ -48,7 +48,7 @@ const SENSOR_GROUPS: SensorCatalogGroup[] = [
     id: 's1',
     label: 'Sentinel-1 · C-band SAR',
     subtitle: 'Track 106 VV / VH backscatter (dB)',
-    tooltip: '5.4 GHz C-band dual-pol (VV, VH) RTC gamma-zero in dB. Repeats Track 106 Ascending; June acquisition follows NISAR by ~11.96 days.',
+    tooltip: '5.4 GHz C-band dual-pol (VV, VH) RTC gamma-zero in dB. Repeats Track 106 Ascending; the June repeat-pass acquisition used by the terrain experiment follows NISAR by ~11.96 days.',
     slotIds: ['s1-vv', 's1-vh', 's1-vv-change', 's1-vh-change', 'radar-disagreement'],
   },
   {
@@ -112,10 +112,10 @@ export function MapTools({ panel, onRefresh }: { panel: 'layers' | 'compare' | '
   if (panel === 'about') {
     return (
       <div className="panel-content about-content">
-        <span className="eyebrow">NASA Space Apps 2026 · Coastal Remote Sensing</span>
+        <span className="eyebrow">NASA Space Apps · Dancing with the SARs</span>
         <h1>About POLTERGEIST</h1>
         <p>
-          Poltergeist integrates airborne topographic LiDAR, L-band and C-band synthetic aperture radar (SAR), multispectral optical imagery, and coastal tide/wave records across a verified 500 m research reach at Duck, North Carolina.
+          Poltergeist integrates ground-based topographic LiDAR, L-band and C-band synthetic aperture radar (SAR), multispectral optical imagery, and coastal tide/wave records across a verified 500 m research reach at Duck, North Carolina.
         </p>
 
         <div className="sensor-meta-grid">
@@ -133,23 +133,24 @@ export function MapTools({ panel, onRefresh }: { panel: 'layers' | 'compare' | '
           </div>
           <div className="meta-chip">
             <span className="eyebrow">Tide Reference</span>
-            <strong className="num">MHW 0.359 m · MLLW</strong>
+            <strong className="num">MHW 0.359 m NAVD88</strong>
           </div>
         </div>
 
-        <details open>
-          <summary>Primary sensors & reference datasets</summary>
+        <details>
+          <summary>Earth observation (EO) instruments</summary>
+          <p>Earth observation (EO) instruments measure the planet using light, radar or laser ranging. Each responds to a different surface property.</p>
           <p>
-            <strong>USACE FRF Dune LiDAR (Independent reference):</strong> 1 m bare-earth elevation (m NAVD88) collected Jun 19 and Oct 16, 2026 (17,466 paired cells; coregistration QC flag = 1).
+            <strong>USACE FRF Dune LiDAR (Survey reference):</strong> 1 m bare-earth elevation (m NAVD88) collected Jun 19 and Oct 16, 2026 (17,466 paired cells; coregistration QC flag = 1).
           </p>
           <p>
-            <strong>NASA–ISRO NISAR (L-band SAR):</strong> Track 69 Descending L2 GCOV provisional V1 (HH & HV gamma-zero dB, 10 m posting). Treated strictly as exploratory for waterline and elevation inference.
+            <strong>NASA–ISRO NISAR (L-band radar):</strong> Track 69 Descending L2 GCOV provisional V1 (HH & HV gamma-zero dB, 10 m posting). Treated strictly as exploratory for waterline and elevation inference.
           </p>
           <p>
-            <strong>Copernicus Sentinel-1 (C-band SAR):</strong> Track 106 Ascending RTC (VV & VH gamma-zero dB). June overpass follows NISAR by ~11.96 days, separating timing and radar frequency.
+            <strong>Copernicus Sentinel-1 (C-band radar):</strong> Track 106 Ascending RTC (VV & VH gamma-zero dB). June overpass follows NISAR by ~11.96 days, confounding timing and radar frequency.
           </p>
           <p>
-            <strong>Copernicus Sentinel-2 (Optical L2A):</strong> NDWI (10 m) and MNDWI (20 m) waterlines paired with NOAA gauge and LiDAR slope.
+            <strong>Copernicus Sentinel-2 (Multispectral optical imager):</strong> NDWI (10 m) and MNDWI (20 m) waterlines paired with NOAA gauge and LiDAR slope.
           </p>
         </details>
 
@@ -187,7 +188,7 @@ export function MapTools({ panel, onRefresh }: { panel: 'layers' | 'compare' | '
         >
           Open this location in Google Earth ↗
         </a>
-        <div className="quiet-note">NASA Space Apps 2026 research prototype. Independent scientific measurements, estimates, and exploratory products are labeled separately.</div>
+        <div className="quiet-note">NASA Space Apps research prototype. Independent scientific measurements, estimates, and exploratory products are labeled separately.</div>
       </div>
     );
   }
@@ -203,8 +204,8 @@ export function MapTools({ panel, onRefresh }: { panel: 'layers' | 'compare' | '
       <h1>{panel === 'compare' ? 'What changed?' : 'Choose what to see'}</h1>
       <p className="intro">
         {panel === 'compare'
-          ? 'Drag the divider across the map to inspect temporal shifts across optical, radar, and LiDAR products.'
-          : 'Select a core overlay or expand any of the four primary sensor groups below.'}
+          ? 'Drag the divider to compare the survey overlays. Both sides use the same background image; it is not a dated before-and-after photo.'
+          : 'Start with measured ground-level change. More satellite observations are available below.'}
       </p>
 
       {panel === 'compare' && (
@@ -233,7 +234,7 @@ export function MapTools({ panel, onRefresh }: { panel: 'layers' | 'compare' | '
           </div>
           {date === compareDate && (
             <p role="status" className="quality-note" style={{ marginBlock: 10 }}>
-              Both sides show the same epoch. Choose different epochs to compare changes.
+              Both sides show the same survey period. Choose different periods to compare changes.
             </p>
           )}
           <button className="full-button" onClick={() => choose('lidar-elevation')}>
@@ -241,7 +242,7 @@ export function MapTools({ panel, onRefresh }: { panel: 'layers' | 'compare' | '
           </button>
 
           {cData?.radar_disagreement && (
-            <div className="compare-meta-card">
+            <details className="compare-meta-card"><summary>Acquisition timing and alignment</summary>
               <div className="panel-heading">
                 <strong>Acquisition timing alignment</strong>
                 <span className="badge">4 sensors</span>
@@ -266,14 +267,14 @@ export function MapTools({ panel, onRefresh }: { panel: 'layers' | 'compare' | '
                 </span>{' '}
                 strict cells — timing and frequency effects are coupled.
               </p>
-            </div>
+            </details>
           )}
         </>
       )}
 
       <fieldset className="layer-choices">
         <legend>Map overlay</legend>
-        {overlays.map((o) => {
+        {overlays.filter(o=>panel!=='compare'||!['none','lidar-dz'].includes(o.id)).map((o) => {
           const desc = o.id === 'none' ? null : resolveSlot(layers?.data, o.id, date);
           const available = o.id === 'none' || !!desc;
           const cls = o.id === 'none' ? null : classifyDescriptor(o.id, desc);
@@ -327,7 +328,7 @@ export function MapTools({ panel, onRefresh }: { panel: 'layers' | 'compare' | '
           )}
           <div className="opacity-control">
             <label htmlFor="active-layer-opacity">
-              Layer opacity <span className="num">{Math.round((slots[selected]?.opacity ?? activeDef?.defaultOpacity ?? 0.75) * 100)}%</span>
+              Overlay strength <span className="num">{Math.round((slots[selected]?.opacity ?? activeDef?.defaultOpacity ?? 0.75) * 100)}%</span>
             </label>
             <input
               id="active-layer-opacity"
@@ -363,7 +364,7 @@ export function MapTools({ panel, onRefresh }: { panel: 'layers' | 'compare' | '
           {SENSOR_GROUPS.map((grp) => {
             const hasActive = grp.slotIds.includes(selected);
             return (
-              <details key={grp.id} className="sensor-group" open={hasActive || grp.id === 's2' || grp.id === 'nisar'}>
+              <details key={grp.id} className="sensor-group" open={hasActive}>
                 <summary>
                   <span>
                     <strong>{grp.label}</strong>

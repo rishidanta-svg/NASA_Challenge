@@ -1,0 +1,1883 @@
+{
+  "schema_version": 1,
+  "status": "verified_lidar_and_radar",
+  "created_utc": "2026-11-15T05:34:33.281230+00:00",
+  "study_wsen_epsg4326": [
+    -75.753384,
+    36.183704,
+    -75.750335,
+    36.18826
+  ],
+  "frf_y_range_m": [
+    700,
+    1190
+  ],
+  "source": {
+    "lidar": {
+      "june": {
+        "filename": "raw/frf_june_slice.nc",
+        "bytes": 293455,
+        "sha256": "988a852ad55a78b567cc8b72fa588a670322043d0897ab04d6285690e09026a8",
+        "source_filename": "FRF-geomorphology_DEMs_duneLidarDEM_202606.nc",
+        "url": "https://chldata.erdc.dren.mil/thredds/dodsC/frf/geomorphology/DEMs/duneLidarDEM/2026/FRF-geomorphology_DEMs_duneLidarDEM_202606.nc",
+        "file_server_url": "https://chldata.erdc.dren.mil/thredds/fileServer/frf/geomorphology/DEMs/duneLidarDEM/2026/FRF-geomorphology_DEMs_duneLidarDEM_202606.nc",
+        "retrieved_at": "2026-11-15T05:07:31.378257+00:00",
+        "timestamp_utc": "2026-06-19T00:31:04Z",
+        "decoded_netcdf_time_utc": "2026-06-19T00:31:03.999998+00:00",
+        "netcdf_time_coordinate": 1781829063.999998,
+        "netcdf_time_units": "seconds since 1970-01-01 00:00:00",
+        "netcdf_calendar": "gregorian",
+        "source_time_index": 111,
+        "horizontal_datum": "FRF coordinates (rotated from NAD83(2011), North Carolina State Plane, meters(3200) using origin [901951.6805 E, 274093.1562 N] and rotation angle 69.9747)",
+        "vertical_datum": "NAVD88 (geoid12b)",
+        "source_elevation_fill": -999.99,
+        "source_license": "These data may be redistributed and used without restriction. Data are intended for scholarly use by the research community, with the express agreement that users will properly acknowledge the USACE Field Research Facility and the supporting investigator(s). Use or reproduction of these data for commercial purposes is prohibited without prior written permission.",
+        "quality": {
+          "coregQCFlag": 1.0,
+          "coregAlgorithmFlag": 1.0,
+          "rmsReflectorError": 0.09749265875906821,
+          "assessmentPlanesOffset": 0.039278837942281666,
+          "translationSigma": [
+            0.001652577210725563,
+            0.0006978537898480224,
+            0.0008360905948694014
+          ],
+          "rotationSigma": [
+            5.831602309040183e-06,
+            9.6774472330942e-06,
+            5.3128917278703295e-06
+          ]
+        },
+        "source_quality_attributes": {
+          "coregQCFlag": "'Coregistration algorithm quality indicator. This flag should be used to evaluate quality of DEM rectification prior to data use.  Flag 1 indicates co-registration using a plane-matching co-registration algorithm, norm of translationSigma < 0.004 m, norm of the assessment plane offsets < 0.1 m, and the RMS reflector error < 0.1 m. Flag 2 indicates that the original rectification matrix was used (the scan was not co-registered). Flag 3 indicates co-registration using a plane-matching algorithm with a combined translationSigma >= 0.004 m or a different co-registration algorithm used, with the norm of the assessment plane offsets < 0.1 m, and the RMS reflector error < 0.1 m. Flag 4 indicates that the norm of the assessment plane offsets >= 0.1 m or the RMS reflector error >= 0.1 m Flag 9 indicates that the scan was missing or that co-registration was not attempted General flag definitions guided by the Ocean Data Standards, UNESCO 2013 - IOC Manurals and Guides, 54, Volume 3 Version 1.'",
+          "coregAlgorithmFlag": "'Coregistration algorithm type indicator. See coregQCFlag for indication of overall coregistration quality and rotationSigms/translationSigma for plane-matching coregistration quality. Flag 1 indicates co-registration using a plane-matching co-registration algorithm. Flag 2 indicates no co-registration, using only the appropriate rectification matrix. Flag 3 indicates co-registration using a recent scan's coregistration matrix, within 12 hours before scan or 6 hours since scan. Flag 4 indicates co-registration using reflector centroids of the closest four reflectors, exclude the furthest reflector. Flag 5 indicates co-registration using reflector centroids of five reflectors. Flag 6 indicates co-registration using reflector centroids of six reflectors. Flag 9 indicates no co-registration attempted.'",
+          "rmsReflectorError": "'Root mean square residual error of the centroids of 4-6 reflectors in scan.  Actual reflector centroid locations were determined from a 3-minute survey using real-time kinematic (RTK) global positioning system (GPS) surveying equipment, with position converted to the local FRF coordinate system. Reflector centroids in scan were found using a reflectance threshold in 1 m cube around surveyed reflector location. See rotationSigma and translationSigma for the residual standard error in rotation and translation, respectively, from the plane-matching algorithm. See assessmentPlanesOffset for the norm of the x-, y-, and z-offsets from the co-registration assessment planes. Co-registration QC Flag indicates the overall quality of the co-registration. Co-registration Algorithm Flag indicates which alogrithm was used for co-registration.'",
+          "assessmentPlanesOffset": "'Norm of offsets in the x-, y-, and z-directions from the co-registration accuracy assessment planes in meters. The y-z assessment plane is a support beam on the FRF Pier, centered at approximately 182.33, 516.56, 6.17 (xFRF, yFRF, elevation) and is 0.037 m x 3.24 m x 0.89 m.  The y-z assessment plane is located approximately 449 m from the lidar.  The x-z assessment plane is the front face of the structure immediately to the south of the main FRF building, centered at approximately -33.70, 482.39, 7.96 (xFRF, yFRF, elevation) and is 2.81 m x 0.053 m x 2.40 m. The x-z assessment plane is located approximately 470 m from the lidar. The x-y assessment plane is a portion of the cul-de-sac in the neighborhood to the north of the device, centered at approximately -24.89, 1085.11, 3.25 (xFRF, yFRF, elevation) and is 2.36 m x 4.00 m x 0.043 m. The x-y assessment plane is located approximately 159 m from the lidar. Note that this offset is not indicative of the offset across the entire DEM.  See rotationSigma and translationSigma for the residual standard error in rotation and translation, respectively, from the plane-matching algorithm. Co-registration QC Flag indicates the overall quality of the co-registration. Co-registration Algorithm Flag indicates which alogrithm was used for co-registration.'",
+          "translationSigma": "'Residual standard error in translation calculated from the least squares fit during plane-matching co-registration with dimensions listed in errorDimension. See rotationSigma for the residual standard error in rotation from plane-matching co-registration. See assessmentPlanesOffset for the norm of the x-, y-, and z-offsets from the co-registration assessment planes. See rmsReflectorError for RMS error of reflector centroids in scan. Co-registration QC Flag indicates the overall quality of the co-registration. Co-registration Algorithm Flag indicates which alogrithm was used for co-registration.'",
+          "rotationSigma": "'Residual standard error in rotation calculated from the least squares fit during plane-matching co-registration with dimensions listed in errorDimension. See translationSigma for the residual standard error in translation from plane-matching co-registration. See assessmentPlanesOffset for the norm of the x-, y-, and z-offsets from the co-registration assessment planes. See rmsReflectorError for RMS error of reflector centroids in scan. Co-registration QC Flag indicates the overall quality of the co-registration. Co-registration Algorithm Flag indicates which alogrithm was used for co-registration.'"
+        },
+        "coordinate_check_residual_m": {
+          "valid_pixels": 63960,
+          "min": 0.02983762669801321,
+          "max": 0.069570564716709,
+          "mean": 0.04787898694947289,
+          "median": 0.047177507697651805,
+          "std": 0.01061936843211166,
+          "rmse": 0.04904251601625598
+        },
+        "horizontal_operation": "Inverse of SPCS83 North Carolina zone (meters) + NAD83(2011) to WGS 84 (1) + UTM zone 18N",
+        "horizontal_operation_reported_accuracy_m": 2.0,
+        "source_center_lonlat": [
+          -75.75168706902073,
+          36.18370440071783
+        ],
+        "pixel_center_bounds_wsen": [
+          -75.75338781282922,
+          36.183704319790714,
+          -75.75032467797341,
+          36.188271189962705
+        ],
+        "status": "numeric_slice_verified"
+      },
+      "october": {
+        "filename": "raw/frf_october_slice.nc",
+        "bytes": 290215,
+        "sha256": "4196707bccdf047621e4261bffd4c3477feb487bfc4402290d4b18e9abb40bac",
+        "source_filename": "FRF-geomorphology_DEMs_duneLidarDEM_202610.nc",
+        "url": "https://chldata.erdc.dren.mil/thredds/dodsC/frf/geomorphology/DEMs/duneLidarDEM/2026/FRF-geomorphology_DEMs_duneLidarDEM_202610.nc",
+        "file_server_url": "https://chldata.erdc.dren.mil/thredds/fileServer/frf/geomorphology/DEMs/duneLidarDEM/2026/FRF-geomorphology_DEMs_duneLidarDEM_202610.nc",
+        "retrieved_at": "2026-11-15T05:07:39.374282+00:00",
+        "timestamp_utc": "2026-10-16T23:33:04Z",
+        "decoded_netcdf_time_utc": "2026-10-16T23:33:04.000004+00:00",
+        "netcdf_time_coordinate": 1792193584.0000045,
+        "netcdf_time_units": "seconds since 1970-01-01 00:00:00",
+        "netcdf_calendar": "gregorian",
+        "source_time_index": 362,
+        "horizontal_datum": "FRF coordinates (rotated from NAD83(2011), North Carolina State Plane, meters(3200) using origin [901951.6805 E, 274093.1562 N] and rotation angle 69.9747)",
+        "vertical_datum": "NAVD88 (geoid12b)",
+        "source_elevation_fill": -999.99,
+        "source_license": "These data may be redistributed and used without restriction. Data are intended for scholarly use by the research community, with the express agreement that users will properly acknowledge the USACE Field Research Facility and the supporting investigator(s). Use or reproduction of these data for commercial purposes is prohibited without prior written permission.",
+        "quality": {
+          "coregQCFlag": 1.0,
+          "coregAlgorithmFlag": 1.0,
+          "rmsReflectorError": 0.07538581020412906,
+          "assessmentPlanesOffset": 0.051040170880635324,
+          "translationSigma": [
+            0.0017332340216787017,
+            0.0007325056957474751,
+            0.0008812286905835825
+          ],
+          "rotationSigma": [
+            6.199482247092447e-06,
+            1.0152558095041979e-05,
+            5.580889624629147e-06
+          ]
+        },
+        "source_quality_attributes": {
+          "coregQCFlag": "'Coregistration algorithm quality indicator. This flag should be used to evaluate quality of DEM rectification prior to data use.  Flag 1 indicates co-registration using a plane-matching co-registration algorithm, norm of translationSigma < 0.004 m, norm of the assessment plane offsets < 0.1 m, and the RMS reflector error < 0.1 m. Flag 2 indicates that the original rectification matrix was used (the scan was not co-registered). Flag 3 indicates co-registration using a plane-matching algorithm with a combined translationSigma >= 0.004 m or a different co-registration algorithm used, with the norm of the assessment plane offsets < 0.1 m, and the RMS reflector error < 0.1 m. Flag 4 indicates that the norm of the assessment plane offsets >= 0.1 m or the RMS reflector error >= 0.1 m Flag 9 indicates that the scan was missing or that co-registration was not attempted General flag definitions guided by the Ocean Data Standards, UNESCO 2013 - IOC Manurals and Guides, 54, Volume 3 Version 1.'",
+          "coregAlgorithmFlag": "'Coregistration algorithm type indicator. See coregQCFlag for indication of overall coregistration quality and rotationSigms/translationSigma for plane-matching coregistration quality. Flag 1 indicates co-registration using a plane-matching co-registration algorithm. Flag 2 indicates no co-registration, using only the appropriate rectification matrix. Flag 3 indicates co-registration using a recent scan's coregistration matrix, within 12 hours before scan or 6 hours since scan. Flag 4 indicates co-registration using reflector centroids of the closest four reflectors, exclude the furthest reflector. Flag 5 indicates co-registration using reflector centroids of five reflectors. Flag 6 indicates co-registration using reflector centroids of six reflectors. Flag 9 indicates no co-registration attempted.'",
+          "rmsReflectorError": "'Root mean square residual error of the centroids of 4-6 reflectors in scan.  Actual reflector centroid locations were determined from a 3-minute survey using real-time kinematic (RTK) global positioning system (GPS) surveying equipment, with position converted to the local FRF coordinate system. Reflector centroids in scan were found using a reflectance threshold in 1 m cube around surveyed reflector location. See rotationSigma and translationSigma for the residual standard error in rotation and translation, respectively, from the plane-matching algorithm. See assessmentPlanesOffset for the norm of the x-, y-, and z-offsets from the co-registration assessment planes. Co-registration QC Flag indicates the overall quality of the co-registration. Co-registration Algorithm Flag indicates which alogrithm was used for co-registration.'",
+          "assessmentPlanesOffset": "'Norm of offsets in the x-, y-, and z-directions from the co-registration accuracy assessment planes in meters. The y-z assessment plane is a support beam on the FRF Pier, centered at approximately 182.33, 516.56, 6.17 (xFRF, yFRF, elevation) and is 0.037 m x 3.24 m x 0.89 m.  The y-z assessment plane is located approximately 449 m from the lidar.  The x-z assessment plane is the front face of the structure immediately to the south of the main FRF building, centered at approximately -33.70, 482.39, 7.96 (xFRF, yFRF, elevation) and is 2.81 m x 0.053 m x 2.40 m. The x-z assessment plane is located approximately 470 m from the lidar. The x-y assessment plane is a portion of the cul-de-sac in the neighborhood to the north of the device, centered at approximately -24.89, 1085.11, 3.25 (xFRF, yFRF, elevation) and is 2.36 m x 4.00 m x 0.043 m. The x-y assessment plane is located approximately 159 m from the lidar. Note that this offset is not indicative of the offset across the entire DEM.  See rotationSigma and translationSigma for the residual standard error in rotation and translation, respectively, from the plane-matching algorithm. Co-registration QC Flag indicates the overall quality of the co-registration. Co-registration Algorithm Flag indicates which alogrithm was used for co-registration.'",
+          "translationSigma": "'Residual standard error in translation calculated from the least squares fit during plane-matching co-registration with dimensions listed in errorDimension. See rotationSigma for the residual standard error in rotation from plane-matching co-registration. See assessmentPlanesOffset for the norm of the x-, y-, and z-offsets from the co-registration assessment planes. See rmsReflectorError for RMS error of reflector centroids in scan. Co-registration QC Flag indicates the overall quality of the co-registration. Co-registration Algorithm Flag indicates which alogrithm was used for co-registration.'",
+          "rotationSigma": "'Residual standard error in rotation calculated from the least squares fit during plane-matching co-registration with dimensions listed in errorDimension. See translationSigma for the residual standard error in translation from plane-matching co-registration. See assessmentPlanesOffset for the norm of the x-, y-, and z-offsets from the co-registration assessment planes. See rmsReflectorError for RMS error of reflector centroids in scan. Co-registration QC Flag indicates the overall quality of the co-registration. Co-registration Algorithm Flag indicates which alogrithm was used for co-registration.'"
+        },
+        "coordinate_check_residual_m": {
+          "valid_pixels": 63960,
+          "min": 0.02983762669801321,
+          "max": 0.069570564716709,
+          "mean": 0.04787898694947289,
+          "median": 0.047177507697651805,
+          "std": 0.01061936843211166,
+          "rmse": 0.04904251601625598
+        },
+        "horizontal_operation": "Inverse of SPCS83 North Carolina zone (meters) + NAD83(2011) to WGS 84 (1) + UTM zone 18N",
+        "horizontal_operation_reported_accuracy_m": 2.0,
+        "source_center_lonlat": [
+          -75.75168706902073,
+          36.18370440071783
+        ],
+        "pixel_center_bounds_wsen": [
+          -75.75338781282922,
+          36.183704319790714,
+          -75.75032467797341,
+          36.188271189962705
+        ],
+        "status": "numeric_slice_verified"
+      }
+    },
+    "nisar": {
+      "june": {
+        "granule": "NISAR_L2_PR_GCOV_023_069_D_070_4005_DHDH_A_20260618T235335_20260618T235409_P05023_N_F_J_001",
+        "cmr_concept_id": "G4250721321-ASF",
+        "cmr_url": "https://cmr.earthdata.nasa.gov/search/concepts/G4250721321-ASF",
+        "asf_catalog": "https://api.daac.asf.alaska.edu/services/search/param",
+        "collection": {
+          "ShortName": "NISAR_L2_GCOV_PROVISIONAL_V1",
+          "Version": "1"
+        },
+        "version": "1.0.11",
+        "release_identifier": "P05023",
+        "url": "https://nisar.asf.earthdatacloud.nasa.gov/NISAR/NISAR_L2_GCOV_PROVISIONAL_V1/NISAR_L2_PR_GCOV_023_069_D_070_4005_DHDH_A_20260618T235335_20260618T235409_P05023_N_F_J_001/NISAR_L2_PR_GCOV_023_069_D_070_4005_DHDH_A_20260618T235335_20260618T235409_P05023_N_F_J_001.h5",
+        "filename": "NISAR_L2_PR_GCOV_023_069_D_070_4005_DHDH_A_20260618T235335_20260618T235409_P05023_N_F_J_001.h5",
+        "archive_bytes": 4886364160,
+        "archive_checksum": {
+          "Value": "15434d2aced3de3a92f3fbb7f4dc369b",
+          "Algorithm": "MD5"
+        },
+        "attributes": {
+          "ASCENDING_DESCENDING": [
+            "DESCENDING"
+          ],
+          "FRAME_NUMBER": [
+            "70"
+          ],
+          "FREQUENCIES": [
+            "A",
+            "B"
+          ],
+          "FREQUENCY_A_POLARIZATION": [
+            "HH",
+            "HV"
+          ],
+          "FREQUENCY_A_POLARIZATION_CONCAT": [
+            "HH+HV"
+          ],
+          "FREQUENCY_A_RANGE_BANDWIDTH": [
+            "40"
+          ],
+          "FREQUENCY_B_POLARIZATION": [
+            "HH",
+            "HV"
+          ],
+          "FREQUENCY_B_POLARIZATION_CONCAT": [
+            "HH+HV"
+          ],
+          "FREQUENCY_B_RANGE_BANDWIDTH": [
+            "5"
+          ],
+          "FULL_FRAME": [
+            "TRUE"
+          ],
+          "JOINT_OBSERVATION": [
+            "FALSE"
+          ],
+          "ORBIT_TYPE": [
+            "MOE"
+          ],
+          "PROCESSING_CENTER": [
+            "JPL"
+          ],
+          "PROCESSING_LEVEL": [
+            "L2"
+          ],
+          "PRODUCTION_PIPELINE": [
+            "PR"
+          ],
+          "PRODUCT_TYPE": [
+            "GCOV"
+          ],
+          "PRODUCT_TYPE_DESC": [
+            "Geocoded Polarimetric Covariance"
+          ],
+          "PRODUCT_VERSION": [
+            "1.0.11"
+          ],
+          "RANGE_BANDWIDTH_CONCAT": [
+            "40+5"
+          ],
+          "STACK_ID": [
+            "069_D_070"
+          ],
+          "TRACK_NUMBER": [
+            "69"
+          ]
+        },
+        "cmr_revision": 1,
+        "acquisition_start_utc": "2026-06-18T23:53:35+00:00",
+        "acquisition_end_utc": "2026-06-18T23:54:09.999342+00:00",
+        "lidar_minus_radar_midpoint_seconds": 2231.500329,
+        "lidar_minus_radar_start_seconds": 2249.0,
+        "lidar_minus_radar_end_seconds": 2214.000658,
+        "timing_note": "Frame timing, not a per-pixel time; tide, swash and beach state can differ.",
+        "cmr_footprint": {
+          "GranuleLocalities": [
+            "Land",
+            "North America"
+          ],
+          "HorizontalSpatialDomain": {
+            "Geometry": {
+              "GPolygons": [
+                {
+                  "Boundary": {
+                    "Points": [
+                      {
+                        "Latitude": 38.00389,
+                        "Longitude": -76.31819
+                      },
+                      {
+                        "Latitude": 35.95062,
+                        "Longitude": -77.07506
+                      },
+                      {
+                        "Latitude": 35.27357,
+                        "Longitude": -74.39516
+                      },
+                      {
+                        "Latitude": 37.30808,
+                        "Longitude": -73.5712
+                      },
+                      {
+                        "Latitude": 38.00389,
+                        "Longitude": -76.31819
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          }
+        },
+        "asf_footprint": {
+          "coordinates": [
+            [
+              [
+                -76.31819,
+                38.00389
+              ],
+              [
+                -77.07506,
+                35.95062
+              ],
+              [
+                -74.39516,
+                35.27357
+              ],
+              [
+                -73.5712,
+                37.30808
+              ],
+              [
+                -76.31819,
+                38.00389
+              ]
+            ]
+          ],
+          "type": "Polygon"
+        },
+        "catalog_status": "both catalog footprints cover study area",
+        "catalog_cache": {
+          "filename": "raw/june_nisar_catalog.json",
+          "bytes": 60682,
+          "sha256": "e4bfe13389fb8e3bc3c32d0add8b355e154b225c2b8e3594dd7e1e4f32136f66"
+        },
+        "mode": "Harmony native CRS subset",
+        "job_id": "7b035370-e233-41bb-a196-d1be74caa082",
+        "granule_id": "G4250721321-ASF",
+        "downloaded_assets": {
+          "HHHH": {
+            "filename": "raw/june_harmony/HHHH.tif",
+            "bytes": 16689,
+            "sha256": "ff0e19c463a6481e9784facda73bd3f461239ab5d96cb11e9650136062bc6ff8",
+            "artifact_name": "NISAR_L2_PR_GCOV_023_069_D_070_4005_DHDH_A_20260618T235335_20260618T235409_P05023_N_F_J_001_science_LSAR_GCOV_grids_frequencyA_HHHH_subsetted.tif",
+            "url_without_query": "https://harmony.earthdata.nasa.gov/service-results/harmony-prod-staging/public/7b035370-e233-41bb-a196-d1be74caa082/466871431/NISAR_L2_PR_GCOV_023_069_D_070_4005_DHDH_A_20260618T235335_20260618T235409_P05023_N_F_J_001_science_LSAR_GCOV_grids_frequencyA_HHHH_subsetted.tif",
+            "band_tags": {
+              "description": "Covariance between HH and HH",
+              "grid_mapping": "projection",
+              "long_name": "Geocoded polarimetric covariance term HHHH",
+              "max_value": "15278.646",
+              "mean_value": "0.065183677",
+              "min_value": "2.0814356e-19",
+              "sample_stddev": "1.3355303",
+              "units": "1",
+              "valid_min": "0",
+              "_FillValue": "nan"
+            },
+            "dataset_tags": {
+              "contact": "nisar-sds-ops@jpl.nasa.gov",
+              "Conventions": "CF-1.7",
+              "institution": "NASA JPL",
+              "mission_name": "NISAR",
+              "reference_document": "D-102274 NISAR NASA SDS Product Specification Level-2 Geocoded Polarimetric Covariance L2 GCOV",
+              "title": "NISAR L2 GCOV Product",
+              "AREA_OR_POINT": "Area"
+            },
+            "unit": null,
+            "source_nodata": "nan"
+          },
+          "HVHV": {
+            "filename": "raw/june_harmony/HVHV.tif",
+            "bytes": 16529,
+            "sha256": "9a6a2ef4a0498fae35e7d47023972425a88edeee1e01b628a7bc316c10292f4d",
+            "artifact_name": "NISAR_L2_PR_GCOV_023_069_D_070_4005_DHDH_A_20260618T235335_20260618T235409_P05023_N_F_J_001_science_LSAR_GCOV_grids_frequencyA_HVHV_subsetted.tif",
+            "url_without_query": "https://harmony.earthdata.nasa.gov/service-results/harmony-prod-staging/public/7b035370-e233-41bb-a196-d1be74caa082/466871431/NISAR_L2_PR_GCOV_023_069_D_070_4005_DHDH_A_20260618T235335_20260618T235409_P05023_N_F_J_001_science_LSAR_GCOV_grids_frequencyA_HVHV_subsetted.tif",
+            "band_tags": {
+              "description": "Covariance between HV and HV",
+              "grid_mapping": "projection",
+              "long_name": "Geocoded polarimetric covariance term HVHV",
+              "max_value": "1056.3274",
+              "mean_value": "0.017444609",
+              "min_value": "4.1121001e-18",
+              "sample_stddev": "0.11996412",
+              "units": "1",
+              "valid_min": "0",
+              "_FillValue": "nan"
+            },
+            "dataset_tags": {
+              "contact": "nisar-sds-ops@jpl.nasa.gov",
+              "Conventions": "CF-1.7",
+              "institution": "NASA JPL",
+              "mission_name": "NISAR",
+              "reference_document": "D-102274 NISAR NASA SDS Product Specification Level-2 Geocoded Polarimetric Covariance L2 GCOV",
+              "title": "NISAR L2 GCOV Product",
+              "AREA_OR_POINT": "Area"
+            },
+            "unit": null,
+            "source_nodata": "nan"
+          },
+          "mask": {
+            "filename": "raw/june_harmony/mask.tif",
+            "bytes": 2759,
+            "sha256": "efdf14a3860ba22d286cd3d7c73e35eeb6f645bb99fecc57c122344188f406b7",
+            "artifact_name": "NISAR_L2_PR_GCOV_023_069_D_070_4005_DHDH_A_20260618T235335_20260618T235409_P05023_N_F_J_001_science_LSAR_GCOV_grids_frequencyA_mask_subsetted.tif",
+            "url_without_query": "https://harmony.earthdata.nasa.gov/service-results/harmony-prod-staging/public/7b035370-e233-41bb-a196-d1be74caa082/466871431/NISAR_L2_PR_GCOV_023_069_D_070_4005_DHDH_A_20260618T235335_20260618T235409_P05023_N_F_J_001_science_LSAR_GCOV_grids_frequencyA_mask_subsetted.tif",
+            "band_tags": {
+              "description": "Mask indicating the subswath number associated with valid GCOV samples. A GCOV sample is only considered valid if it is generated from fully-focused radar samples. If at least one radar sample in the averaging set is partially focused or invalid, the corresponding mask pixel will contain the value 0. GCOV pixels outside of the radar acquisition extent are filled with the value 255",
+              "grid_mapping": "projection",
+              "long_name": "Valid samples subswath mask",
+              "valid_min": "0",
+              "_FillValue": "255"
+            },
+            "dataset_tags": {
+              "contact": "nisar-sds-ops@jpl.nasa.gov",
+              "Conventions": "CF-1.7",
+              "institution": "NASA JPL",
+              "mission_name": "NISAR",
+              "reference_document": "D-102274 NISAR NASA SDS Product Specification Level-2 Geocoded Polarimetric Covariance L2 GCOV",
+              "title": "NISAR L2 GCOV Product",
+              "AREA_OR_POINT": "Area"
+            },
+            "unit": null,
+            "source_nodata": "255.0"
+          },
+          "numberOfLooks": {
+            "filename": "raw/june_harmony/numberOfLooks.tif",
+            "bytes": 16520,
+            "sha256": "8ebaf7832c4ceba299e25b0188f8cd05e672ccbe67903f21f235b22888bbe449",
+            "artifact_name": "NISAR_L2_PR_GCOV_023_069_D_070_4005_DHDH_A_20260618T235335_20260618T235409_P05023_N_F_J_001_science_LSAR_GCOV_grids_frequencyA_numberOfLooks_subsetted.tif",
+            "url_without_query": "https://harmony.earthdata.nasa.gov/service-results/harmony-prod-staging/public/7b035370-e233-41bb-a196-d1be74caa082/466871431/NISAR_L2_PR_GCOV_023_069_D_070_4005_DHDH_A_20260618T235335_20260618T235409_P05023_N_F_J_001_science_LSAR_GCOV_grids_frequencyA_numberOfLooks_subsetted.tif",
+            "band_tags": {
+              "description": "Number of averaged radar-grid pixels for covariance estimation",
+              "grid_mapping": "projection",
+              "long_name": "Number of radar looks",
+              "max_value": "12.567694",
+              "mean_value": "4.6040015",
+              "min_value": "2.1022165e-13",
+              "sample_stddev": "0.43348825",
+              "units": "1",
+              "valid_min": "0",
+              "_FillValue": "nan"
+            },
+            "dataset_tags": {
+              "contact": "nisar-sds-ops@jpl.nasa.gov",
+              "Conventions": "CF-1.7",
+              "institution": "NASA JPL",
+              "mission_name": "NISAR",
+              "reference_document": "D-102274 NISAR NASA SDS Product Specification Level-2 Geocoded Polarimetric Covariance L2 GCOV",
+              "title": "NISAR L2 GCOV Product",
+              "AREA_OR_POINT": "Area"
+            },
+            "unit": null,
+            "source_nodata": "nan"
+          },
+          "rtcGammaToSigmaFactor": {
+            "filename": "raw/june_harmony/rtcGammaToSigmaFactor.tif",
+            "bytes": 16706,
+            "sha256": "e13b0d33b10a012ddf6e530b8746a45de825cfcf0964bbda5c71fc48c869ace0",
+            "artifact_name": "NISAR_L2_PR_GCOV_023_069_D_070_4005_DHDH_A_20260618T235335_20260618T235409_P05023_N_F_J_001_science_LSAR_GCOV_grids_frequencyA_rtcGammaToSigmaFactor_subsetted.tif",
+            "url_without_query": "https://harmony.earthdata.nasa.gov/service-results/harmony-prod-staging/public/7b035370-e233-41bb-a196-d1be74caa082/466871431/NISAR_L2_PR_GCOV_023_069_D_070_4005_DHDH_A_20260618T235335_20260618T235409_P05023_N_F_J_001_science_LSAR_GCOV_grids_frequencyA_rtcGammaToSigmaFactor_subsetted.tif",
+            "band_tags": {
+              "description": "Radiometric terrain correction (RTC) scaling factor to normalize backscatter coefficients from gamma0 to sigma0, accounting for local terrain",
+              "grid_mapping": "projection",
+              "long_name": "Radiometric terrain correction area normalization factor gamma0 to sigma0",
+              "max_value": "0.99682415",
+              "mean_value": "0.75959247",
+              "min_value": "0.011451091",
+              "sample_stddev": "0.048591133",
+              "units": "1",
+              "valid_min": "0",
+              "_FillValue": "nan"
+            },
+            "dataset_tags": {
+              "contact": "nisar-sds-ops@jpl.nasa.gov",
+              "Conventions": "CF-1.7",
+              "institution": "NASA JPL",
+              "mission_name": "NISAR",
+              "reference_document": "D-102274 NISAR NASA SDS Product Specification Level-2 Geocoded Polarimetric Covariance L2 GCOV",
+              "title": "NISAR L2 GCOV Product",
+              "AREA_OR_POINT": "Area"
+            },
+            "unit": null,
+            "source_nodata": "nan"
+          }
+        },
+        "source_hdf_metadata": {
+          "granule_id": "G4250721321-ASF",
+          "url": "https://nisar.asf.earthdatacloud.nasa.gov/NISAR/NISAR_L2_GCOV_PROVISIONAL_V1/NISAR_L2_PR_GCOV_023_069_D_070_4005_DHDH_A_20260618T235335_20260618T235409_P05023_N_F_J_001/NISAR_L2_PR_GCOV_023_069_D_070_4005_DHDH_A_20260618T235335_20260618T235409_P05023_N_F_J_001.h5",
+          "etag": "\"97605ee5c2237f3dbe496fe196b59513-19\"",
+          "identification": {
+            "zeroDopplerStartTime": "2026-06-18T23:53:35.000000000",
+            "zeroDopplerEndTime": "2026-06-18T23:54:09.999342105",
+            "productVersion": "1.0.11",
+            "orbitPassDirection": "Descending",
+            "lookDirection": "Left",
+            "trackNumber": 69,
+            "frameNumber": 70,
+            "absoluteOrbitNumber": 4666,
+            "frame_midpoint_utc": "2026-06-18T23:53:52.499671052Z"
+          },
+          "retrieved_utc": "2026-11-15T05:32:58.504879+00:00",
+          "science_dimensions": [
+            34776,
+            35280
+          ],
+          "science_subset_grid": {
+            "epsg": 32618,
+            "width": 45,
+            "height": 72,
+            "affine": [
+              10.0,
+              0.0,
+              432170.0,
+              0.0,
+              -10.0,
+              4005200.0
+            ],
+            "first_center": [
+              432175.0,
+              4005195.0
+            ]
+          },
+          "projection_attributes": {
+            "description": "Product map grid projection: EPSG code, with additional projection information as HDF5 Attributes",
+            "ellipsoid": "WGS84",
+            "epsg_code": 32618,
+            "false_easting": 500000.0,
+            "false_northing": 0.0,
+            "grid_mapping_name": "transverse_mercator",
+            "inverse_flattening": 298.257223563,
+            "latitude_of_projection_origin": 0.0,
+            "longitude_of_central_meridian": -75.0,
+            "longitude_of_projection_origin": 0.0,
+            "scale_factor_at_central_meridian": 0.9996,
+            "semi_major_axis": 6378137.0,
+            "spatial_ref": "PROJCS[\"WGS 84 / UTM zone 18N\",GEOGCS[\"WGS 84\",DATUM[\"WGS_1984\",SPHEROID[\"WGS 84\",6378137,298.257223563,AUTHORITY[\"EPSG\",\"7030\"]],AUTHORITY[\"EPSG\",\"6326\"]],PRIMEM[\"Greenwich\",0,AUTHORITY[\"EPSG\",\"8901\"]],UNIT[\"degree\",0.0174532925199433,AUTHORITY[\"EPSG\",\"9122\"]],AUTHORITY[\"EPSG\",\"4326\"]],PROJECTION[\"Transverse_Mercator\"],PARAMETER[\"latitude_of_origin\",0],PARAMETER[\"central_meridian\",-75],PARAMETER[\"scale_factor\",0.9996],PARAMETER[\"false_easting\",500000],PARAMETER[\"false_northing\",0],UNIT[\"metre\",1,AUTHORITY[\"EPSG\",\"9001\"]],AXIS[\"Easting\",EAST],AXIS[\"Northing\",NORTH],AUTHORITY[\"EPSG\",\"32618\"]]",
+            "utm_zone_number": 18
+          },
+          "science_variable_attributes": {
+            "HHHH": {
+              "_FillValue": "nan",
+              "description": "Covariance between HH and HH",
+              "grid_mapping": "projection",
+              "long_name": "Geocoded polarimetric covariance term HHHH",
+              "max_value": 15278.646484375,
+              "mean_value": 0.06518367677927017,
+              "min_value": 2.0814356093429492e-19,
+              "sample_stddev": 1.3355302810668945,
+              "units": "1",
+              "valid_min": 0.0
+            },
+            "HVHV": {
+              "_FillValue": "nan",
+              "description": "Covariance between HV and HV",
+              "grid_mapping": "projection",
+              "long_name": "Geocoded polarimetric covariance term HVHV",
+              "max_value": 1056.327392578125,
+              "mean_value": 0.017444608733057976,
+              "min_value": 4.1121001134583124e-18,
+              "sample_stddev": 0.1199641227722168,
+              "units": "1",
+              "valid_min": 0.0
+            },
+            "mask": {
+              "_FillValue": 255,
+              "description": "Mask indicating the subswath number associated with valid GCOV samples. A GCOV sample is only considered valid if it is generated from fully-focused radar samples. If at least one radar sample in the averaging set is partially focused or invalid, the corresponding mask pixel will contain the value 0. GCOV pixels outside of the radar acquisition extent are filled with the value 255",
+              "grid_mapping": "projection",
+              "long_name": "Valid samples subswath mask",
+              "valid_min": 0
+            },
+            "numberOfLooks": {
+              "_FillValue": "nan",
+              "description": "Number of averaged radar-grid pixels for covariance estimation",
+              "grid_mapping": "projection",
+              "long_name": "Number of radar looks",
+              "max_value": 12.567693710327148,
+              "mean_value": 4.604001522064209,
+              "min_value": 2.1022165128462e-13,
+              "sample_stddev": 0.43348824977874756,
+              "units": "1",
+              "valid_min": 0.0
+            },
+            "rtcGammaToSigmaFactor": {
+              "_FillValue": "nan",
+              "description": "Radiometric terrain correction (RTC) scaling factor to normalize backscatter coefficients from gamma0 to sigma0, accounting for local terrain",
+              "grid_mapping": "projection",
+              "long_name": "Radiometric terrain correction area normalization factor gamma0 to sigma0",
+              "max_value": 0.9968241453170776,
+              "mean_value": 0.7595924735069275,
+              "min_value": 0.011451090686023235,
+              "sample_stddev": 0.04859113320708275,
+              "units": "1",
+              "valid_min": 0.0
+            },
+            "inputDataExceptionMask": {
+              "description": "Bitwise OR of input data exception codes for each image pixel (0: no anomaly, 2: NISAR LSAR qFSP-H1 sample slip)",
+              "grid_mapping": "projection",
+              "valid_min": 0
+            }
+          },
+          "hdf5_first_center": [
+            298805.0,
+            4226395.0
+          ],
+          "hdf5_last_center": [
+            651595.0,
+            3878645.0
+          ],
+          "subset_row_column": [
+            22120,
+            13337
+          ],
+          "maximum_center_residual_m": 0.0,
+          "hdf5_hh_hv_exact_array_match": true,
+          "radar_geometry": {
+            "variable_attributes": {
+              "incidenceAngle": {
+                "_FillValue": "nan",
+                "description": "Incidence angle is defined as the angle between the LOS vector and the normal to the ellipsoid at the target height",
+                "grid_mapping": "projection",
+                "long_name": "Incidence angle",
+                "units": "degrees",
+                "valid_max": 90.0,
+                "valid_min": 0.0
+              },
+              "zeroDopplerAzimuthTime": {
+                "_FillValue": "nan",
+                "description": "Zero Doppler azimuth time in seconds since UTC epoch",
+                "grid_mapping": "projection",
+                "long_name": "Zero Doppler azimuth time",
+                "units": "seconds since 2026-06-18T00:00:00"
+              }
+            },
+            "grid": {
+              "epsg": 32618,
+              "width": 3,
+              "height": 3,
+              "affine": [
+                500.0,
+                0.0,
+                431500.0,
+                0.0,
+                -500.0,
+                4005500.0
+              ],
+              "first_center": [
+                431750.0,
+                4005250.0
+              ]
+            },
+            "projection_attributes": {
+              "description": "Product map grid projection: EPSG code, with additional projection information as HDF5 Attributes",
+              "ellipsoid": "WGS84",
+              "epsg_code": 32618,
+              "false_easting": 500000.0,
+              "false_northing": 0.0,
+              "grid_mapping_name": "transverse_mercator",
+              "inverse_flattening": 298.257223563,
+              "latitude_of_projection_origin": 0.0,
+              "longitude_of_central_meridian": -75.0,
+              "longitude_of_projection_origin": 0.0,
+              "scale_factor_at_central_meridian": 0.9996,
+              "semi_major_axis": 6378137.0,
+              "spatial_ref": "PROJCS[\"WGS 84 / UTM zone 18N\",GEOGCS[\"WGS 84\",DATUM[\"WGS_1984\",SPHEROID[\"WGS 84\",6378137,298.257223563,AUTHORITY[\"EPSG\",\"7030\"]],AUTHORITY[\"EPSG\",\"6326\"]],PRIMEM[\"Greenwich\",0,AUTHORITY[\"EPSG\",\"8901\"]],UNIT[\"degree\",0.0174532925199433,AUTHORITY[\"EPSG\",\"9122\"]],AUTHORITY[\"EPSG\",\"4326\"]],PROJECTION[\"Transverse_Mercator\"],PARAMETER[\"latitude_of_origin\",0],PARAMETER[\"central_meridian\",-75],PARAMETER[\"scale_factor\",0.9996],PARAMETER[\"false_easting\",500000],PARAMETER[\"false_northing\",0],UNIT[\"metre\",1,AUTHORITY[\"EPSG\",\"9001\"]],AXIS[\"Easting\",EAST],AXIS[\"Northing\",NORTH],AUTHORITY[\"EPSG\",\"32618\"]]",
+              "utm_zone_number": 18
+            },
+            "dimensions": [
+              "height_above_ellipsoid_m",
+              "y",
+              "x"
+            ]
+          },
+          "geometry_asset": {
+            "filename": "raw/june_nisar_geometry.npz",
+            "bytes": 2905,
+            "sha256": "9c3c0880df0c7144bd77e0baa39e53ddd7a67dfc9ec93c47d3662212f3e45045"
+          },
+          "exception_asset": {
+            "filename": "raw/june_nisar_exceptions.npz",
+            "bytes": 265,
+            "sha256": "16df60a45ae479520823aa40b370f1ffcfbcbd79fc4dc2c016454142faea878a"
+          }
+        },
+        "native_subset_grid": {
+          "epsg": 32618,
+          "width": 45,
+          "height": 72,
+          "affine": [
+            10.0,
+            0.0,
+            432170.0,
+            0.0,
+            -10.0,
+            4005200.0
+          ],
+          "first_center": [
+            432175.0,
+            4005195.0
+          ]
+        }
+      },
+      "october": {
+        "granule": "NISAR_L2_PR_GCOV_033_069_D_070_4005_DHDH_A_20261016T235331_20261016T235406_P05023_N_F_J_001",
+        "cmr_concept_id": "G4376256706-ASF",
+        "cmr_url": "https://cmr.earthdata.nasa.gov/search/concepts/G4376256706-ASF",
+        "asf_catalog": "https://api.daac.asf.alaska.edu/services/search/param",
+        "collection": {
+          "ShortName": "NISAR_L2_GCOV_PROVISIONAL_V1",
+          "Version": "1"
+        },
+        "version": "1.0.11",
+        "release_identifier": "P05023",
+        "url": "https://nisar.asf.earthdatacloud.nasa.gov/NISAR/NISAR_L2_GCOV_PROVISIONAL_V1/NISAR_L2_PR_GCOV_033_069_D_070_4005_DHDH_A_20261016T235331_20261016T235406_P05023_N_F_J_001/NISAR_L2_PR_GCOV_033_069_D_070_4005_DHDH_A_20261016T235331_20261016T235406_P05023_N_F_J_001.h5",
+        "filename": "NISAR_L2_PR_GCOV_033_069_D_070_4005_DHDH_A_20261016T235331_20261016T235406_P05023_N_F_J_001.h5",
+        "archive_bytes": 5007998976,
+        "archive_checksum": {
+          "Value": "87755b7cb4591640fa8839613a943afe",
+          "Algorithm": "MD5"
+        },
+        "attributes": {
+          "ASCENDING_DESCENDING": [
+            "DESCENDING"
+          ],
+          "FRAME_NUMBER": [
+            "70"
+          ],
+          "FREQUENCIES": [
+            "A",
+            "B"
+          ],
+          "FREQUENCY_A_POLARIZATION": [
+            "HH",
+            "HV"
+          ],
+          "FREQUENCY_A_POLARIZATION_CONCAT": [
+            "HH+HV"
+          ],
+          "FREQUENCY_A_RANGE_BANDWIDTH": [
+            "40"
+          ],
+          "FREQUENCY_B_POLARIZATION": [
+            "HH",
+            "HV"
+          ],
+          "FREQUENCY_B_POLARIZATION_CONCAT": [
+            "HH+HV"
+          ],
+          "FREQUENCY_B_RANGE_BANDWIDTH": [
+            "5"
+          ],
+          "FULL_FRAME": [
+            "TRUE"
+          ],
+          "JOINT_OBSERVATION": [
+            "FALSE"
+          ],
+          "ORBIT_TYPE": [
+            "MOE"
+          ],
+          "PROCESSING_CENTER": [
+            "JPL"
+          ],
+          "PROCESSING_LEVEL": [
+            "L2"
+          ],
+          "PRODUCTION_PIPELINE": [
+            "PR"
+          ],
+          "PRODUCT_TYPE": [
+            "GCOV"
+          ],
+          "PRODUCT_TYPE_DESC": [
+            "Geocoded Polarimetric Covariance"
+          ],
+          "PRODUCT_VERSION": [
+            "1.0.11"
+          ],
+          "RANGE_BANDWIDTH_CONCAT": [
+            "40+5"
+          ],
+          "STACK_ID": [
+            "069_D_070"
+          ],
+          "TRACK_NUMBER": [
+            "69"
+          ]
+        },
+        "cmr_revision": 1,
+        "acquisition_start_utc": "2026-10-16T23:53:31+00:00",
+        "acquisition_end_utc": "2026-10-16T23:54:06.999342+00:00",
+        "lidar_minus_radar_midpoint_seconds": -1244.999671,
+        "lidar_minus_radar_start_seconds": -1227.0,
+        "lidar_minus_radar_end_seconds": -1262.999342,
+        "timing_note": "Frame timing, not a per-pixel time; tide, swash and beach state can differ.",
+        "cmr_footprint": {
+          "GranuleLocalities": [
+            "Land",
+            "North America"
+          ],
+          "HorizontalSpatialDomain": {
+            "Geometry": {
+              "GPolygons": [
+                {
+                  "Boundary": {
+                    "Points": [
+                      {
+                        "Latitude": 38.08076,
+                        "Longitude": -76.28909
+                      },
+                      {
+                        "Latitude": 35.96894,
+                        "Longitude": -77.06851
+                      },
+                      {
+                        "Latitude": 35.29173,
+                        "Longitude": -74.3881
+                      },
+                      {
+                        "Latitude": 37.38421,
+                        "Longitude": -73.5395
+                      },
+                      {
+                        "Latitude": 38.08076,
+                        "Longitude": -76.28909
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          }
+        },
+        "asf_footprint": {
+          "coordinates": [
+            [
+              [
+                -76.28909,
+                38.08076
+              ],
+              [
+                -77.06851,
+                35.96894
+              ],
+              [
+                -74.3881,
+                35.29173
+              ],
+              [
+                -73.5395,
+                37.38421
+              ],
+              [
+                -76.28909,
+                38.08076
+              ]
+            ]
+          ],
+          "type": "Polygon"
+        },
+        "catalog_status": "both catalog footprints cover study area",
+        "catalog_cache": {
+          "filename": "raw/october_nisar_catalog.json",
+          "bytes": 60680,
+          "sha256": "3a5967d89114fd6c7a931e04ffe71923d07bec64f8fdf12af586a34a87cf0793"
+        },
+        "mode": "Harmony native CRS subset",
+        "job_id": "b74aec96-3edf-4b8d-a1d7-a5d6b3dde246",
+        "granule_id": "G4376256706-ASF",
+        "downloaded_assets": {
+          "HHHH": {
+            "filename": "raw/october_harmony/HHHH.tif",
+            "bytes": 16599,
+            "sha256": "d9f8cd323a27bcca295fcc87944578caaf30dfb7c9718fa54d53f4c1e660aba4",
+            "artifact_name": "NISAR_L2_PR_GCOV_033_069_D_070_4005_DHDH_A_20261016T235331_20261016T235406_P05023_N_F_J_001_science_LSAR_GCOV_grids_frequencyA_HHHH_subsetted.tif",
+            "url_without_query": "https://harmony.earthdata.nasa.gov/service-results/harmony-prod-staging/public/b74aec96-3edf-4b8d-a1d7-a5d6b3dde246/467012948/NISAR_L2_PR_GCOV_033_069_D_070_4005_DHDH_A_20261016T235331_20261016T235406_P05023_N_F_J_001_science_LSAR_GCOV_grids_frequencyA_HHHH_subsetted.tif",
+            "band_tags": {
+              "description": "Covariance between HH and HH",
+              "grid_mapping": "projection",
+              "long_name": "Geocoded polarimetric covariance term HHHH",
+              "max_value": "20142.045",
+              "mean_value": "0.077688947",
+              "min_value": "1.2208633e-17",
+              "sample_stddev": "1.6256516",
+              "units": "1",
+              "valid_min": "0",
+              "_FillValue": "nan"
+            },
+            "dataset_tags": {
+              "contact": "nisar-sds-ops@jpl.nasa.gov",
+              "Conventions": "CF-1.7",
+              "institution": "NASA JPL",
+              "mission_name": "NISAR",
+              "reference_document": "D-102274 NISAR NASA SDS Product Specification Level-2 Geocoded Polarimetric Covariance L2 GCOV",
+              "title": "NISAR L2 GCOV Product",
+              "AREA_OR_POINT": "Area"
+            },
+            "unit": null,
+            "source_nodata": "nan"
+          },
+          "HVHV": {
+            "filename": "raw/october_harmony/HVHV.tif",
+            "bytes": 16515,
+            "sha256": "c27e12c2a24e6589bd96d90e6202e7a6f3cfecba6e8a415de2e1e4ab2016991e",
+            "artifact_name": "NISAR_L2_PR_GCOV_033_069_D_070_4005_DHDH_A_20261016T235331_20261016T235406_P05023_N_F_J_001_science_LSAR_GCOV_grids_frequencyA_HVHV_subsetted.tif",
+            "url_without_query": "https://harmony.earthdata.nasa.gov/service-results/harmony-prod-staging/public/b74aec96-3edf-4b8d-a1d7-a5d6b3dde246/467012948/NISAR_L2_PR_GCOV_033_069_D_070_4005_DHDH_A_20261016T235331_20261016T235406_P05023_N_F_J_001_science_LSAR_GCOV_grids_frequencyA_HVHV_subsetted.tif",
+            "band_tags": {
+              "description": "Covariance between HV and HV",
+              "grid_mapping": "projection",
+              "long_name": "Geocoded polarimetric covariance term HVHV",
+              "max_value": "1475.6602",
+              "mean_value": "0.017797731",
+              "min_value": "2.3498168e-18",
+              "sample_stddev": "0.11617664",
+              "units": "1",
+              "valid_min": "0",
+              "_FillValue": "nan"
+            },
+            "dataset_tags": {
+              "contact": "nisar-sds-ops@jpl.nasa.gov",
+              "Conventions": "CF-1.7",
+              "institution": "NASA JPL",
+              "mission_name": "NISAR",
+              "reference_document": "D-102274 NISAR NASA SDS Product Specification Level-2 Geocoded Polarimetric Covariance L2 GCOV",
+              "title": "NISAR L2 GCOV Product",
+              "AREA_OR_POINT": "Area"
+            },
+            "unit": null,
+            "source_nodata": "nan"
+          },
+          "mask": {
+            "filename": "raw/october_harmony/mask.tif",
+            "bytes": 2759,
+            "sha256": "efdf14a3860ba22d286cd3d7c73e35eeb6f645bb99fecc57c122344188f406b7",
+            "artifact_name": "NISAR_L2_PR_GCOV_033_069_D_070_4005_DHDH_A_20261016T235331_20261016T235406_P05023_N_F_J_001_science_LSAR_GCOV_grids_frequencyA_mask_subsetted.tif",
+            "url_without_query": "https://harmony.earthdata.nasa.gov/service-results/harmony-prod-staging/public/b74aec96-3edf-4b8d-a1d7-a5d6b3dde246/467012948/NISAR_L2_PR_GCOV_033_069_D_070_4005_DHDH_A_20261016T235331_20261016T235406_P05023_N_F_J_001_science_LSAR_GCOV_grids_frequencyA_mask_subsetted.tif",
+            "band_tags": {
+              "description": "Mask indicating the subswath number associated with valid GCOV samples. A GCOV sample is only considered valid if it is generated from fully-focused radar samples. If at least one radar sample in the averaging set is partially focused or invalid, the corresponding mask pixel will contain the value 0. GCOV pixels outside of the radar acquisition extent are filled with the value 255",
+              "grid_mapping": "projection",
+              "long_name": "Valid samples subswath mask",
+              "valid_min": "0",
+              "_FillValue": "255"
+            },
+            "dataset_tags": {
+              "contact": "nisar-sds-ops@jpl.nasa.gov",
+              "Conventions": "CF-1.7",
+              "institution": "NASA JPL",
+              "mission_name": "NISAR",
+              "reference_document": "D-102274 NISAR NASA SDS Product Specification Level-2 Geocoded Polarimetric Covariance L2 GCOV",
+              "title": "NISAR L2 GCOV Product",
+              "AREA_OR_POINT": "Area"
+            },
+            "unit": null,
+            "source_nodata": "255.0"
+          },
+          "numberOfLooks": {
+            "filename": "raw/october_harmony/numberOfLooks.tif",
+            "bytes": 16527,
+            "sha256": "993e9741b42331ceeabb12755c5ba6fe795f3c51ade53791a3640594a5a6563c",
+            "artifact_name": "NISAR_L2_PR_GCOV_033_069_D_070_4005_DHDH_A_20261016T235331_20261016T235406_P05023_N_F_J_001_science_LSAR_GCOV_grids_frequencyA_numberOfLooks_subsetted.tif",
+            "url_without_query": "https://harmony.earthdata.nasa.gov/service-results/harmony-prod-staging/public/b74aec96-3edf-4b8d-a1d7-a5d6b3dde246/467012948/NISAR_L2_PR_GCOV_033_069_D_070_4005_DHDH_A_20261016T235331_20261016T235406_P05023_N_F_J_001_science_LSAR_GCOV_grids_frequencyA_numberOfLooks_subsetted.tif",
+            "band_tags": {
+              "description": "Number of averaged radar-grid pixels for covariance estimation",
+              "grid_mapping": "projection",
+              "long_name": "Number of radar looks",
+              "max_value": "12.52937",
+              "mean_value": "4.6041365",
+              "min_value": "3.9770973e-10",
+              "sample_stddev": "0.43222079",
+              "units": "1",
+              "valid_min": "0",
+              "_FillValue": "nan"
+            },
+            "dataset_tags": {
+              "contact": "nisar-sds-ops@jpl.nasa.gov",
+              "Conventions": "CF-1.7",
+              "institution": "NASA JPL",
+              "mission_name": "NISAR",
+              "reference_document": "D-102274 NISAR NASA SDS Product Specification Level-2 Geocoded Polarimetric Covariance L2 GCOV",
+              "title": "NISAR L2 GCOV Product",
+              "AREA_OR_POINT": "Area"
+            },
+            "unit": null,
+            "source_nodata": "nan"
+          },
+          "rtcGammaToSigmaFactor": {
+            "filename": "raw/october_harmony/rtcGammaToSigmaFactor.tif",
+            "bytes": 16695,
+            "sha256": "e11b9a821690487ad57796d1ab777d0bd40c45f3f78086f554ac7d62b75612e6",
+            "artifact_name": "NISAR_L2_PR_GCOV_033_069_D_070_4005_DHDH_A_20261016T235331_20261016T235406_P05023_N_F_J_001_science_LSAR_GCOV_grids_frequencyA_rtcGammaToSigmaFactor_subsetted.tif",
+            "url_without_query": "https://harmony.earthdata.nasa.gov/service-results/harmony-prod-staging/public/b74aec96-3edf-4b8d-a1d7-a5d6b3dde246/467012948/NISAR_L2_PR_GCOV_033_069_D_070_4005_DHDH_A_20261016T235331_20261016T235406_P05023_N_F_J_001_science_LSAR_GCOV_grids_frequencyA_rtcGammaToSigmaFactor_subsetted.tif",
+            "band_tags": {
+              "description": "Radiometric terrain correction (RTC) scaling factor to normalize backscatter coefficients from gamma0 to sigma0, accounting for local terrain",
+              "grid_mapping": "projection",
+              "long_name": "Radiometric terrain correction area normalization factor gamma0 to sigma0",
+              "max_value": "0.99677807",
+              "mean_value": "0.75967592",
+              "min_value": "0.008676216",
+              "sample_stddev": "0.048531629",
+              "units": "1",
+              "valid_min": "0",
+              "_FillValue": "nan"
+            },
+            "dataset_tags": {
+              "contact": "nisar-sds-ops@jpl.nasa.gov",
+              "Conventions": "CF-1.7",
+              "institution": "NASA JPL",
+              "mission_name": "NISAR",
+              "reference_document": "D-102274 NISAR NASA SDS Product Specification Level-2 Geocoded Polarimetric Covariance L2 GCOV",
+              "title": "NISAR L2 GCOV Product",
+              "AREA_OR_POINT": "Area"
+            },
+            "unit": null,
+            "source_nodata": "nan"
+          }
+        },
+        "source_hdf_metadata": {
+          "granule_id": "G4376256706-ASF",
+          "url": "https://nisar.asf.earthdatacloud.nasa.gov/NISAR/NISAR_L2_GCOV_PROVISIONAL_V1/NISAR_L2_PR_GCOV_033_069_D_070_4005_DHDH_A_20261016T235331_20261016T235406_P05023_N_F_J_001/NISAR_L2_PR_GCOV_033_069_D_070_4005_DHDH_A_20261016T235331_20261016T235406_P05023_N_F_J_001.h5",
+          "etag": "\"d51f4e8e243bd9467d50c6101004fc18-19\"",
+          "identification": {
+            "zeroDopplerStartTime": "2026-10-16T23:53:31.000000000",
+            "zeroDopplerEndTime": "2026-10-16T23:54:06.999342105",
+            "productVersion": "1.0.11",
+            "orbitPassDirection": "Descending",
+            "lookDirection": "Left",
+            "trackNumber": 69,
+            "frameNumber": 70,
+            "absoluteOrbitNumber": 6396,
+            "frame_midpoint_utc": "2026-10-16T23:53:48.999671052Z"
+          },
+          "retrieved_utc": "2026-11-15T05:32:58.505883+00:00",
+          "science_dimensions": [
+            34776,
+            35280
+          ],
+          "science_subset_grid": {
+            "epsg": 32618,
+            "width": 45,
+            "height": 72,
+            "affine": [
+              10.0,
+              0.0,
+              432170.0,
+              0.0,
+              -10.0,
+              4005200.0
+            ],
+            "first_center": [
+              432175.0,
+              4005195.0
+            ]
+          },
+          "projection_attributes": {
+            "description": "Product map grid projection: EPSG code, with additional projection information as HDF5 Attributes",
+            "ellipsoid": "WGS84",
+            "epsg_code": 32618,
+            "false_easting": 500000.0,
+            "false_northing": 0.0,
+            "grid_mapping_name": "transverse_mercator",
+            "inverse_flattening": 298.257223563,
+            "latitude_of_projection_origin": 0.0,
+            "longitude_of_central_meridian": -75.0,
+            "longitude_of_projection_origin": 0.0,
+            "scale_factor_at_central_meridian": 0.9996,
+            "semi_major_axis": 6378137.0,
+            "spatial_ref": "PROJCS[\"WGS 84 / UTM zone 18N\",GEOGCS[\"WGS 84\",DATUM[\"WGS_1984\",SPHEROID[\"WGS 84\",6378137,298.257223563,AUTHORITY[\"EPSG\",\"7030\"]],AUTHORITY[\"EPSG\",\"6326\"]],PRIMEM[\"Greenwich\",0,AUTHORITY[\"EPSG\",\"8901\"]],UNIT[\"degree\",0.0174532925199433,AUTHORITY[\"EPSG\",\"9122\"]],AUTHORITY[\"EPSG\",\"4326\"]],PROJECTION[\"Transverse_Mercator\"],PARAMETER[\"latitude_of_origin\",0],PARAMETER[\"central_meridian\",-75],PARAMETER[\"scale_factor\",0.9996],PARAMETER[\"false_easting\",500000],PARAMETER[\"false_northing\",0],UNIT[\"metre\",1,AUTHORITY[\"EPSG\",\"9001\"]],AXIS[\"Easting\",EAST],AXIS[\"Northing\",NORTH],AUTHORITY[\"EPSG\",\"32618\"]]",
+            "utm_zone_number": 18
+          },
+          "science_variable_attributes": {
+            "HHHH": {
+              "_FillValue": "nan",
+              "description": "Covariance between HH and HH",
+              "grid_mapping": "projection",
+              "long_name": "Geocoded polarimetric covariance term HHHH",
+              "max_value": 20142.044921875,
+              "mean_value": 0.07768894731998444,
+              "min_value": 1.2208633284633503e-17,
+              "sample_stddev": 1.6256515979766846,
+              "units": "1",
+              "valid_min": 0.0
+            },
+            "HVHV": {
+              "_FillValue": "nan",
+              "description": "Covariance between HV and HV",
+              "grid_mapping": "projection",
+              "long_name": "Geocoded polarimetric covariance term HVHV",
+              "max_value": 1475.66015625,
+              "mean_value": 0.01779773086309433,
+              "min_value": 2.3498168406276167e-18,
+              "sample_stddev": 0.11617663502693176,
+              "units": "1",
+              "valid_min": 0.0
+            },
+            "mask": {
+              "_FillValue": 255,
+              "description": "Mask indicating the subswath number associated with valid GCOV samples. A GCOV sample is only considered valid if it is generated from fully-focused radar samples. If at least one radar sample in the averaging set is partially focused or invalid, the corresponding mask pixel will contain the value 0. GCOV pixels outside of the radar acquisition extent are filled with the value 255",
+              "grid_mapping": "projection",
+              "long_name": "Valid samples subswath mask",
+              "valid_min": 0
+            },
+            "numberOfLooks": {
+              "_FillValue": "nan",
+              "description": "Number of averaged radar-grid pixels for covariance estimation",
+              "grid_mapping": "projection",
+              "long_name": "Number of radar looks",
+              "max_value": 12.529370307922363,
+              "mean_value": 4.6041364669799805,
+              "min_value": 3.9770972626307355e-10,
+              "sample_stddev": 0.43222078680992126,
+              "units": "1",
+              "valid_min": 0.0
+            },
+            "rtcGammaToSigmaFactor": {
+              "_FillValue": "nan",
+              "description": "Radiometric terrain correction (RTC) scaling factor to normalize backscatter coefficients from gamma0 to sigma0, accounting for local terrain",
+              "grid_mapping": "projection",
+              "long_name": "Radiometric terrain correction area normalization factor gamma0 to sigma0",
+              "max_value": 0.9967780709266663,
+              "mean_value": 0.759675920009613,
+              "min_value": 0.008676216006278992,
+              "sample_stddev": 0.048531629145145416,
+              "units": "1",
+              "valid_min": 0.0
+            },
+            "inputDataExceptionMask": {
+              "description": "Bitwise OR of input data exception codes for each image pixel (0: no anomaly, 2: NISAR LSAR qFSP-H1 sample slip)",
+              "grid_mapping": "projection",
+              "valid_min": 0
+            }
+          },
+          "hdf5_first_center": [
+            298805.0,
+            4226395.0
+          ],
+          "hdf5_last_center": [
+            651595.0,
+            3878645.0
+          ],
+          "subset_row_column": [
+            22120,
+            13337
+          ],
+          "maximum_center_residual_m": 0.0,
+          "hdf5_hh_hv_exact_array_match": true,
+          "radar_geometry": {
+            "variable_attributes": {
+              "incidenceAngle": {
+                "_FillValue": "nan",
+                "description": "Incidence angle is defined as the angle between the LOS vector and the normal to the ellipsoid at the target height",
+                "grid_mapping": "projection",
+                "long_name": "Incidence angle",
+                "units": "degrees",
+                "valid_max": 90.0,
+                "valid_min": 0.0
+              },
+              "zeroDopplerAzimuthTime": {
+                "_FillValue": "nan",
+                "description": "Zero Doppler azimuth time in seconds since UTC epoch",
+                "grid_mapping": "projection",
+                "long_name": "Zero Doppler azimuth time",
+                "units": "seconds since 2026-10-16T00:00:00"
+              }
+            },
+            "grid": {
+              "epsg": 32618,
+              "width": 3,
+              "height": 3,
+              "affine": [
+                500.0,
+                0.0,
+                431500.0,
+                0.0,
+                -500.0,
+                4005500.0
+              ],
+              "first_center": [
+                431750.0,
+                4005250.0
+              ]
+            },
+            "projection_attributes": {
+              "description": "Product map grid projection: EPSG code, with additional projection information as HDF5 Attributes",
+              "ellipsoid": "WGS84",
+              "epsg_code": 32618,
+              "false_easting": 500000.0,
+              "false_northing": 0.0,
+              "grid_mapping_name": "transverse_mercator",
+              "inverse_flattening": 298.257223563,
+              "latitude_of_projection_origin": 0.0,
+              "longitude_of_central_meridian": -75.0,
+              "longitude_of_projection_origin": 0.0,
+              "scale_factor_at_central_meridian": 0.9996,
+              "semi_major_axis": 6378137.0,
+              "spatial_ref": "PROJCS[\"WGS 84 / UTM zone 18N\",GEOGCS[\"WGS 84\",DATUM[\"WGS_1984\",SPHEROID[\"WGS 84\",6378137,298.257223563,AUTHORITY[\"EPSG\",\"7030\"]],AUTHORITY[\"EPSG\",\"6326\"]],PRIMEM[\"Greenwich\",0,AUTHORITY[\"EPSG\",\"8901\"]],UNIT[\"degree\",0.0174532925199433,AUTHORITY[\"EPSG\",\"9122\"]],AUTHORITY[\"EPSG\",\"4326\"]],PROJECTION[\"Transverse_Mercator\"],PARAMETER[\"latitude_of_origin\",0],PARAMETER[\"central_meridian\",-75],PARAMETER[\"scale_factor\",0.9996],PARAMETER[\"false_easting\",500000],PARAMETER[\"false_northing\",0],UNIT[\"metre\",1,AUTHORITY[\"EPSG\",\"9001\"]],AXIS[\"Easting\",EAST],AXIS[\"Northing\",NORTH],AUTHORITY[\"EPSG\",\"32618\"]]",
+              "utm_zone_number": 18
+            },
+            "dimensions": [
+              "height_above_ellipsoid_m",
+              "y",
+              "x"
+            ]
+          },
+          "geometry_asset": {
+            "filename": "raw/october_nisar_geometry.npz",
+            "bytes": 2910,
+            "sha256": "75c4e4aea6b0582f6ddbedfe99711c8687c8da62add6d90d4a34acfa26585740"
+          },
+          "exception_asset": {
+            "filename": "raw/october_nisar_exceptions.npz",
+            "bytes": 265,
+            "sha256": "16df60a45ae479520823aa40b370f1ffcfbcbd79fc4dc2c016454142faea878a"
+          }
+        },
+        "native_subset_grid": {
+          "epsg": 32618,
+          "width": 45,
+          "height": 72,
+          "affine": [
+            10.0,
+            0.0,
+            432170.0,
+            0.0,
+            -10.0,
+            4005200.0
+          ],
+          "first_center": [
+            432175.0,
+            4005195.0
+          ]
+        }
+      }
+    }
+  },
+  "alignment": {
+    "method": "shared native radar posting",
+    "same_crs_and_posting": true,
+    "native_lattice_residual_xy_pixels": [
+      0.0,
+      -0.0
+    ],
+    "physical_cross_sensor_residual_m": null,
+    "uncertainty_note": "No surveyed independent cross-sensor control points. Grid agreement only."
+  },
+  "comparison": {
+    "grid": {
+      "epsg": 32618,
+      "width": 29,
+      "height": 52,
+      "affine": [
+        10.0,
+        0.0,
+        432250.0,
+        0.0,
+        -10.0,
+        4005100.0
+      ],
+      "first_center": [
+        432255.0,
+        4005095.0
+      ]
+    },
+    "study_intersecting_pixels": 1450,
+    "paired_lidar_pixels_at_threshold": 168,
+    "paired_lidar_fraction_of_study_intersecting_pixels": 0.11586206896551725,
+    "bands": {
+      "study_area_fraction": {
+        "valid_pixels": 1508,
+        "min": 0.0,
+        "max": 1.0,
+        "mean": 0.8866290495604816,
+        "median": 1.0,
+        "std": 0.2911136398761801,
+        "rmse": 0.9331978476435109
+      },
+      "lidar_june_m": {
+        "valid_pixels": 193,
+        "min": 0.8536877699768814,
+        "max": 7.685306364983602,
+        "mean": 2.8260794302764203,
+        "median": 1.934202792535565,
+        "std": 1.9344643072734269,
+        "rmse": 3.4247448229534356
+      },
+      "lidar_june_std_m": {
+        "valid_pixels": 193,
+        "min": 0.017305297723729275,
+        "max": 1.5461448795702613,
+        "mean": 0.3412108538690771,
+        "median": 0.2431617463606751,
+        "std": 0.3116835561015638,
+        "rmse": 0.46213795120308115
+      },
+      "lidar_june_sample_count": {
+        "valid_pixels": 1450,
+        "min": 0.0,
+        "max": 130.0,
+        "mean": 17.271724137931034,
+        "median": 0.0,
+        "std": 39.026789567217804,
+        "rmse": 42.677895433358586
+      },
+      "lidar_june_coverage": {
+        "valid_pixels": 1450,
+        "min": 0.0,
+        "max": 1.0,
+        "mean": 0.13673552516564025,
+        "median": 0.0,
+        "std": 0.31129455282724466,
+        "rmse": 0.3400013271477593
+      },
+      "lidar_june_valid": {
+        "valid_pixels": 1450,
+        "min": 0.0,
+        "max": 1.0,
+        "mean": 0.13310344827586207,
+        "median": 0.0,
+        "std": 0.33968650301849934,
+        "rmse": 0.3648334527916294
+      },
+      "lidar_october_m": {
+        "valid_pixels": 184,
+        "min": 0.3172460600429425,
+        "max": 7.6747486101464535,
+        "mean": 2.529216219886019,
+        "median": 1.7634073500870842,
+        "std": 2.143944036382144,
+        "rmse": 3.3156342859358117
+      },
+      "lidar_october_std_m": {
+        "valid_pixels": 184,
+        "min": 0.026412314783542407,
+        "max": 1.7327588504307267,
+        "mean": 0.3343467322422629,
+        "median": 0.24970319742165203,
+        "std": 0.33044658279618433,
+        "rmse": 0.4700879507525745
+      },
+      "lidar_october_sample_count": {
+        "valid_pixels": 1450,
+        "min": 0.0,
+        "max": 130.0,
+        "mean": 16.66551724137931,
+        "median": 0.0,
+        "std": 38.12061417045195,
+        "rmse": 41.604334986334926
+      },
+      "lidar_october_coverage": {
+        "valid_pixels": 1450,
+        "min": 0.0,
+        "max": 1.0,
+        "mean": 0.13168388504754605,
+        "median": 0.0,
+        "std": 0.30405963979036255,
+        "rmse": 0.3313501322327491
+      },
+      "lidar_october_valid": {
+        "valid_pixels": 1450,
+        "min": 0.0,
+        "max": 1.0,
+        "mean": 0.12689655172413794,
+        "median": 0.0,
+        "std": 0.3328570517274061,
+        "rmse": 0.35622542262468854
+      },
+      "lidar_dz_m": {
+        "valid_pixels": 168,
+        "min": -1.2092009912422483,
+        "max": 0.17983934665457724,
+        "mean": -0.3149957991531119,
+        "median": -0.2825943754415266,
+        "std": 0.28332739000293977,
+        "rmse": 0.4236705836023851
+      },
+      "lidar_dz_std_m": {
+        "valid_pixels": 168,
+        "min": 0.027488610456661386,
+        "max": 0.48205029868921834,
+        "mean": 0.17357517431150268,
+        "median": 0.14798473153440053,
+        "std": 0.10146429888796371,
+        "rmse": 0.20105557710766087
+      },
+      "lidar_dz_sample_count": {
+        "valid_pixels": 1450,
+        "min": 0.0,
+        "max": 130.0,
+        "mean": 15.21448275862069,
+        "median": 0.0,
+        "std": 36.36810174771927,
+        "rmse": 39.42231995132742
+      },
+      "lidar_dz_coverage": {
+        "valid_pixels": 1450,
+        "min": 0.0,
+        "max": 1.0,
+        "mean": 0.12028839470514166,
+        "median": 0.0,
+        "std": 0.29024883690757186,
+        "rmse": 0.3141873409718129
+      },
+      "lidar_dz_valid": {
+        "valid_pixels": 1450,
+        "min": 0.0,
+        "max": 1.0,
+        "mean": 0.11586206896551725,
+        "median": 0.0,
+        "std": 0.32005944751021953,
+        "rmse": 0.34038517735870527
+      },
+      "nisar_june_HHHH": {
+        "valid_pixels": 1310,
+        "min": 0.0015887916088104248,
+        "max": 0.7336349487304688,
+        "mean": 0.04910110377400886,
+        "median": 0.013231873512268066,
+        "std": 0.07734289967611865,
+        "rmse": 0.09161245833474911
+      },
+      "nisar_june_HHHH_db": {
+        "valid_pixels": 1310,
+        "min": -27.989330625653057,
+        "max": -1.345199880260637,
+        "mean": -17.057671013404583,
+        "median": -18.7837870884117,
+        "std": 5.689100578695346,
+        "rmse": 17.981379418611205
+      },
+      "nisar_june_HHHH_valid": {
+        "valid_pixels": 1310,
+        "min": 1.0,
+        "max": 1.0,
+        "mean": 1.0,
+        "median": 1.0,
+        "std": 0.0,
+        "rmse": 1.0
+      },
+      "nisar_june_HVHV": {
+        "valid_pixels": 1310,
+        "min": 0.0007358193397521973,
+        "max": 0.3123626708984375,
+        "mean": 0.012519341820978936,
+        "median": 0.0040528178215026855,
+        "std": 0.020394128280584612,
+        "rmse": 0.02393019824312898
+      },
+      "nisar_june_HVHV_db": {
+        "valid_pixels": 1310,
+        "min": -31.332288016675975,
+        "max": -5.05340872334707,
+        "mean": -22.34291844602997,
+        "median": -23.922429520607196,
+        "std": 4.967225660593662,
+        "rmse": 22.888410505083275
+      },
+      "nisar_june_HVHV_valid": {
+        "valid_pixels": 1310,
+        "min": 1.0,
+        "max": 1.0,
+        "mean": 1.0,
+        "median": 1.0,
+        "std": 0.0,
+        "rmse": 1.0
+      },
+      "nisar_june_mask": {
+        "valid_pixels": 1310,
+        "min": 1.0,
+        "max": 1.0,
+        "mean": 1.0,
+        "median": 1.0,
+        "std": 0.0,
+        "rmse": 1.0
+      },
+      "nisar_june_numberOfLooks": {
+        "valid_pixels": 1310,
+        "min": 3.976266384124756,
+        "max": 6.096630096435547,
+        "mean": 4.67140826851357,
+        "median": 4.592200040817261,
+        "std": 0.3071241285499408,
+        "rmse": 4.681493398636221
+      },
+      "nisar_june_rtcGammaToSigmaFactor": {
+        "valid_pixels": 1310,
+        "min": 0.5738490223884583,
+        "max": 0.8328790068626404,
+        "mean": 0.7573763425113591,
+        "median": 0.7682518064975739,
+        "std": 0.03827352343149749,
+        "rmse": 0.7583427897670979
+      },
+      "nisar_june_inputDataExceptionMask": {
+        "valid_pixels": 1310,
+        "min": 0.0,
+        "max": 0.0,
+        "mean": 0.0,
+        "median": 0.0,
+        "std": 0.0,
+        "rmse": 0.0
+      },
+      "nisar_october_HHHH": {
+        "valid_pixels": 1310,
+        "min": 0.0013473182916641235,
+        "max": 1.24749755859375,
+        "mean": 0.061719285440808944,
+        "median": 0.015999436378479004,
+        "std": 0.10116592798199849,
+        "rmse": 0.11850660395008776
+      },
+      "nisar_october_HHHH_db": {
+        "valid_pixels": 1310,
+        "min": -28.705297940438914,
+        "max": 0.9603970436332333,
+        "mean": -15.932594074429897,
+        "median": -17.959007763225685,
+        "std": 5.516887417301114,
+        "rmse": 16.860711749974676
+      },
+      "nisar_october_HHHH_valid": {
+        "valid_pixels": 1310,
+        "min": 1.0,
+        "max": 1.0,
+        "mean": 1.0,
+        "median": 1.0,
+        "std": 0.0,
+        "rmse": 1.0
+      },
+      "nisar_october_HVHV": {
+        "valid_pixels": 1310,
+        "min": 0.0005490556359291077,
+        "max": 0.34228515625,
+        "mean": 0.014684019738253746,
+        "median": 0.004281044006347656,
+        "std": 0.025216461150703612,
+        "rmse": 0.029180307548728305
+      },
+      "nisar_october_HVHV_db": {
+        "valid_pixels": 1310,
+        "min": -32.60383646164159,
+        "max": -4.656119343371345,
+        "mean": -21.884923407418583,
+        "median": -23.68450308930309,
+        "std": 5.131994578880415,
+        "rmse": 22.478595171990527
+      },
+      "nisar_october_HVHV_valid": {
+        "valid_pixels": 1310,
+        "min": 1.0,
+        "max": 1.0,
+        "mean": 1.0,
+        "median": 1.0,
+        "std": 0.0,
+        "rmse": 1.0
+      },
+      "nisar_october_mask": {
+        "valid_pixels": 1310,
+        "min": 1.0,
+        "max": 1.0,
+        "mean": 1.0,
+        "median": 1.0,
+        "std": 0.0,
+        "rmse": 1.0
+      },
+      "nisar_october_numberOfLooks": {
+        "valid_pixels": 1310,
+        "min": 3.9763031005859375,
+        "max": 6.096625328063965,
+        "mean": 4.671430906994652,
+        "median": 4.592224359512329,
+        "std": 0.3071176766570185,
+        "rmse": 4.681515565085743
+      },
+      "nisar_october_rtcGammaToSigmaFactor": {
+        "valid_pixels": 1310,
+        "min": 0.5750903487205505,
+        "max": 0.8321424126625061,
+        "mean": 0.7573679866681572,
+        "median": 0.7682446539402008,
+        "std": 0.038280933151846525,
+        "rmse": 0.7583348185813138
+      },
+      "nisar_october_inputDataExceptionMask": {
+        "valid_pixels": 1310,
+        "min": 0.0,
+        "max": 0.0,
+        "mean": 0.0,
+        "median": 0.0,
+        "std": 0.0,
+        "rmse": 0.0
+      },
+      "nisar_HHHH_change_db": {
+        "valid_pixels": 1310,
+        "min": -8.316410251426234,
+        "max": 10.890614220987711,
+        "mean": 1.1250769389746846,
+        "median": 1.1557843537516872,
+        "std": 2.928499297047231,
+        "rmse": 3.137181258935921
+      },
+      "nisar_HVHV_change_db": {
+        "valid_pixels": 1310,
+        "min": -10.686892198648987,
+        "max": 9.907321779579306,
+        "mean": 0.457995038611386,
+        "median": 0.48057409627506775,
+        "std": 2.6737332771105335,
+        "rmse": 2.71267563348825
+      }
+    },
+    "fully_joined_pixels": 168
+  },
+  "min_valid_area_fraction": 0.5,
+  "calibration": "GCOV linear gamma0 power. dB = 10 log10(power) for positive samples.",
+  "radar_resampling": "Nearest neighbor; preserves measured intensity and categorical flags.",
+  "files": [
+    {
+      "filename": "comparison_pixels.csv",
+      "bytes": 608856,
+      "sha256": "429371d40cd2559a8105a74a500f234f0e84ba28428f97750b7fb5308998aa52"
+    },
+    {
+      "filename": "duck_radar_lidar_alignment.png",
+      "bytes": 162533,
+      "sha256": "b8ea4502ebcd4fab49d24b298a71029871e5e3708d0c53ca22a5bb8787fd1d5f"
+    },
+    {
+      "filename": "lidar_dz_coverage.tif",
+      "bytes": 3098,
+      "sha256": "4dbb0f2dc63880eeb938e646592e3cf61f1089138c15aabafd7668b7481ee1f7"
+    },
+    {
+      "filename": "lidar_dz_m.tif",
+      "bytes": 2857,
+      "sha256": "90e81c7d70c96a6a932c75b30b2c43f2069495740bc9755004af1719e28efa84"
+    },
+    {
+      "filename": "lidar_dz_sample_count.tif",
+      "bytes": 2636,
+      "sha256": "ed8afb867c30978fc0dd2482d8649691addf1471afdb528dcca7370f9c4e45b6"
+    },
+    {
+      "filename": "lidar_dz_std_m.tif",
+      "bytes": 2863,
+      "sha256": "5278de9e9386cffa47562c5e9b0072fcb1e05a7fb38bbe8041aac411e8c558e4"
+    },
+    {
+      "filename": "lidar_dz_valid.tif",
+      "bytes": 1954,
+      "sha256": "853081b7f6095b3b8cc07b78465e416690e16633d8804d732211cc771dae4e68"
+    },
+    {
+      "filename": "lidar_june_coverage.tif",
+      "bytes": 3138,
+      "sha256": "10824215f18e14bab4d39753a2678e76b9afa0f15505ec7ebf093f621b4cc291"
+    },
+    {
+      "filename": "lidar_june_m.tif",
+      "bytes": 3022,
+      "sha256": "16e672abfa1911a63c069191190d317295735d591154885c31bb87f71bb835f0"
+    },
+    {
+      "filename": "lidar_june_sample_count.tif",
+      "bytes": 2716,
+      "sha256": "53436608340a7aade452ce4074e9dfdca322adc1a0a09d451b6f79112b7b90f4"
+    },
+    {
+      "filename": "lidar_june_std_m.tif",
+      "bytes": 3033,
+      "sha256": "6a0ef517023e26b75371d79efbcd9300451b05bcc5c474a97e96464f7a0cd933"
+    },
+    {
+      "filename": "lidar_june_valid.tif",
+      "bytes": 2036,
+      "sha256": "180e1f3a782decc6f0985294875e3447e1313208def0e873030013ab3fa81f74"
+    },
+    {
+      "filename": "lidar_october_coverage.tif",
+      "bytes": 3142,
+      "sha256": "26c8696ea97d8fc4cd49225ebdf650953454cb32540c5bff30bf8d729da8c201"
+    },
+    {
+      "filename": "lidar_october_m.tif",
+      "bytes": 2984,
+      "sha256": "e8acbf6ff46c176e5ffd50316a490353b80576ee2539fdc83016174684d42c93"
+    },
+    {
+      "filename": "lidar_october_sample_count.tif",
+      "bytes": 2713,
+      "sha256": "b117093aa6b29e7b03b463d81fc7376b14350dbb4087afbf9c0bdf217d31241c"
+    },
+    {
+      "filename": "lidar_october_std_m.tif",
+      "bytes": 2992,
+      "sha256": "9a841d3f70f6cd7d3e9aa919e419bbaeca4eee5f69322fdf6eea898fe8901634"
+    },
+    {
+      "filename": "lidar_october_valid.tif",
+      "bytes": 2030,
+      "sha256": "32ee34407deeae8e1e85a622cc6b3d4692c89d36403dfe69d4e767db36782add"
+    },
+    {
+      "filename": "nisar_HHHH_change_db.tif",
+      "bytes": 7572,
+      "sha256": "b9068ec3f978d45d4ee8e58ba57373fc065e83448165075c9c4a2c6512939958"
+    },
+    {
+      "filename": "nisar_HVHV_change_db.tif",
+      "bytes": 7581,
+      "sha256": "095cd3f46baf2ebd9bbfe9a5c4e66e116eb2bf1783ad451595b243210e600288"
+    },
+    {
+      "filename": "nisar_june_HHHH.tif",
+      "bytes": 6995,
+      "sha256": "d7a758125ba373eeee0f43d675a3dcfb4cdd6a78291bb94b4f3f7fd91c3d68ca"
+    },
+    {
+      "filename": "nisar_june_HHHH_db.tif",
+      "bytes": 7417,
+      "sha256": "ff96357623ac0beabbaafb467a5ad084ce15f46870d6d44d0289bea830eb0e8a"
+    },
+    {
+      "filename": "nisar_june_HHHH_native_db.tif",
+      "bytes": 7710,
+      "sha256": "c33df4dd3b4ab1683f192839af409c197adff5d36b1808067a4d0b2c4f914bbf"
+    },
+    {
+      "filename": "nisar_june_HHHH_native_raw.tif",
+      "bytes": 7260,
+      "sha256": "36b31f9cfb9adfa3bc8de17c14ac7a24ef3b0902b485e526aa0b60125cc810cb"
+    },
+    {
+      "filename": "nisar_june_HHHH_valid.tif",
+      "bytes": 2127,
+      "sha256": "af62e13886d1b3022985a74a146757d5935f3a6556f336211de9daa270f23467"
+    },
+    {
+      "filename": "nisar_june_HVHV.tif",
+      "bytes": 6973,
+      "sha256": "fb2bec0f3ce84b09767e9c3068fa0e588072d858618de381c3c57a643d08944a"
+    },
+    {
+      "filename": "nisar_june_HVHV_db.tif",
+      "bytes": 7354,
+      "sha256": "a8cb3d03de714fc437a210f10070d15976492db949b69b7940bdce1a2b0e277a"
+    },
+    {
+      "filename": "nisar_june_HVHV_native_db.tif",
+      "bytes": 7627,
+      "sha256": "9e0e3948b4da9d4987b75513a7ee35b6689f3da1453f6aeacd679d0615eeca59"
+    },
+    {
+      "filename": "nisar_june_HVHV_native_raw.tif",
+      "bytes": 7239,
+      "sha256": "66696565be261593d16c2c3db62dfbb1403e05f2bd036cbb9283d1d7280d8c8c"
+    },
+    {
+      "filename": "nisar_june_HVHV_valid.tif",
+      "bytes": 2127,
+      "sha256": "af62e13886d1b3022985a74a146757d5935f3a6556f336211de9daa270f23467"
+    },
+    {
+      "filename": "nisar_june_inputDataExceptionMask.tif",
+      "bytes": 2082,
+      "sha256": "62a7957c9113aa3a15b85506e3d0ef2316b88ea57b3b40ccd1cf44606dc2bc4c"
+    },
+    {
+      "filename": "nisar_june_inputDataExceptionMask_native_raw.tif",
+      "bytes": 2286,
+      "sha256": "eb4975e5d07efb6c0b577cea20be1992dd18d6328e4dbcf2e4cebe1809c4096b"
+    },
+    {
+      "filename": "nisar_june_mask.tif",
+      "bytes": 2085,
+      "sha256": "63ef59a3a9d763caddbb24d4bf7a0328c1b1f2bd436d096e0ac3755a86b54a6c"
+    },
+    {
+      "filename": "nisar_june_mask_native_raw.tif",
+      "bytes": 2145,
+      "sha256": "f3c63200bc355412f4a917e426ffb67482e173b33ab34f41d2737b7a9d099a56"
+    },
+    {
+      "filename": "nisar_june_numberOfLooks.tif",
+      "bytes": 6598,
+      "sha256": "022e886b36fbe32a34e4509f75294ccaafe8ce433addb7d433d91dc684cb9320"
+    },
+    {
+      "filename": "nisar_june_numberOfLooks_native_raw.tif",
+      "bytes": 6862,
+      "sha256": "55b9c92cfb7149d60447ffe55eb94aeb6ee9ad1501faf5eab6cf01a038248e89"
+    },
+    {
+      "filename": "nisar_june_radar_geometry.npz",
+      "bytes": 2905,
+      "sha256": "9c3c0880df0c7144bd77e0baa39e53ddd7a67dfc9ec93c47d3662212f3e45045"
+    },
+    {
+      "filename": "nisar_june_rtcGammaToSigmaFactor.tif",
+      "bytes": 6573,
+      "sha256": "24fd511a7c10be90b87bb5f4712d516b46227408b8d2d206464667f1d7740605"
+    },
+    {
+      "filename": "nisar_june_rtcGammaToSigmaFactor_native_raw.tif",
+      "bytes": 6834,
+      "sha256": "5a4f345945a897665ba39da06a63e2482be06af3973ba2f83941e27b39e353cc"
+    },
+    {
+      "filename": "nisar_october_HHHH.tif",
+      "bytes": 6974,
+      "sha256": "40b2fdc073273538d867044185b4751dd9d42734ac20a1aefd863e7646d0b094"
+    },
+    {
+      "filename": "nisar_october_HHHH_db.tif",
+      "bytes": 7433,
+      "sha256": "bc94d37e5c534bc9d82d8214b2e5c32837eb3fcfef79bf7edd03c43c209b279e"
+    },
+    {
+      "filename": "nisar_october_HHHH_native_db.tif",
+      "bytes": 7725,
+      "sha256": "db3944a000bf0e16ae433fa2e9e93f9881538dcacb443d0a4ef6e5885f66179d"
+    },
+    {
+      "filename": "nisar_october_HHHH_native_raw.tif",
+      "bytes": 7243,
+      "sha256": "3195027846338d1cd1181663c9e945d5b821629876baed199ac950c460b7e5d5"
+    },
+    {
+      "filename": "nisar_october_HHHH_valid.tif",
+      "bytes": 2127,
+      "sha256": "e7bf157a734eaa3618747b91a82c5f8439b0d95d9cb94a4d823d19a902fbd66d"
+    },
+    {
+      "filename": "nisar_october_HVHV.tif",
+      "bytes": 6959,
+      "sha256": "61708fe607b6fe658e1b950250ac6155226a836b93e058d28b03c588f260dfdc"
+    },
+    {
+      "filename": "nisar_october_HVHV_db.tif",
+      "bytes": 7368,
+      "sha256": "7e229496b05e5bc510419ad5fc46535b96afe7f9c22fedc1bcbaed75c83420a0"
+    },
+    {
+      "filename": "nisar_october_HVHV_native_db.tif",
+      "bytes": 7645,
+      "sha256": "97c399f3c9d7a613f907dbfdc5a2db444cc3225cf19790460c719b2a73bb7592"
+    },
+    {
+      "filename": "nisar_october_HVHV_native_raw.tif",
+      "bytes": 7227,
+      "sha256": "fef7b149bfa4b19f79549bbdb9fba359572f53d686ed6cd4dbd1a8279ccc2022"
+    },
+    {
+      "filename": "nisar_october_HVHV_valid.tif",
+      "bytes": 2127,
+      "sha256": "e7bf157a734eaa3618747b91a82c5f8439b0d95d9cb94a4d823d19a902fbd66d"
+    },
+    {
+      "filename": "nisar_october_inputDataExceptionMask.tif",
+      "bytes": 2082,
+      "sha256": "8a05dc1c68aa2fa314bf3ae5336d3ce9af0c8f46ef0d6ad1f06b53dc04149b6f"
+    },
+    {
+      "filename": "nisar_october_inputDataExceptionMask_native_raw.tif",
+      "bytes": 2286,
+      "sha256": "9a9311fb1a5eeb843d60b4776d39da1d3fafee9f759a432159be360350ceae7c"
+    },
+    {
+      "filename": "nisar_october_mask.tif",
+      "bytes": 2085,
+      "sha256": "8787af63d7e1eb04e344d9ffbc360f57a3a6786842ed91e5f5087a9787d3fa7e"
+    },
+    {
+      "filename": "nisar_october_mask_native_raw.tif",
+      "bytes": 2145,
+      "sha256": "f89d08a04e3fac8aab3eedc67470974d9bade3c5b295066ee3e47deff92883e8"
+    },
+    {
+      "filename": "nisar_october_numberOfLooks.tif",
+      "bytes": 6593,
+      "sha256": "e65498cfcc854e7015bd3422c9840aab4e2ce4cad7d406d6464a10e5bf1acdf6"
+    },
+    {
+      "filename": "nisar_october_numberOfLooks_native_raw.tif",
+      "bytes": 6857,
+      "sha256": "709ce923f4a8a68e2acbbd4251b1bef2b86bf7b818d3f6058c2d57fecb1dc0e3"
+    },
+    {
+      "filename": "nisar_october_radar_geometry.npz",
+      "bytes": 2910,
+      "sha256": "75c4e4aea6b0582f6ddbedfe99711c8687c8da62add6d90d4a34acfa26585740"
+    },
+    {
+      "filename": "nisar_october_rtcGammaToSigmaFactor.tif",
+      "bytes": 6580,
+      "sha256": "bd865e26fbae95b8d67d67ceff17008c35c97613200dee4a1521738d487a988b"
+    },
+    {
+      "filename": "nisar_october_rtcGammaToSigmaFactor_native_raw.tif",
+      "bytes": 6846,
+      "sha256": "94ad898ac94fa6d09cbaa21c052fe459d4cb6bba4fb5f10b1e7d5dc849dfa73b"
+    },
+    {
+      "filename": "study_area_fraction.tif",
+      "bytes": 2658,
+      "sha256": "d397760467d6e32dc5fa319babd6c48c4dcfd58bcafbf7202aea0bd7d0bc99f2"
+    }
+  ]
+}

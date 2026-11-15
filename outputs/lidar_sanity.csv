@@ -1,0 +1,10 @@
+,value
+common_cells_1m2,17654.0
+median_dz_m,-0.26836028206698725
+mean_dz_m,-0.31478184874384924
+p10_dz_m,-0.7860830505733083
+p90_dz_m,0.08040905414996537
+detect_threshold_m,0.1
+area_lowering_gt_thr_m2,11684.0
+area_raising_gt_thr_m2,1381.0
+max_rmsReflectorError_m,0.09749265875906821

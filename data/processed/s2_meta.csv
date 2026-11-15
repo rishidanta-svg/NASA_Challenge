@@ -1,0 +1,4 @@
+date_key,item_id,acquisition_utc,boa_offset_applied,offshore_nir_reflectance_median,site_clear_fraction,pixel_m_green_nir,pixel_m_swir16,self_href
+2026-06,S2C_18SVF_20260618_0_L2A,2026-06-18T16:03:02.616000Z,True,0.0845,0.9946153846153846,10.0,20.0,https://earth-search.aws.element84.com/v1/collections/sentinel-2-l2a/items/S2C_18SVF_20260618_0_L2A
+2026-09,S2B_18SVF_20260928_0_L2A,2026-09-28T15:53:06.776000Z,True,0.0033,1.0,10.0,20.0,https://earth-search.aws.element84.com/v1/collections/sentinel-2-l2a/items/S2B_18SVF_20260928_0_L2A
+2026-10,S2C_18SVF_20261016_0_L2A,2026-10-16T16:03:03.679000Z,True,0.0053,1.0,10.0,20.0,https://earth-search.aws.element84.com/v1/collections/sentinel-2-l2a/items/S2C_18SVF_20261016_0_L2A

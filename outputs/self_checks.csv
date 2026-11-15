@@ -1,0 +1,12 @@
+check,status,detail
+Three lidar scans loaded at the document's matched times,PASS,2026-06: 2026-06-19T00:31:03 UTC; 2026-09: 2026-09-29T10:33:03 UTC; 2026-10: 2026-10-16T23:33:04 UTC
+All lidar scans QC flag 1,PASS,"flags [1, 1, 1], max RMS reflector error 0.097 m"
+Median Jun->Oct lidar change recomputed independently,PASS,-0.268 m over 17654 common 1 m cells (reported as computed)
+NISAR granule IDs match the team's document,NOT RUN,NISAR not downloaded (no Earthdata login)
+Sentinel-1/2 product IDs agree with their acquisition dates and are used for the right date,PASS,all consistent
+"S2 thresholds independently recomputed from training folds only, and applied to the held-out fold",PASS,"match for all 5 folds x 2 indices; folds: 0: y 700-790, 1: y 800-890, 2: y 900-990, 3: y 1000-1090, 4: y 1100-1190"
+FRF transform fitted to FRF's own lat/lon,PASS,max residual 0.003 m; FRF x-axis azimuth 72.30 deg in UTM 18N (handoff: 69.97 deg from NC State Plane north; differs by the grid convergence between the two projections)
+Units: lidar boundaries inside the lidar x-range (m); datum NAVD88,PASS,x 62-103 m within grid 40-169 m; NAVD88 (geoid12b)
+Units: satellite times are UTC,PASS,6 timestamps end in Z
+Re-running the scoring reproduces identical outputs,PASS,"byte-identical: metrics.csv, sensor_boundaries.csv, change_metrics.csv, matrix_same_rows.csv"
+Every number in the summary's results table matches metrics.csv,PASS,5 rows checked

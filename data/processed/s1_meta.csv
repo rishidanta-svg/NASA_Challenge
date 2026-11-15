@@ -1,0 +1,4 @@
+date_key,item_id,acquisition_utc,orbit_state,relative_orbit,pixel_m,url
+2026-06,S1A_IW_GRDH_1SDV_20260623T225806_20260623T225835_065103_0834CA_rtc,2026-06-23T22:58:20.739610Z,ascending,106,10.0,https://planetarycomputer.microsoft.com/api/stac/v1/collections/sentinel-1-rtc/items/S1A_IW_GRDH_1SDV_20260623T225806_20260623T225835_065103_0834CA_rtc
+2026-09,S1D_IW_GRDH_1SDV_20261004T225729_20261004T225759_004872_009297_rtc,2026-10-04T22:57:44.438136Z,ascending,106,10.0,https://planetarycomputer.microsoft.com/api/stac/v1/collections/sentinel-1-rtc/items/S1D_IW_GRDH_1SDV_20261004T225729_20261004T225759_004872_009297_rtc
+2026-10,S1D_IW_GRDH_1SDV_20261016T225729_20261016T225759_005047_0098AC_rtc,2026-10-16T22:57:44.383059Z,ascending,106,10.0,https://planetarycomputer.microsoft.com/api/stac/v1/collections/sentinel-1-rtc/items/S1D_IW_GRDH_1SDV_20261016T225729_20261016T225759_005047_0098AC_rtc
